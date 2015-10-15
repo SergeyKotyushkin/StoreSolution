@@ -16,8 +16,8 @@
     <form id="form1" runat="server">
     <div style="text-align: center">
     
-        <strong><em><span class="auto-style1">Choose product for youself!<br />
-        </span></em></strong>
+        <strong><em><span class="auto-style1">Choose product for youself!</span></em><hr />
+        </strong>
         <br />
         <asp:Table ID="TableProducts" runat="server" CellPadding="10" style="font-size: large">
         </asp:Table>

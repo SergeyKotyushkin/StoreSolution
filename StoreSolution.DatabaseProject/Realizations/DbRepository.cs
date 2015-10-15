@@ -19,7 +19,7 @@ namespace StoreSolution.DatabaseProject.Realizations
 
         private static DbRepository instance;
 
-        public DbRepository()
+        private DbRepository()
         {
  
         }
