@@ -12,5 +12,8 @@ namespace StoreSolution.DatabaseProject.Interfaces
         IList<Product> GetProducts();
         bool AddProduct(Product product);
         bool RemoveProduct(int id);
+        bool UpdateProduct(Product product);
+        Product GetProductById(int id);
+        int GetCurrentId();
     }
 }
