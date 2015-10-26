@@ -1,0 +1,11 @@
+﻿body {
+    text-align: center;
+    font-family: "Calibri";
+}
+
+#labTitle {
+    font-size: large;
+}
+#myDialogBox {
+    background-color: #b0c4de
+}

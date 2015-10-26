@@ -1,0 +1,50 @@
+﻿div#cap {
+    background-color: #808080;
+    border-style: solid;
+    text-align: right;
+}
+
+#labUser {
+    color: #FFFF99;
+    font-weight: bold;
+}
+
+#btnSignOut {
+    color: #990000;
+    font-size: x-small;
+}
+
+div.delimeter {
+    height: 10px;
+}
+
+div#footer {
+    position: fixed;
+    top: 90%;
+    left: 0;
+    width: 100%;
+    height: 10%;
+    display: table;
+}
+
+#inFooter {
+    display: table-cell;
+    text-align: center;
+    font-size: medium;
+}
+
+.validate {
+    color: red;
+}
+
+div#back {
+    text-align: left;
+}
+
+#btnBack {
+    background-color: #C1C1FF;
+    font-size: medium;
+    color: #000066;
+    height: 40px;
+    width: 120px;
+}

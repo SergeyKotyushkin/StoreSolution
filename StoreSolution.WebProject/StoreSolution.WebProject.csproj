@@ -13,12 +13,13 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>StoreSolution.WebProject</RootNamespace>
     <AssemblyName>StoreSolution.WebProject</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,6 +29,10 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PublishDatabaseSettings>
+      <Objects>
+      </Objects>
+    </PublishDatabaseSettings>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -39,6 +44,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data.SqlServerCe, Version=4.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -46,65 +52,83 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Content\Images\logo.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <Content Include="App_Data\aspnetdb.mdf" />
     <Content Include="App_Data\aspnetdb_log.ldf">
       <DependentUpon>aspnetdb.mdf</DependentUpon>
     </Content>
-    <Content Include="LoginPage.aspx" />
-    <Content Include="Restrict\BasketPage.aspx" />
-    <Content Include="Restrict\StartPage.aspx" />
-    <Content Include="SuperThings\ProductManagementPage.aspx" />
-    <Content Include="Web.config" />
+    <Content Include="Content\Basket.css" />
+    <Content Include="Content\Common.css" />
+    <Content Include="Content\Index.css" />
+    <Content Include="Content\NewUser.css" />
+    <Content Include="Content\ProductCatalog.css" />
+    <Content Include="Content\ProductManagment.css" />
+    <Content Include="Index.aspx" />
+    <Content Include="NotAuthenticated\NewUser.aspx" />
+    <Content Include="User\Basket.aspx" />
+    <Content Include="User\ProductCatalog.aspx" />
+    <Content Include="Admin\ProductManagement.aspx" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LoginPage.aspx.cs">
-      <DependentUpon>LoginPage.aspx</DependentUpon>
+    <Compile Include="Index.aspx.cs">
+      <DependentUpon>Index.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="LoginPage.aspx.designer.cs">
-      <DependentUpon>LoginPage.aspx</DependentUpon>
+    <Compile Include="Index.aspx.designer.cs">
+      <DependentUpon>Index.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Restrict\BasketPage.aspx.cs">
-      <DependentUpon>BasketPage.aspx</DependentUpon>
+    <Compile Include="NotAuthenticated\NewUser.aspx.cs">
+      <DependentUpon>NewUser.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Restrict\BasketPage.aspx.designer.cs">
-      <DependentUpon>BasketPage.aspx</DependentUpon>
+    <Compile Include="NotAuthenticated\NewUser.aspx.designer.cs">
+      <DependentUpon>NewUser.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Basket.aspx.cs">
+      <DependentUpon>Basket.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Basket.aspx.designer.cs">
+      <DependentUpon>Basket.aspx</DependentUpon>
     </Compile>
     <Compile Include="Model\Order.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Restrict\StartPage.aspx.cs">
-      <DependentUpon>StartPage.aspx</DependentUpon>
+    <Compile Include="User\ProductCatalog.aspx.cs">
+      <DependentUpon>ProductCatalog.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Restrict\StartPage.aspx.designer.cs">
-      <DependentUpon>StartPage.aspx</DependentUpon>
+    <Compile Include="User\ProductCatalog.aspx.designer.cs">
+      <DependentUpon>ProductCatalog.aspx</DependentUpon>
     </Compile>
-    <Compile Include="SuperThings\ProductManagementPage.aspx.cs">
-      <DependentUpon>ProductManagementPage.aspx</DependentUpon>
+    <Compile Include="Admin\ProductManagement.aspx.cs">
+      <DependentUpon>ProductManagement.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="SuperThings\ProductManagementPage.aspx.designer.cs">
-      <DependentUpon>ProductManagementPage.aspx</DependentUpon>
+    <Compile Include="Admin\ProductManagement.aspx.designer.cs">
+      <DependentUpon>ProductManagement.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Restrict\Web.config">
+    <Content Include="Admin\Web.config" />
+    <Content Include="User\Web.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="SuperThings\Web.config" />
+    <Content Include="NotAuthenticated\Web.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -118,6 +142,7 @@
       <Name>StoreSolution.DatabaseProject</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
