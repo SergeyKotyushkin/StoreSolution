@@ -1,0 +1,25 @@
+﻿body {
+    font-family: "Calibri";
+}
+
+#iconDiv {
+    background-color: grey;
+    height: 200px;
+    width: 200px;
+    border: 2px solid black;
+}
+
+#icon {
+    height: 200px;
+    width: 200px;
+}
+
+#labTitle {
+    font-size: xx-large;
+    font-weight: bolder;
+}
+
+#labPassword {
+    font-size: large;
+    font-weight: bold;
+}

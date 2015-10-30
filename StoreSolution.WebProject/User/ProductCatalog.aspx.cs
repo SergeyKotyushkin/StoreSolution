@@ -1,45 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Web.Security;
 using System.Web.UI.WebControls;
-using StoreSolution.DatabaseProject.Model;
-using StoreSolution.DatabaseProject.Realizations;
+using StoreSolution.DatabaseProject.Contracts;
+using StoreSolution.MyIoC;
 using StoreSolution.WebProject.Model;
 
 namespace StoreSolution.WebProject.User
 {
     public partial class ProductCatalog : System.Web.UI.Page
     {
-        private const double Tolerance = double.Epsilon;
+        private readonly IProductRepository _productRepository;
+
+        protected ProductCatalog()
+            : this(SimpleContainer.Resolve<IProductRepository>())
+        {
+        }
+
+        protected ProductCatalog(IProductRepository iProductRepository)
+        {
+            _productRepository = iProductRepository;
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
             var user = Membership.GetUser();
-            if (user == null)
-            {
-                btnSignOut_Click(null, null);
-                return;
-            }
+            if (user == null) SignOut();
 
-            labUser.Text = "Good day, " + user.UserName + "!";
+            SetTitles(user);
 
-            if (Session["Bought"] != null)
-            {
-                var lMessage = new Label {Text = "Products are bought! Success!"};
-                phForMessage.Controls.Clear();
-                phForMessage.Controls.Add(lMessage);
-                Session["Bought"] = null;
-            }
-
-            FillGridView();
+            FillGridView(false);
             FillCountColumn();
         }
 
         protected void gvTable_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var id = GetIdFromRow(gvTable.SelectedIndex, 
-                DbRepository.GetInstance().GetProducts().ToList());
+            var id = GetIdFromRow(gvTable.SelectedIndex);
 
             var orders = GetOrdersFromSession();
 
@@ -55,25 +53,16 @@ namespace StoreSolution.WebProject.User
 
         protected void btnSignOut_Click(object sender, EventArgs e)
         {
-            Session.Abandon();
-            FormsAuthentication.SignOut();
-            FormsAuthentication.RedirectToLoginPage();
+            SignOut();
         }
 
         protected void gvTable_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
-            var id = GetIdFromRow(e.RowIndex,
-                DbRepository.GetInstance().GetProducts().ToList());
+            var id = GetIdFromRow(e.RowIndex);
 
             var orders = GetOrdersFromSession();
             RemoveFromOrders(orders, id);
             LoadOrdersToSession(orders);
-            FillCountColumn();
-        }
-
-        protected void gvTable_PageIndexChanged(object sender, EventArgs e)
-        {
-            FillGridView();
             FillCountColumn();
         }
 
@@ -82,42 +71,51 @@ namespace StoreSolution.WebProject.User
             gvTable.PageIndex = e.NewPageIndex;
         }
 
-
-
-        private void FillGridView()
+        protected void gvTable_PageIndexChanged(object sender, EventArgs e)
         {
-            var products = DbRepository.GetInstance().GetProducts();
+            FillGridView(true);
+            FillCountColumn();
+        }
 
-            gvTable.DataSource = products.Select(p => new { p.Name, p.Category, p.Price }).ToList();
-            gvTable.DataBind();
 
-            if (gvTable.Columns.Count != 6) return;
-            foreach (GridViewRow row in gvTable.Rows)
-                row.Cells[5].Text = string.Format("{0:c}", double.Parse(row.Cells[5].Text));
+        private void SignOut()
+        {
+            Session.Abandon();
+            FormsAuthentication.SignOut();
+            FormsAuthentication.RedirectToLoginPage();
+            Response.End();
+        }
+
+        private void SetTitles(MembershipUser user)
+        {
+            hlUser.Text = "Good day, " + user.UserName + "!";
+
+            labMessage.Text = "";
+            if (Session["Bought"] == null) return;
+            labMessage.ForeColor = Color.DarkGreen;
+            labMessage.Text = "Products were bought successfully.";
+            Session["Bought"] = null;
+        }
+
+        private void FillGridView(bool bind)
+        {
+            var products = _productRepository.Products;
+
+            gvTable.DataSource = products.Select(p => new {p.Id, p.Name, p.Category, p.Price}).ToList();
+            if (!Page.IsPostBack || bind)
+                gvTable.DataBind();
         }
 
         private void FillCountColumn()
         {
             var orders = GetOrdersFromSession();
-            var products = DbRepository.GetInstance().GetProducts().ToList();
 
             for (var i = 0; i < gvTable.Rows.Count; i++)
             {
-                var id = GetIdFromRow(i, products);
+                var id = GetIdFromRow(i);
                 var foo = orders.Find(order => order.Id == id);
-                if (foo == null)
-                    gvTable.Rows[i].Cells[1].Text = (0).ToString();
-                else
-                {
-                    gvTable.Rows[i].Cells[1].Text = (foo.Count).ToString();
-                    gvTable.Rows[i].Cells[1].ID = "Record_" + id;
-                }
+                gvTable.Rows[i].Cells[1].Text = foo == null ? (0).ToString() : (foo.Count).ToString();
             }
-        }
-
-        private List<Order> GetOrdersFromSession()
-        {
-            return Session["CurrentOrder"] as List<Order> ?? new List<Order>();
         }
 
         private void LoadOrdersToSession(List<Order> orders)
@@ -125,35 +123,60 @@ namespace StoreSolution.WebProject.User
             Session["CurrentOrder"] = orders;
         }
 
-        private int GetIdFromRow(int index, List<Product> products)
+        private List<Order> GetOrdersFromSession()
         {
-            var name = gvTable.Rows[index].Cells[3].Text;
-            var category = gvTable.Rows[index].Cells[4].Text;
-            var price = double.Parse(gvTable.Rows[index].Cells[5].Text);
-
-            var product = products.Find(p => p.Name == name && p.Category == category && Math.Abs(p.Price - price) < Tolerance);
-
-            return product == null ? -1: product.Id;
+            return Session["CurrentOrder"] as List<Order> ?? new List<Order>();
         }
 
-        private static void AddToOrders(List<Order> orders, int id)
+        private int GetIdFromRow(int index)
         {
-            var order = orders.Find(p => p.Id == id);
-            if (order == null) orders.Add(new Order() { Id = id, Count = 1 });
+            int id;
+            if (!int.TryParse(gvTable.Rows[index].Cells[3].Text, out id)) return -1;
+
+            var product = _productRepository.GetProductById(id);
+            return product == null ? -1 : product.Id;
+        }
+
+        private void AddToOrders(List<Order> orders, int id)
+        {
+            var order = orders.Find(o => o.Id == id);
+            if (order == null) orders.Add(new Order {Id = id, Count = 1});
             else order.Count++;
+
+            labMessage.Text = "";
+            labMessage.ForeColor = Color.DarkGreen;
+            labMessage.Text = "Product '" + _productRepository.GetProductById(id).Name + "' was added to order.";
         }
 
-        private static void RemoveFromOrders(List<Order> orders, int id)
+        private void RemoveFromOrders(List<Order> orders, int id)
         {
-            var order = orders.Find(p => p.Id == id);
-            if (order != null && order.Count != 0)
+            var order = orders.Find(o => o.Id == id);
+            if (order == null || order.Count == 0) return;
+            if (order.Count == 1) orders.Remove(order);
+            else order.Count--;
+
+            labMessage.Text = "";
+            labMessage.ForeColor = Color.DarkBlue;
+            labMessage.Text = "Product '" + _productRepository.GetProductById(id).Name + "' was removed from order.";
+        }
+
+        protected void gvTable_DataBound(object sender, EventArgs e)
+        {
+            foreach (GridViewRow row in gvTable.Rows)
+                row.Cells[6].Text = string.Format("{0:c}", double.Parse(row.Cells[6].Text));
+        }
+
+        protected void gvTable_RowCreated(object sender, GridViewRowEventArgs e)
+        {
+            switch (e.Row.RowType)
             {
-                if (order.Count == 1) orders.Remove(order);
-                else order.Count--;
+                case DataControlRowType.DataRow:
+                    e.Row.Cells[3].CssClass = "hiddencol";
+                    break;
+                case DataControlRowType.Header:
+                    e.Row.Cells[3].CssClass = "hiddencol";
+                    break;
             }
         }
-        
-        
-
     }
 }

@@ -13,23 +13,25 @@
 <form id="form1" runat="server">
     <div style="text-align: center">
         <div id="cap">
-            <asp:Label ID="labUser" runat="server" />
+            <asp:HyperLink ID="hlUser" NavigateUrl="~/Authenticated/Profile.aspx" runat="server" />
             <asp:Button ID="btnSignOut" OnClick="btnSignOut_Click" runat="server" Text="Sign Out" />
             <br/>
         </div>
-        <asp:Label ID="labTitle" runat="server" Text="Choose product for youself!"/>
-        <hr/>
+        <br />
+        <asp:Label ID="labTitle" runat="server" Text="Choose products for youself!"/>
         <br/>
         <br/>
         <asp:GridView AllowPaging="True" 
+                      DataKeyNames="Id"
                       HorizontalAlign="Center" 
                       ID="gvTable" 
+                      OnDataBound="gvTable_DataBound" 
                       OnPageIndexChanged="gvTable_PageIndexChanged" 
                       OnPageIndexChanging="gvTable_PageIndexChanging" 
                       OnRowDeleting="gvTable_RowDeleting" 
                       OnSelectedIndexChanged="gvTable_SelectedIndexChanged" 
                       runat="server" 
-                      Width="50%">
+                      Width="50%" OnRowCreated="gvTable_RowCreated">
             <Columns>
                 <asp:CommandField ButtonType="Button" HeaderText="Add" SelectText="+" ShowSelectButton="True"/>
                 <asp:BoundField HeaderText="Count"/>
@@ -41,10 +43,11 @@
         <br/>
         <br/>
         <asp:Button ID="btnBasket" OnClick="btnBasket_Click" runat="server" Text="To basket" Width="150px" />
-        <br/>
-        <hr/>
-        <div id="message">
-            <asp:PlaceHolder ID="phForMessage" runat="server"/>
+    </div>
+    <div id="footer">
+        <div id="inFooter">
+            <hr/>
+            <asp:Label ID="labMessage" runat="server" Text=""/>
         </div>
     </div>
 </form>

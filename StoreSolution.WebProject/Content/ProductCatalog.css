@@ -5,13 +5,9 @@
 #labTitle {
     font-size: medium;
     font-weight: bold;
-    font-size: large;
+    font-size: x-large;
 }
 
 #btnBasket {
     font-size: medium;
-}
-
-#message {
-    text-align: center;
 }

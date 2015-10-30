@@ -19,7 +19,7 @@
     <div id="center"
          class="cellCenter">
         <div class="cellCenter">
-            <asp:Image ID="logo" ImageUrl="~/Content/Images/logo.jpg" runat="server"/>
+            <asp:Image ID="logo" ImageUrl="~/Content/Images/11logo.jpg" runat="server"/>
             <br/>
             <div id="credentials">
                 <div class="delimeter"></div>
@@ -47,7 +47,7 @@
     <div id="footer">
         <div id="inFooter">
             <hr/>
-            <asp:Label CssClass="validate" ID="labMessage" runat="server" Text=""/>
+            <asp:Label ID="labMessage" runat="server" Text=""/>
         </div>
     </div>
 </form>

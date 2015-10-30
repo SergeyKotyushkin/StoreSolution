@@ -7,7 +7,7 @@ namespace StoreSolution.WebProject
     public partial class Index : System.Web.UI.Page
     {
         private const string ValidateError = "Credentials are wrong!";
-
+        
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["NewUser"] != null)
@@ -17,6 +17,12 @@ namespace StoreSolution.WebProject
                 Session["NewUser"] = null;
             }
             else labMessage.ForeColor = Color.Red;
+
+            //if (User.Identity.Name == "" && Membership.GetNumberOfUsersOnline() > 0)
+            //{
+            //    FormsAuthentication.SignOut();
+            //    Response.Redirect("~/NotAuthenticated/NewUser.aspx");
+            //}
 
             if (Membership.GetUser(tbLogin.Text) != null) return;
 

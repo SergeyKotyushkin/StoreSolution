@@ -22,13 +22,13 @@ namespace StoreSolution.WebProject.User {
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
         
         /// <summary>
-        /// labUser элемент управления.
+        /// hlUser элемент управления.
         /// </summary>
         /// <remarks>
         /// Автоматически создаваемое поле.
         /// Для изменения переместите объявление поля из файла конструктора в файл кода программной части.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label labUser;
+        protected global::System.Web.UI.WebControls.HyperLink hlUser;
         
         /// <summary>
         /// btnSignOut элемент управления.
@@ -58,13 +58,13 @@ namespace StoreSolution.WebProject.User {
         protected global::System.Web.UI.WebControls.GridView gvTable;
         
         /// <summary>
-        /// phTotal элемент управления.
+        /// labTotal элемент управления.
         /// </summary>
         /// <remarks>
         /// Автоматически создаваемое поле.
         /// Для изменения переместите объявление поля из файла конструктора в файл кода программной части.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.PlaceHolder phTotal;
+        protected global::System.Web.UI.WebControls.Label labTotal;
         
         /// <summary>
         /// btnBuy элемент управления.

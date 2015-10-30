@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Web;
 using System.Web.Security;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
-namespace StoreSolution.WebProject
+namespace StoreSolution.WebProject.NotAuthenticated
 {
     public partial class NewUser : System.Web.UI.Page
     {
@@ -25,8 +20,7 @@ namespace StoreSolution.WebProject
             if (!rgxLogin.IsMatch(tbLogin.Text))
             {
                 labMessage.Text =
-                    "Login must have only letters, numbers and underscope. " +
-                    "First symbol must be letter. " +
+                    "Login must have only letters, numbers and underscopes. " +
                     "First symbol must be letter. Length must be more than 5 symbols.";
                 rfvLogin.IsValid = false;
                 return;

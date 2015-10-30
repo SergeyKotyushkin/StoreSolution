@@ -12,14 +12,12 @@
 </head>
 <body>
     <form id="form1" runat="server">
-
         <div id="cap">
-            <asp:Label ID="labUser" runat="server" />
+            <asp:HyperLink ID="hlUser" NavigateUrl="~/Authenticated/Profile.aspx" runat="server" />
             <asp:Button ID="btnSignOut" OnClick="btnSignOut_Click" runat="server" Text="Sign Out" />
             <br />
         </div>
-        
-        <div class="cellCenter">
+        <div>
             <asp:Label ID="labTitle" runat="server" Text="Products managment" />
             <br />
             <asp:Panel runat="server" ID="myDialogBox" EnableTheming="True" Visible="False">
@@ -49,7 +47,7 @@
                           PageSize="7" 
                           runat="server" 
                           ShowFooter="True" 
-                          Width="50%">
+                          Width="50%" OnDataBound="gvTable_DataBound">
                 <Columns>
                     <asp:CommandField ButtonType="Button" ShowEditButton="True" CausesValidation="False" />
                     <asp:CommandField ButtonType="Button" ShowDeleteButton="True" />
@@ -57,9 +55,12 @@
                 <PagerStyle HorizontalAlign="Center" VerticalAlign="Middle" />
             </asp:GridView>
             <br />
-            <asp:PlaceHolder ID="phMessage" runat="server"></asp:PlaceHolder>
-            <br />
-            <br />
+        </div>
+        <div id="footer">
+            <div id="inFooter">
+                <hr/>
+                <asp:Label ID="labMessage" runat="server" Text=""/>
+            </div>
         </div>
     </form>
 </body>

@@ -4,7 +4,7 @@
     text-align: right;
 }
 
-#labUser {
+#hlUser {
     color: #FFFF99;
     font-weight: bold;
 }
@@ -33,8 +33,15 @@ div#footer {
     font-size: medium;
 }
 
-.validate {
+#labMessage {
     color: red;
+    font-size: large;
+}
+
+.cellCenter {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
 }
 
 div#back {
@@ -47,4 +54,11 @@ div#back {
     color: #000066;
     height: 40px;
     width: 120px;
+    position: fixed;
+    bottom: 5px;
+    left: 5px;
+}
+
+.hiddencol {
+    display: none;
 }

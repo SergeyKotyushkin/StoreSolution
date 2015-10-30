@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
-using StoreSolution.DatabaseProject.Realizations;
 using StoreSolution.WebProject.Model;
 using System.Web.Security;
+using StoreSolution.DatabaseProject.Contracts;
+using StoreSolution.MyIoC;
 
 namespace StoreSolution.WebProject.User
 {
@@ -12,23 +13,33 @@ namespace StoreSolution.WebProject.User
     {
         private const double Tolerance = double.Epsilon;
 
+        private readonly IProductRepository _productRepository;
+
+        protected Basket()
+            : this(SimpleContainer.Resolve<IProductRepository>())
+        {
+            
+        }
+
+        protected Basket(IProductRepository iProductRepository)
+        {
+            _productRepository = iProductRepository;
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             var user = Membership.GetUser();
-            if (user == null)
-            {
-                btnSignOut_Click(null, null);
-                return;
-            }
+            if (user == null) SignOut();
 
-            labUser.Text = "Good day, " + user.UserName + "!";
+            SetTitles(user);
 
-            FillOrdersGridView();
+            if (!Page.IsPostBack)
+                FillOrdersGridView();
         }
 
         protected void btnBuy_Click(object sender, EventArgs e)
         {
-            Session["Bought"] = "1";
+            Session["Bought"] = 1;
             Session["CurrentOrder"] = null;
             Response.Redirect("~/User/ProductCatalog.aspx");
         }
@@ -40,9 +51,7 @@ namespace StoreSolution.WebProject.User
 
         protected void btnSignOut_Click(object sender, EventArgs e)
         {
-            Session.Abandon();
-            FormsAuthentication.SignOut();
-            FormsAuthentication.RedirectToLoginPage();
+            SignOut();
         }
 
         protected void GV_table_PageIndexChanging(object sender, GridViewPageEventArgs e)
@@ -54,46 +63,57 @@ namespace StoreSolution.WebProject.User
         {
             FillOrdersGridView();
         }
-        
+
 
         private void FillOrdersGridView()
         {
-            var products = DbRepository.GetInstance().GetProducts();
+            var products = _productRepository.Products.ToList();
 
             var orders = GetOrdersFromSession();
 
             var list = products.Join(orders, p => p.Id, q => q.Id, (p, q) => new { p.Name, p.Price, q.Count, Total = (q.Count * p.Price) }).ToList();
             gvTable.DataSource = list;               
             gvTable.DataBind();
-
-            for (var i = 0; i < gvTable.Rows.Count; i++)
-            {
-                gvTable.Rows[i].Cells[1].Text = string.Format("{0:c}", double.Parse(gvTable.Rows[i].Cells[1].Text));
-                gvTable.Rows[i].Cells[3].Text = string.Format("{0:c}", double.Parse(gvTable.Rows[i].Cells[3].Text));
-            }
-
+            
             var sum = list.Sum(p => p.Total);
-
-            var label = new Label();
 
             if (Math.Abs(sum) < Tolerance)
             {
                 btnBuy.Enabled = false;
-                label.Text = "Your basket is empty.";
+                labTotal.Text = "Your basket is empty.";
             }
             else
             {
                 btnBuy.Enabled = true;
-                label.Text = "Total: " + string.Format("{0:c}", sum);
+                labTotal.Text = "Total: " + string.Format("{0:c}", sum);
             }
-            label.Font.Size = FontUnit.Larger;
-            phTotal.Controls.Clear();
-            phTotal.Controls.Add(label);
+        }
+
+        private void SetTitles(MembershipUser user)
+        {
+            hlUser.Text = "Good day, " + user.UserName + "!";
+        }
+
+        private void SignOut()
+        {
+            Session.Abandon();
+            FormsAuthentication.SignOut();
+            FormsAuthentication.RedirectToLoginPage();
+            Response.End();
         }
 
         private IEnumerable<Order> GetOrdersFromSession()
         {
             return Session["CurrentOrder"] as List<Order> ?? new List<Order>();
+        }
+
+        protected void gvTable_DataBound(object sender, EventArgs e)
+        {
+            for (var i = 0; i < gvTable.Rows.Count; i++)
+            {
+                gvTable.Rows[i].Cells[1].Text = string.Format("{0:c}", double.Parse(gvTable.Rows[i].Cells[1].Text));
+                gvTable.Rows[i].Cells[3].Text = string.Format("{0:c}", double.Parse(gvTable.Rows[i].Cells[3].Text));
+            }
         }
 
     }
