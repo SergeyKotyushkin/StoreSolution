@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using System.Text.RegularExpressions;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.MyIoC;
+using StoreSolution.WebProject.Log4net;
 
 namespace StoreSolution.WebProject.Authenticated
 {
@@ -32,6 +33,150 @@ namespace StoreSolution.WebProject.Authenticated
             if(!Page.IsPostBack)
                 RefereshUser();
         }
+
+        protected void btnBack_Click(object sender, EventArgs e)
+        {
+            var user = GetUser();
+            Logger.Log.Debug("User " + user.UserName + " escaped Profile page.");
+
+            FormsAuthentication.RedirectToLoginPage();
+        }
+
+        protected void btnNewIcon_Click(object sender, EventArgs e)
+        {
+            labMessage.Text = "";
+            labMessage.ForeColor = Color.Red;
+
+            var extension = Path.GetExtension(btnChooseIcon.FileName);
+            if (extension != null)
+            {
+                if (!btnChooseIcon.HasFile || (extension.ToLower() != ".jpg" &&
+                                               extension.ToLower() != ".jpeg"))
+                {
+                    labMessage.Text = !btnChooseIcon.HasFile
+                        ? "Image file was not choosen."
+                        : "Only .Jpg image files allowed";
+                    return;
+                }
+            }
+            else
+            {
+                labMessage.Text = "No image.";
+                return;
+            }
+
+            if (btnChooseIcon.FileBytes.Length == 0)
+            {
+                labMessage.Text = "Image file is empty.";
+                return;
+            }
+
+            var user = GetUser();
+            var person = _iPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName) ?? new Person
+            {
+                Login = user.UserName,
+                Name = "",
+                SecondName = ""
+            };
+
+            var image = ByteArrayToImage(btnChooseIcon.FileBytes);
+            var newImage = (Image) (new Bitmap(image, GetSize(image.Size, 500)));
+
+            var updatedPerson = new Person
+            {
+                Login = person.Login,
+                Name = person.Name,
+                SecondName = person.SecondName,
+                Icon = ImageToByteArray(newImage)
+            };
+
+            var result = _iPersonRepository.AddOrUpdate(updatedPerson);
+
+            labMessage.Text = "";
+            if (result)
+            {
+                labMessage.ForeColor = Color.DarkGreen;
+                labMessage.Text = "Icon successfully changed.";
+                Logger.Log.Info("Icon successfully changed for user - " + user.UserName + ".");
+            }
+            else
+            {
+                labMessage.ForeColor = Color.Red;
+                labMessage.Text = "Icon has not changed.";
+            }
+            RefreshIcon(updatedPerson.Icon);
+        }
+
+        protected void btnSubmit_Click(object sender, EventArgs e)
+        {
+            var user = GetUser();
+
+            var person = _iPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName);
+            if(person == null) return;
+
+            var updatedPerson = new Person
+            {
+                Login = person.Login,
+                Name = tbName.Text,
+                SecondName = tbSecondName.Text,
+                Icon = person.Icon
+            };
+
+            var result = _iPersonRepository.AddOrUpdate(updatedPerson);
+
+            string message;
+            if (!result)
+            {
+                labMessage.ForeColor = Color.Red;
+                message = "Nothing changed. Try again.";
+            }
+            else
+            {
+                labMessage.ForeColor = Color.DarkGreen;
+                message = "Your new data successfully commited.";
+                Logger.Log.Info("Personal data successfully commited for user - " + user.UserName + ".");
+            }
+
+            RefereshUser();
+            labMessage.Text = message;
+        }
+
+        protected void btnNewPassword_Click(object sender, EventArgs e)
+        {
+            Page.Validate();
+            if (!Page.IsValid)
+            {
+                labMessage.ForeColor = Color.Red;
+                labMessage.Text = "Enter both passwords.";
+                return;
+            }
+
+            var rgxPassword = new Regex("^[a-zA-Z0-9_!@#$%^&*]{5,}$");
+            if (!rgxPassword.IsMatch(tbNewPassword.Text) || !rgxPassword.IsMatch(tbOldPassword.Text))
+            {
+                labMessage.ForeColor = Color.Red;
+                labMessage.Text =
+                    "Password must have letters, numbers and symbols: _,!,@,#,$,%,^,&,*. " +
+                    "First symbol must be letter. Length must be more than 5 symbols.";
+                rfvNewPassword.IsValid = false;
+                rfvOldPassword.IsValid = false;
+                return;
+            }
+
+            var user = GetUser();
+            if (user.ChangePassword(tbOldPassword.Text, tbNewPassword.Text))
+            {
+                labMessage.ForeColor = Color.DarkGreen;
+                labMessage.Text = "Password successfully changed.";
+                Logger.Log.Info("Password successfully changed for user - " + user.UserName + ".");
+            }
+            else
+            {
+                labMessage.ForeColor = Color.Red;
+                labMessage.Text = "Password has not changed.";
+            }
+        }
+
 
         private void RefreshIcon(byte[] iconArray)
         {
@@ -73,6 +218,14 @@ namespace StoreSolution.WebProject.Authenticated
 
         private void SignOut()
         {
+            var user = Membership.GetUser();
+            if (user == null)
+            {
+                Logger.Log.Error("No user at Product Management page start.");
+                Logger.Log.Error("Sign out.");
+            }
+            else Logger.Log.Error("User " + user.UserName + " sing out.");
+
             Session.Abandon();
             FormsAuthentication.SignOut();
             FormsAuthentication.RedirectToLoginPage();
@@ -112,129 +265,6 @@ namespace StoreSolution.WebProject.Authenticated
             return newSize;
         }
 
-        protected void btnNewIcon_Click(object sender, EventArgs e)
-        {
-            labMessage.Text = "";
-            labMessage.ForeColor = Color.Red;
-            if (!btnChooseIcon.HasFile || (Path.GetExtension(btnChooseIcon.FileName).ToLower() != ".jpg" &&
-                Path.GetExtension(btnChooseIcon.FileName).ToLower() != ".jpeg"))
-            {
-                labMessage.Text = !btnChooseIcon.HasFile
-                    ? "Image file was not choosen."
-                    : "Only .Jpg image files allowed";
-                return;
-            }
 
-            if (btnChooseIcon.FileBytes.Length == 0)
-            {
-                labMessage.Text = "Image file is empty.";
-                return;
-            }
-
-            var user = GetUser();
-            var person = _iPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName) ?? new Person
-            {
-                Login = user.UserName,
-                Name = "",
-                SecondName = ""
-            };
-
-            var image = ByteArrayToImage(btnChooseIcon.FileBytes);
-            var newImage = (Image) (new Bitmap(image, GetSize(image.Size, 500)));
-
-            var updatedPerson = new Person
-            {
-                Login = person.Login,
-                Name = person.Name,
-                SecondName = person.SecondName,
-                Icon = ImageToByteArray(newImage)
-            };
-
-            var result = _iPersonRepository.AddOrUpdate(updatedPerson);
-
-            labMessage.Text = "";
-            if (result)
-            {
-                labMessage.ForeColor = Color.DarkGreen;
-                labMessage.Text = "Icon successfully changed.";
-            }
-            else
-            {
-                labMessage.ForeColor = Color.Red;
-                labMessage.Text = "Icon has not changed.";
-            }
-            RefreshIcon(updatedPerson.Icon);
-        }
-
-        protected void btnSubmit_Click(object sender, EventArgs e)
-        {
-            var user = GetUser();
-
-            var person = _iPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName);
-            if(person == null) return;
-
-            var updatedPerson = new Person
-            {
-                Login = person.Login,
-                Name = tbName.Text,
-                SecondName = tbSecondName.Text,
-                Icon = person.Icon
-            };
-
-            var result = _iPersonRepository.AddOrUpdate(updatedPerson);
-
-            if (!result)
-            {
-                labMessage.ForeColor = Color.Red;
-                labMessage.Text = "Nothing changed. Try again.";
-            }
-            else
-            {
-                labMessage.ForeColor = Color.DarkGreen;
-                labMessage.Text = "Your new data successfully commited.";
-            }
-
-            RefereshUser();
-        }
-
-        protected void btnNewPassword_Click(object sender, EventArgs e)
-        {
-            Page.Validate();
-            if (!Page.IsValid)
-            {
-                labMessage.ForeColor = Color.Red;
-                labMessage.Text = "Enter both passwords.";
-                return;
-            }
-
-            var rgxPassword = new Regex("^[a-zA-Z0-9_!@#$%^&*]{5,}$");
-            if (!rgxPassword.IsMatch(tbNewPassword.Text) || !rgxPassword.IsMatch(tbOldPassword.Text))
-            {
-                labMessage.ForeColor = Color.Red;
-                labMessage.Text =
-                    "Password must have letters, numbers and symbols: _,!,@,#,$,%,^,&,*. " +
-                    "First symbol must be letter. Length must be more than 5 symbols.";
-                rfvNewPassword.IsValid = false;
-                rfvOldPassword.IsValid = false;
-                return;
-            }
-
-            var user = GetUser();
-            if (user.ChangePassword(tbOldPassword.Text, tbNewPassword.Text))
-            {
-                labMessage.ForeColor = Color.DarkGreen;
-                labMessage.Text = "Password successfully changed.";
-            }
-            else
-            {
-                labMessage.ForeColor = Color.Red;
-                labMessage.Text = "Password has not changed.";
-            }
-        }
-
-        protected void btnBack_Click(object sender, EventArgs e)
-        {
-            FormsAuthentication.RedirectToLoginPage();
-        }
     }
 }

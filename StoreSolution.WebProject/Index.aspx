@@ -16,8 +16,7 @@
         <asp:Label CssClass="cellCenter" ID="labWelcome" runat="server" Text="Hello! Nice to see You here. Please sign in to shop." />
     </div>
     <br/>
-    <div id="center"
-         class="cellCenter">
+    <div id="center">
         <div class="cellCenter">
             <asp:Image ID="logo" ImageUrl="~/Content/Images/11logo.jpg" runat="server"/>
             <br/>

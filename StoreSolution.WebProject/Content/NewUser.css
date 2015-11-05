@@ -8,5 +8,13 @@
 
 #btnSubmit {
     font-size: large;
-    
+    background-color: lightblue;
+    color: black;
+    border: 1px solid darkblue;
+}
+
+#btnSubmit:hover {
+    background-color: darkblue;
+    color: white;
+    border: 1px solid black;
 }

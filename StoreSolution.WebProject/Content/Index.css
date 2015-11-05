@@ -56,6 +56,14 @@ div#credentials {
     width: 150px;
     margin-left: 0;
     font-size: large;
+    border: 1px solid darkblue;
+    color: black;
+}
+
+.btnCredentials:hover {
+    background-color: darkblue;
+    border: 1px solid black;
+    color: white;
 }
 
 #tbLogin, #tbPassword {
@@ -64,4 +72,12 @@ div#credentials {
 
 #labLogin, #labPassword {
     margin-right: 10px;
+}
+
+#hlCreateUser {
+    color: darkblue;
+}
+
+#hlCreateUser:hover {
+    border: 1px solid darkblue;
 }

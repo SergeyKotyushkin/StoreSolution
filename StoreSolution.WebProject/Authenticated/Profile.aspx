@@ -16,9 +16,11 @@
             <asp:Image ID="icon" runat="server"/>
         </div>
         <br />
-        <asp:FileUpload ID="btnChooseIcon" runat="server" />
-        <asp:Button ID="btnNewIcon" runat="server" Text="Commit this icon" OnClick="btnNewIcon_Click" CausesValidation="False" />
+        <asp:FileUpload CssClass="btnProfile" ID="btnChooseIcon" runat="server" />
+        <asp:Button CausesValidation="False" CssClass="btnProfile" ID="btnNewIcon" OnClick="btnNewIcon_Click" runat="server" Text="Commit this icon" />
         <hr />
+        <asp:Label ID="labPersonData" runat="server" Text="Personal data" />
+        <br />
         <asp:Label ID="labName" runat="server" Text="Name" />
         <br />
         <asp:TextBox ID="tbName" runat="server" />
@@ -30,20 +32,20 @@
         <hr />
         <asp:Label ID="labPassword" runat="server" Text="Change password" />
         <br />
-        <asp:Label ID="labOldPassword" runat="server" Text="Old password"></asp:Label>
+        <asp:Label ID="labOldPassword" runat="server" Text="Old password"/>
         <br />
-        <asp:TextBox ID="tbOldPassword" runat="server"></asp:TextBox>
+        <asp:TextBox ID="tbOldPassword" runat="server"/>
         <asp:RequiredFieldValidator ID="rfvOldPassword" runat="server" Display="Dynamic" ErrorMessage="*" ForeColor="Red" ControlToValidate="tbOldPassword"></asp:RequiredFieldValidator>
         <br />
         <asp:Label ID="labNewPassword" runat="server" Text="New password" />
         <br />
         <asp:TextBox ID="tbNewPassword" runat="server" />
         <asp:RequiredFieldValidator ID="rfvNewPassword" runat="server" Display="Dynamic" ErrorMessage="*" ForeColor="Red" ControlToValidate="tbNewPassword"></asp:RequiredFieldValidator>
-        <asp:Button ID="btnNewPassword" runat="server" OnClick="btnNewPassword_Click" Text="Change" />
+        <asp:Button CssClass="btnProfile" ID="btnNewPassword" runat="server" OnClick="btnNewPassword_Click" Text="Change" />
         <br />
         <hr />
         <div>
-            <asp:Button ID="btnSubmit" runat="server" Text="Submit" OnClick="btnSubmit_Click" CausesValidation="False" />
+            <asp:Button CssClass="btnProfile" ID="btnSubmit" runat="server" Text="Submit" OnClick="btnSubmit_Click" CausesValidation="False" />
         </div>
     </div>
     <div id="footer">

@@ -6,12 +6,15 @@ using System.Web.Security;
 using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.MyIoC;
+using StoreSolution.WebProject.Log4net;
+using StoreSolution.WebProject.Master;
 using StoreSolution.WebProject.Model;
 
 namespace StoreSolution.WebProject.User
 {
     public partial class ProductCatalog : System.Web.UI.Page
     {
+        private StoreMaster _master;
         private readonly IProductRepository _productRepository;
 
         protected ProductCatalog()
@@ -26,9 +29,12 @@ namespace StoreSolution.WebProject.User
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            _master = (StoreMaster)Page.Master;
+            if (_master != null) _master.BtnBackVisibility = false;
+
             var user = Membership.GetUser();
             if (user == null) SignOut();
-
+            
             SetTitles(user);
 
             FillGridView(false);
@@ -48,14 +54,13 @@ namespace StoreSolution.WebProject.User
 
         protected void btnBasket_Click(object sender, EventArgs e)
         {
+            var user = Membership.GetUser();
+            if (user == null) return;
+
+            Logger.Log.Debug("User " + user.UserName + " redirected to Basket page.");
             Response.Redirect("~/User/Basket.aspx");
         }
-
-        protected void btnSignOut_Click(object sender, EventArgs e)
-        {
-            SignOut();
-        }
-
+        
         protected void gvTable_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
             var id = GetIdFromRow(e.RowIndex);
@@ -71,6 +76,25 @@ namespace StoreSolution.WebProject.User
             gvTable.PageIndex = e.NewPageIndex;
         }
 
+        protected void gvTable_DataBound(object sender, EventArgs e)
+        {
+            foreach (GridViewRow row in gvTable.Rows)
+                row.Cells[6].Text = string.Format("{0:c}", double.Parse(row.Cells[6].Text));
+        }
+
+        protected void gvTable_RowCreated(object sender, GridViewRowEventArgs e)
+        {
+            switch (e.Row.RowType)
+            {
+                case DataControlRowType.DataRow:
+                    e.Row.Cells[3].CssClass = "hiddencol";
+                    break;
+                case DataControlRowType.Header:
+                    e.Row.Cells[3].CssClass = "hiddencol";
+                    break;
+            }
+        }
+
         protected void gvTable_PageIndexChanged(object sender, EventArgs e)
         {
             FillGridView(true);
@@ -80,6 +104,14 @@ namespace StoreSolution.WebProject.User
 
         private void SignOut()
         {
+            var user = Membership.GetUser();
+            if (user == null)
+            {
+                Logger.Log.Error("No user at Product Management page start.");
+                Logger.Log.Error("Sign out.");
+            }
+            else Logger.Log.Error("User " + user.UserName + " sing out.");
+
             Session.Abandon();
             FormsAuthentication.SignOut();
             FormsAuthentication.RedirectToLoginPage();
@@ -88,12 +120,12 @@ namespace StoreSolution.WebProject.User
 
         private void SetTitles(MembershipUser user)
         {
-            hlUser.Text = "Good day, " + user.UserName + "!";
+            _master.HlUserText = "Good day, " + user.UserName + "!";
 
-            labMessage.Text = "";
+            _master.LabMessageText = "";
             if (Session["Bought"] == null) return;
-            labMessage.ForeColor = Color.DarkGreen;
-            labMessage.Text = "Products were bought successfully.";
+            _master.LabMessageForeColor = Color.DarkGreen;
+            _master.LabMessageText = "Products were bought successfully.";
             Session["Bought"] = null;
         }
 
@@ -143,9 +175,8 @@ namespace StoreSolution.WebProject.User
             if (order == null) orders.Add(new Order {Id = id, Count = 1});
             else order.Count++;
 
-            labMessage.Text = "";
-            labMessage.ForeColor = Color.DarkGreen;
-            labMessage.Text = "Product '" + _productRepository.GetProductById(id).Name + "' was added to order.";
+            _master.LabMessageForeColor = Color.DarkGreen;
+            _master.LabMessageText = "Product '" + _productRepository.GetProductById(id).Name + "' was added to order.";
         }
 
         private void RemoveFromOrders(List<Order> orders, int id)
@@ -155,28 +186,8 @@ namespace StoreSolution.WebProject.User
             if (order.Count == 1) orders.Remove(order);
             else order.Count--;
 
-            labMessage.Text = "";
-            labMessage.ForeColor = Color.DarkBlue;
-            labMessage.Text = "Product '" + _productRepository.GetProductById(id).Name + "' was removed from order.";
-        }
-
-        protected void gvTable_DataBound(object sender, EventArgs e)
-        {
-            foreach (GridViewRow row in gvTable.Rows)
-                row.Cells[6].Text = string.Format("{0:c}", double.Parse(row.Cells[6].Text));
-        }
-
-        protected void gvTable_RowCreated(object sender, GridViewRowEventArgs e)
-        {
-            switch (e.Row.RowType)
-            {
-                case DataControlRowType.DataRow:
-                    e.Row.Cells[3].CssClass = "hiddencol";
-                    break;
-                case DataControlRowType.Header:
-                    e.Row.Cells[3].CssClass = "hiddencol";
-                    break;
-            }
+            _master.LabMessageForeColor = Color.DarkBlue;
+            _master.LabMessageText = "Product '" + _productRepository.GetProductById(id).Name + "' was removed from order.";
         }
     }
 }

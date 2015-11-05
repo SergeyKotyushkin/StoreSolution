@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Management;
-using System.Web.Security;
-using System.Web.SessionState;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.DatabaseProject.Realizations;
 using StoreSolution.MyIoC;
+using StoreSolution.WebProject.Log4net;
 
 namespace StoreSolution.WebProject
 {
@@ -16,25 +11,29 @@ namespace StoreSolution.WebProject
 
         protected void Application_Start(object sender, EventArgs e)
         {
+            #region Log4Net
+            Logger.InitLogger(); 
+            Logger.Log.Info("Log4Net is ready.");
+            #endregion
+
             #region IoC
             SimpleContainer.Register<IPersonRepository>(typeof(EfPersonRepository));
             SimpleContainer.Register<IProductRepository>(typeof(EfProductRepository));
+            Logger.Log.Info("IoC is ready.");
             #endregion
 
+            Logger.Log.Info("Application successfully started.");
         }
 
-        private void Application_Error(object sender, EventArgs e)
+        protected void Application_End(object sender, EventArgs e)
         {
-            var ex = Server.GetLastError();
-            var httpException = ex as HttpException ?? ex.InnerException as HttpException;
-            if (httpException == null) return;
+            Logger.Log.Error("Application ended.");
+        }
 
-            if (httpException.WebEventCode == WebEventCodes.RuntimeErrorPostTooLarge)
-            {
-                //handle the error
-                Response.Write("Too big a file."); //for example
-                
-            }
+        protected void Application_Error(object sender, EventArgs e)
+        {
+            var error = Server.GetLastError();
+            Logger.Log.Error("Application error: " + error.Message);
         }
     }
 }

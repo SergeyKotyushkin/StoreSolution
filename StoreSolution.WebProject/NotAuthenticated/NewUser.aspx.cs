@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using System.Web.Security;
+using StoreSolution.WebProject.Log4net;
 
 namespace StoreSolution.WebProject.NotAuthenticated
 {
@@ -48,6 +49,7 @@ namespace StoreSolution.WebProject.NotAuthenticated
 
                 if (status == MembershipCreateStatus.Success)
                 {
+                    Logger.Log.Info("User " + tbLogin.Text + " successfully created.");
                     Roles.AddUserToRole(tbLogin.Text, "User");
                     Session["NewUser"] = "Yes";
                     FormsAuthentication.RedirectToLoginPage();
@@ -55,13 +57,15 @@ namespace StoreSolution.WebProject.NotAuthenticated
                 else
                 {
                     labMessage.Text = "Error create new user.";
+                    Logger.Log.Debug("User " + tbLogin.Text + " didn't create.");
                 }
             }
         }
 
         protected void btnBack_Click(object sender, EventArgs e)
         {
-            FormsAuthentication.RedirectToLoginPage();
+            Logger.Log.Debug("Redirected to Index page.");
+            Response.Redirect("~/Index.aspx");
         }
 
     }

@@ -1,17 +1,38 @@
 ﻿div#cap {
-    background-color: #808080;
-    border-style: solid;
+    background-color: #006699;
     text-align: right;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
 }
 
 #hlUser {
-    color: #FFFF99;
+    color: white;
     font-weight: bold;
 }
 
+#hlUser:hover {
+    color: darkblue;
+    border: 1px solid darkblue;
+    background-color: white;
+    font-weight: bold;
+    vertical-align: middle;
+}
+
 #btnSignOut {
-    color: #990000;
+    color: darkblue;
+    border: 1px solid darkblue;
     font-size: x-small;
+    margin: 5px
+}
+
+#btnSignOut:hover {
+    color: white;
+    background-color: darkblue;
+    border: 1px solid white;
+    font-size: x-small;
+    margin: 5px
 }
 
 div.delimeter {
@@ -49,16 +70,35 @@ div#back {
 }
 
 #btnBack {
-    background-color: #C1C1FF;
     font-size: medium;
-    color: #000066;
-    height: 40px;
-    width: 120px;
-    position: fixed;
+    color: darkblue;
+    text-align: left;
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+}
+
+#btnBack:hover {
+    font-size: medium;
+    color: white;
+    background-color: darkblue;
+    border: 1px solid black;
+    text-align: left;
+    position: absolute;
     bottom: 5px;
     left: 5px;
 }
 
 .hiddencol {
     display: none;
+}
+
+.btnInGvTable {
+    background-color: lightblue;
+    color: black;
+    border: 1px solid darkblue;
+}
+
+.btnInGvTable:hover {
+    background-color: white;
 }

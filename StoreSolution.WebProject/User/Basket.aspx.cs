@@ -6,13 +6,15 @@ using StoreSolution.WebProject.Model;
 using System.Web.Security;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.MyIoC;
+using StoreSolution.WebProject.Log4net;
+using StoreSolution.WebProject.Master;
 
 namespace StoreSolution.WebProject.User
 {
     public partial class Basket : System.Web.UI.Page
     {
+        private StoreMaster _master;
         private const double Tolerance = double.Epsilon;
-
         private readonly IProductRepository _productRepository;
 
         protected Basket()
@@ -28,6 +30,9 @@ namespace StoreSolution.WebProject.User
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            _master = (StoreMaster)Page.Master;
+            if (_master != null) _master.BtnBackVisibility = true;
+
             var user = Membership.GetUser();
             if (user == null) SignOut();
 
@@ -39,13 +44,16 @@ namespace StoreSolution.WebProject.User
 
         protected void btnBuy_Click(object sender, EventArgs e)
         {
+            var user = Membership.GetUser();
+            if (user == null)
+            {
+                SignOut();
+                return;
+            }
+
+            Logger.Log.Info("Products has bought by user - " + user.UserName + ". " + labTotal.Text);
             Session["Bought"] = 1;
             Session["CurrentOrder"] = null;
-            Response.Redirect("~/User/ProductCatalog.aspx");
-        }
-
-        protected void btnBack_Click(object sender, EventArgs e)
-        {
             Response.Redirect("~/User/ProductCatalog.aspx");
         }
 
@@ -91,11 +99,19 @@ namespace StoreSolution.WebProject.User
 
         private void SetTitles(MembershipUser user)
         {
-            hlUser.Text = "Good day, " + user.UserName + "!";
+            _master.HlUserText = "Good day, " + user.UserName + "!";
         }
 
         private void SignOut()
         {
+            var user = Membership.GetUser();
+            if (user == null)
+            {
+                Logger.Log.Error("No user at Product Management page start.");
+                Logger.Log.Error("Sign out.");
+            }
+            else Logger.Log.Error("User " + user.UserName + " sing out.");
+
             Session.Abandon();
             FormsAuthentication.SignOut();
             FormsAuthentication.RedirectToLoginPage();

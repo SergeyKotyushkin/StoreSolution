@@ -6,11 +6,14 @@ using System.Web.Security;
 using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.MyIoC;
+using StoreSolution.WebProject.Log4net;
+using StoreSolution.WebProject.Master;
 
 namespace StoreSolution.WebProject.Admin
 {
     public partial class ProductManagement : System.Web.UI.Page
     {
+        private StoreMaster _master;
         private readonly IProductRepository _productRepository;
 
         protected ProductManagement()
@@ -26,9 +29,12 @@ namespace StoreSolution.WebProject.Admin
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            _master = (StoreMaster)Page.Master;
+            if (_master != null) _master.BtnBackVisibility = true;
+
             var user = Membership.GetUser();
             if (user == null) SignOut();
-            
+
             SetTitles(user);
 
             FillProductsGridView(false);
@@ -41,7 +47,7 @@ namespace StoreSolution.WebProject.Admin
 
         protected void gvTable_RowEditing(object sender, GridViewEditEventArgs e)
         {
-            labMessage.Text = "";
+            _master.LabMessageText = "";
             gvTable.EditIndex = e.NewEditIndex;
 
             gvTable.PagerSettings.Visible = false;
@@ -73,19 +79,20 @@ namespace StoreSolution.WebProject.Admin
                 var result = _productRepository.AddOrUpdateProduct(product);
                 if (result)
                 {
-                    labMessage.ForeColor = Color.DarkGreen;
-                    labMessage.Text = "Product successfully added.";
+                    _master.LabMessageForeColor = Color.DarkGreen;
+                    _master.LabMessageText = "Product successfully updated.";
+                    Logger.Log.Info("Product " + product.Name + " successfully updated.");
                 }
                 else
                 {
-                    labMessage.ForeColor = Color.Red;
-                    labMessage.Text = "Error. Not valid value. Please check entered values.";
+                    _master.LabMessageForeColor = Color.Red;
+                    _master.LabMessageText = "Error. Not valid value. Please check entered values.";
                 }
             }
             else
             {
-                labMessage.ForeColor = Color.Red;
-                labMessage.Text = "Error. Not valid value. Please check entered values.";
+                _master.LabMessageForeColor = Color.Red;
+                _master.LabMessageText = "Error. Not valid value. Please check entered values.";
             }
 
             gvTable.EditIndex = -1;
@@ -97,7 +104,7 @@ namespace StoreSolution.WebProject.Admin
 
         protected void gvTable_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
         {
-            labMessage.Text = "";
+            _master.LabMessageText = "";
             gvTable.EditIndex = -1;
 
             gvTable.PagerSettings.Visible = true;
@@ -111,30 +118,21 @@ namespace StoreSolution.WebProject.Admin
                 gvTable.Rows[gvTable.EditIndex].Cells[2].Enabled = false;
         }
 
-        private void SetButtonsEnabled(bool enabled)
-        {
-            for (var i = 0; i < gvTable.Rows.Count; i++)
-            {
-                if (i == gvTable.EditIndex) continue;
-                gvTable.Rows[i].Cells[0].Enabled = enabled;
-                gvTable.Rows[i].Cells[1].Enabled = enabled;
-            }
-            gvTable.FooterRow.Visible = enabled;
-        }
-
         protected void gvTable_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
             var id = int.Parse(e.Values["Id"].ToString());
 
+            var product = _productRepository.GetProductById(id);
             if (_productRepository.RemoveProduct(id))
             {
-                labMessage.ForeColor = Color.DarkGreen;
-                labMessage.Text = "Product was removed.";
+                _master.LabMessageForeColor = Color.DarkGreen;
+                _master.LabMessageText = "Product was removed.";
+                Logger.Log.Info("Product " + product.Name + " successfully added.");
             }
             else
             {
-                labMessage.ForeColor = Color.Red;
-                labMessage.Text = "Error. Product wasn't removed.";
+                _master.LabMessageForeColor = Color.Red;
+                _master.LabMessageText = "Error. Product wasn't removed.";
             }
 
             FillProductsGridView(true);
@@ -142,7 +140,7 @@ namespace StoreSolution.WebProject.Admin
 
         protected void gvTable_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
-            labMessage.Text = "";
+            _master.LabMessageText = "";
             gvTable.PageIndex = e.NewPageIndex;
             FillProductsGridView(true);
         }
@@ -179,19 +177,20 @@ namespace StoreSolution.WebProject.Admin
                     var result = _productRepository.AddOrUpdateProduct(product);
                     if (result)
                     {
-                        labMessage.ForeColor = Color.DarkGreen;
-                        labMessage.Text = "Product successfully added.";
+                        _master.LabMessageForeColor = Color.DarkGreen;
+                        _master.LabMessageText = "Product successfully added.";
+                        Logger.Log.Info("Product " + product.Name + " successfully added.");
                     }
                     else
                     {
-                        labMessage.ForeColor = Color.Red;
-                        labMessage.Text = "Error. Not valid value. Please check entered values.";
+                        _master.LabMessageForeColor = Color.Red;
+                        _master.LabMessageText = "Error. Not valid value. Please check entered values.";
                     }
                 }
                 else
                 {
-                    labMessage.ForeColor = Color.Red;
-                    labMessage.Text = "Error. Not valid value. Please check entered values.";
+                    _master.LabMessageForeColor = Color.Red;
+                    _master.LabMessageText = "Error. Not valid value. Please check entered values.";
                 }
             }
 
@@ -202,7 +201,7 @@ namespace StoreSolution.WebProject.Admin
         protected void btnNo_Click(object sender, EventArgs e)
         {
             ControlVisibilityOfMessageBox();
-            labMessage.Text = "";
+            _master.LabMessageText = "";
         }
 
         protected void gvTable_DataBound(object sender, EventArgs e)
@@ -215,6 +214,17 @@ namespace StoreSolution.WebProject.Admin
         }
 
 
+        private void SetButtonsEnabled(bool enabled)
+        {
+            for (var i = 0; i < gvTable.Rows.Count; i++)
+            {
+                if (i == gvTable.EditIndex) continue;
+                gvTable.Rows[i].Cells[0].Enabled = enabled;
+                gvTable.Rows[i].Cells[1].Enabled = enabled;
+            }
+            gvTable.FooterRow.Visible = enabled;
+        }
+
         private void ControlVisibilityOfMessageBox()
         {
             myDialogBox.Visible = !myDialogBox.Visible;
@@ -223,11 +233,19 @@ namespace StoreSolution.WebProject.Admin
 
         private void SetTitles(MembershipUser user)
         {
-            hlUser.Text = "Good day, " + user.UserName + "!";
+            _master.HlUserText = "Good day, " + user.UserName + "!";
         }
 
         private void SignOut()
         {
+            var user = Membership.GetUser();
+            if (user == null)
+            {
+                Logger.Log.Error("No user at Product Management page start.");
+                Logger.Log.Error("Sign out.");
+            }
+            else Logger.Log.Error("User " + user.UserName + " sing out.");
+
             Session.Abandon();
             FormsAuthentication.SignOut();
             FormsAuthentication.RedirectToLoginPage();
@@ -269,6 +287,7 @@ namespace StoreSolution.WebProject.Admin
             gvTable.FooterRow.Cells[4].Controls.Add(tbCategory);
             gvTable.FooterRow.Cells[5].Controls.Add(tbPrice);
 
+            bInsert.CssClass = "btnInGvTable";
             bInsert.Click += btnInsert_Click;
         }
     }
