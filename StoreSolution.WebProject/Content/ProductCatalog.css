@@ -1,0 +1,24 @@
+﻿body {
+    font-family: "Calibri";
+    text-align: center;
+}
+
+#labTitle {
+    color: darkblue;
+    font-size: medium;
+    font-weight: bold;
+    font-size: x-large;
+}
+
+#btnBasket {
+    color: darkblue;
+    border: 1px solid darkblue;
+    font-size: medium;
+}
+
+#btnBasket:hover {
+    color: white;
+    background-color: darkblue;
+    border: 1px solid black;
+    font-size: medium;
+}

@@ -1,0 +1,31 @@
+﻿body {
+    text-align: center;
+    font-family: "Calibri";
+}
+
+#labTitle {
+    font-size: x-large;
+}
+
+#btnBuy {
+    color: darkblue;
+    border: 1px solid darkblue;
+    font-size: medium;
+}
+
+#btnBuy:hover {
+    color: white;
+    background-color: darkblue;
+    border: 1px solid black;
+    font-size: medium;
+}
+
+#labTotal {
+    font-size: larger;
+    border-bottom: 1px dotted darkblue;
+}
+
+#gvTable {
+    font-size: large;
+}
+

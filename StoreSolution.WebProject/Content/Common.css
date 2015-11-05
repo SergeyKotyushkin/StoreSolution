@@ -1,0 +1,104 @@
+﻿div#cap {
+    background-color: #006699;
+    text-align: right;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+#hlUser {
+    color: white;
+    font-weight: bold;
+}
+
+#hlUser:hover {
+    color: darkblue;
+    border: 1px solid darkblue;
+    background-color: white;
+    font-weight: bold;
+    vertical-align: middle;
+}
+
+#btnSignOut {
+    color: darkblue;
+    border: 1px solid darkblue;
+    font-size: x-small;
+    margin: 5px
+}
+
+#btnSignOut:hover {
+    color: white;
+    background-color: darkblue;
+    border: 1px solid white;
+    font-size: x-small;
+    margin: 5px
+}
+
+div.delimeter {
+    height: 10px;
+}
+
+div#footer {
+    position: fixed;
+    top: 90%;
+    left: 0;
+    width: 100%;
+    height: 10%;
+    display: table;
+}
+
+#inFooter {
+    display: table-cell;
+    text-align: center;
+    font-size: medium;
+}
+
+#labMessage {
+    color: red;
+    font-size: large;
+}
+
+.cellCenter {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+}
+
+div#back {
+    text-align: left;
+}
+
+#btnBack {
+    font-size: medium;
+    color: darkblue;
+    text-align: left;
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+}
+
+#btnBack:hover {
+    font-size: medium;
+    color: white;
+    background-color: darkblue;
+    border: 1px solid black;
+    text-align: left;
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+}
+
+.hiddencol {
+    display: none;
+}
+
+.btnInGvTable {
+    background-color: lightblue;
+    color: black;
+    border: 1px solid darkblue;
+}
+
+.btnInGvTable:hover {
+    background-color: white;
+}
