@@ -103,6 +103,15 @@ namespace StoreSolution.WebProject.Authenticated {
         protected global::System.Web.UI.WebControls.TextBox tbSecondName;
         
         /// <summary>
+        /// btnSubmit элемент управления.
+        /// </summary>
+        /// <remarks>
+        /// Автоматически создаваемое поле.
+        /// Для изменения переместите объявление поля из файла конструктора в файл кода программной части.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSubmit;
+        
+        /// <summary>
         /// labPassword элемент управления.
         /// </summary>
         /// <remarks>
@@ -173,15 +182,6 @@ namespace StoreSolution.WebProject.Authenticated {
         /// Для изменения переместите объявление поля из файла конструктора в файл кода программной части.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnNewPassword;
-        
-        /// <summary>
-        /// btnSubmit элемент управления.
-        /// </summary>
-        /// <remarks>
-        /// Автоматически создаваемое поле.
-        /// Для изменения переместите объявление поля из файла конструктора в файл кода программной части.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSubmit;
         
         /// <summary>
         /// labMessage элемент управления.

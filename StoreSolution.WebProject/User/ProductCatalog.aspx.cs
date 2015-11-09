@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Web;
 using System.Web.Security;
 using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
@@ -25,6 +26,14 @@ namespace StoreSolution.WebProject.User
         protected ProductCatalog(IProductRepository iProductRepository)
         {
             _productRepository = iProductRepository;
+        }
+
+        protected override void InitializeCulture()
+        {
+            var cookie = Request.Cookies["language"];
+            if (null == cookie) return;
+            Page.Culture = cookie.Value;
+            Page.UICulture = cookie.Value;
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -87,10 +96,10 @@ namespace StoreSolution.WebProject.User
             switch (e.Row.RowType)
             {
                 case DataControlRowType.DataRow:
-                    e.Row.Cells[3].CssClass = "hiddencol";
+                    e.Row.Cells[3].CssClass = "hiddenСolumn";
                     break;
                 case DataControlRowType.Header:
-                    e.Row.Cells[3].CssClass = "hiddencol";
+                    e.Row.Cells[3].CssClass = "hiddenСolumn";
                     break;
             }
         }
@@ -99,6 +108,15 @@ namespace StoreSolution.WebProject.User
         {
             FillGridView(true);
             FillCountColumn();
+        }
+
+        protected void gvTable_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType != DataControlRowType.Header) return;
+            e.Row.Cells[1].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_HeaderCount");
+            e.Row.Cells[4].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_HeaderName");
+            e.Row.Cells[5].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_HeaderCategory");
+            e.Row.Cells[6].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_HeaderPrice");
         }
 
 
@@ -120,12 +138,13 @@ namespace StoreSolution.WebProject.User
 
         private void SetTitles(MembershipUser user)
         {
-            _master.HlUserText = "Good day, " + user.UserName + "!";
+            var hlUserText = (string)HttpContext.GetGlobalResourceObject("Lang", "Master_ToProfile");
+            if (hlUserText != null) _master.HlUserText = string.Format(hlUserText, user.UserName);
 
             _master.LabMessageText = "";
             if (Session["Bought"] == null) return;
             _master.LabMessageForeColor = Color.DarkGreen;
-            _master.LabMessageText = "Products were bought successfully.";
+            _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_ProductsBought");
             Session["Bought"] = null;
         }
 
@@ -176,7 +195,8 @@ namespace StoreSolution.WebProject.User
             else order.Count++;
 
             _master.LabMessageForeColor = Color.DarkGreen;
-            _master.LabMessageText = "Product '" + _productRepository.GetProductById(id).Name + "' was added to order.";
+            var text = (string) HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_ProductAdded");
+            if (text != null) _master.LabMessageText = string.Format(text, _productRepository.GetProductById(id).Name);
         }
 
         private void RemoveFromOrders(List<Order> orders, int id)
@@ -187,7 +207,8 @@ namespace StoreSolution.WebProject.User
             else order.Count--;
 
             _master.LabMessageForeColor = Color.DarkBlue;
-            _master.LabMessageText = "Product '" + _productRepository.GetProductById(id).Name + "' was removed from order.";
+            var text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_ProductRemoved");
+            if (text != null) _master.LabMessageText = string.Format(text, _productRepository.GetProductById(id).Name);
         }
     }
 }

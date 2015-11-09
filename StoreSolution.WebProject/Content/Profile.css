@@ -27,7 +27,6 @@
 .btnProfile {
     color: black;
     border: 1px solid darkblue;
-    background-color: white;
 }
 
 .btnProfile:hover {
@@ -40,7 +39,6 @@
     font-size: medium;
     color: black;
     border: 1px solid darkblue;
-    background-color: white;
     position: absolute;
     bottom: 5px;
     left: 5px;

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Drawing;
+using System.Web;
 using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 using StoreSolution.WebProject.Log4net;
 
 namespace StoreSolution.WebProject.Master
@@ -59,8 +62,18 @@ namespace StoreSolution.WebProject.Master
 
         protected void btnBack_Click(object sender, EventArgs e)
         {
-            if (Page.Title == "Your order") Response.Redirect("~/User/ProductCatalog.aspx");
-            else if (Page.Title == "Product management") SignOut();
+            if (Page.Title == (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_Title")) Response.Redirect("~/User/ProductCatalog.aspx");
+            else if (Page.Title == (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_Title")) SignOut();
+        }
+
+        protected void lang_Click(object sender, ImageClickEventArgs e)
+        {
+            var button = sender as ImageButton;
+            if(button == null) return;
+
+            var id = button.ID.Replace('_', '-');
+            Response.Cookies.Set(new HttpCookie("language", id));
+            Response.Redirect(Request.RawUrl);
         }
     }
 }

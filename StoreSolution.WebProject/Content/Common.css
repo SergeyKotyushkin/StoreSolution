@@ -44,7 +44,7 @@ div#footer {
     top: 90%;
     left: 0;
     width: 100%;
-    height: 10%;
+    /*height: 10%;*/
     display: table;
 }
 
@@ -89,7 +89,7 @@ div#back {
     left: 5px;
 }
 
-.hiddencol {
+.hiddenСolumn {
     display: none;
 }
 
@@ -101,4 +101,21 @@ div#back {
 
 .btnInGvTable:hover {
     background-color: white;
+}
+
+#leftUp {
+    float: left;
+    display: table-cell;
+}
+
+.langFlag {
+    width: 18px;
+    height: 12px;
+    margin-left: 5px;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.langFlag:hover {
+    border: 1px solid gold;
 }

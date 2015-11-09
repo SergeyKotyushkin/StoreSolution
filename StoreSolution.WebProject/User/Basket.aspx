@@ -1,13 +1,13 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Basket.aspx.cs" 
          Inherits="StoreSolution.WebProject.User.Basket" 
-         MasterPageFile="~/Master/StoreMaster.Master" Title="Your order"%>
+         MasterPageFile="~/Master/StoreMaster.Master" Title="<%$ Resources: Lang, Basket_Title %>"%>
 
 <asp:Content ID="Head" ContentPlaceHolderID="head" runat="server">
     <link href="<%= ResolveUrl("~/Content/Basket.css") %>" rel="stylesheet"/>
 </asp:Content>
 <asp:Content ContentPlaceHolderID="StoreMasterContentId" runat="server">
     <br/>
-    <asp:Label ID="labTitle" runat="server" Text="Your order"/>
+    <asp:Label ID="labTitle" runat="server" Text="<%$ Resources: Lang, Basket_Title %>"/>
     <br/>
     <br />
     <asp:GridView AllowPaging="True"
@@ -17,7 +17,7 @@
                   OnPageIndexChanged="GV_table_PageIndexChanged"
                   OnPageIndexChanging="GV_table_PageIndexChanging"
                   runat="server"
-                  Width="50%" OnDataBound="gvTable_DataBound" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px">
+                  Width="50%" OnDataBound="gvTable_DataBound" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" OnRowDataBound="gvTable_RowDataBound">
         <FooterStyle BackColor="White" ForeColor="#000066" />
         <HeaderStyle BackColor="#006699" Font-Bold="True" ForeColor="White" />
         <PagerStyle HorizontalAlign="Left" VerticalAlign="Middle" BackColor="White" ForeColor="#000066"/>
@@ -33,6 +33,6 @@
     <asp:Label ID="labTotal" runat="server"/>
     <br/>
     <br/>
-    <asp:Button ID="btnBuy" runat="server" Text="Buy" OnClick="btnBuy_Click" Width="120px"/>
+    <asp:Button ID="btnBuy" runat="server" Text="<%$ Resources: Lang, Basket_BuyButton %>" OnClick="btnBuy_Click" Width="120px"/>
     <br/>
 </asp:Content>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.UI.WebControls;
 using StoreSolution.WebProject.Model;
 using System.Web.Security;
@@ -26,6 +27,14 @@ namespace StoreSolution.WebProject.User
         protected Basket(IProductRepository iProductRepository)
         {
             _productRepository = iProductRepository;
+        }
+
+        protected override void InitializeCulture()
+        {
+            var cookie = Request.Cookies["language"];
+            if (null == cookie) return;
+            Page.Culture = cookie.Value;
+            Page.UICulture = cookie.Value;
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -72,6 +81,24 @@ namespace StoreSolution.WebProject.User
             FillOrdersGridView();
         }
 
+        protected void gvTable_DataBound(object sender, EventArgs e)
+        {
+            for (var i = 0; i < gvTable.Rows.Count; i++)
+            {
+                gvTable.Rows[i].Cells[1].Text = string.Format("{0:c}", double.Parse(gvTable.Rows[i].Cells[1].Text));
+                gvTable.Rows[i].Cells[3].Text = string.Format("{0:c}", double.Parse(gvTable.Rows[i].Cells[3].Text));
+            }
+        }
+
+        protected void gvTable_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType != DataControlRowType.Header) return;
+            e.Row.Cells[0].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderCount");
+            e.Row.Cells[1].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderName");
+            e.Row.Cells[2].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderPrice");
+            e.Row.Cells[3].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderTotalPrice");
+        }
+
 
         private void FillOrdersGridView()
         {
@@ -88,18 +115,20 @@ namespace StoreSolution.WebProject.User
             if (Math.Abs(sum) < Tolerance)
             {
                 btnBuy.Enabled = false;
-                labTotal.Text = "Your basket is empty.";
+                labTotal.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_EmptyOrder");
             }
             else
             {
                 btnBuy.Enabled = true;
-                labTotal.Text = "Total: " + string.Format("{0:c}", sum);
+                var text = (string) HttpContext.GetGlobalResourceObject("Lang", "Basket_Total");
+                if (text != null) labTotal.Text = string.Format(text, sum);
             }
         }
 
         private void SetTitles(MembershipUser user)
         {
-            _master.HlUserText = "Good day, " + user.UserName + "!";
+            var hlUserText = (string)HttpContext.GetGlobalResourceObject("Lang", "Master_ToProfile");
+            if (hlUserText != null) _master.HlUserText = string.Format(hlUserText, user.UserName);
         }
 
         private void SignOut()
@@ -122,15 +151,5 @@ namespace StoreSolution.WebProject.User
         {
             return Session["CurrentOrder"] as List<Order> ?? new List<Order>();
         }
-
-        protected void gvTable_DataBound(object sender, EventArgs e)
-        {
-            for (var i = 0; i < gvTable.Rows.Count; i++)
-            {
-                gvTable.Rows[i].Cells[1].Text = string.Format("{0:c}", double.Parse(gvTable.Rows[i].Cells[1].Text));
-                gvTable.Rows[i].Cells[3].Text = string.Format("{0:c}", double.Parse(gvTable.Rows[i].Cells[3].Text));
-            }
-        }
-
     }
 }

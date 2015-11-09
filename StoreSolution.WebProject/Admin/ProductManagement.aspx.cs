@@ -2,6 +2,7 @@
 using System;
 using System.Drawing;
 using System.Linq;
+using System.Web;
 using System.Web.Security;
 using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
@@ -25,6 +26,14 @@ namespace StoreSolution.WebProject.Admin
         protected ProductManagement(IProductRepository iProductRepository)
         {
             _productRepository = iProductRepository;
+        }
+
+        protected override void InitializeCulture()
+        {
+            var cookie = Request.Cookies["language"];
+            if (null == cookie) return;
+            Page.Culture = cookie.Value;
+            Page.UICulture = cookie.Value;
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -80,19 +89,19 @@ namespace StoreSolution.WebProject.Admin
                 if (result)
                 {
                     _master.LabMessageForeColor = Color.DarkGreen;
-                    _master.LabMessageText = "Product successfully updated.";
+                    _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasUpdated");
                     Logger.Log.Info("Product " + product.Name + " successfully updated.");
                 }
                 else
                 {
                     _master.LabMessageForeColor = Color.Red;
-                    _master.LabMessageText = "Error. Not valid value. Please check entered values.";
+                    _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasNotUpdated");
                 }
             }
             else
             {
                 _master.LabMessageForeColor = Color.Red;
-                _master.LabMessageText = "Error. Not valid value. Please check entered values.";
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasNotUpdated");
             }
 
             gvTable.EditIndex = -1;
@@ -126,13 +135,13 @@ namespace StoreSolution.WebProject.Admin
             if (_productRepository.RemoveProduct(id))
             {
                 _master.LabMessageForeColor = Color.DarkGreen;
-                _master.LabMessageText = "Product was removed.";
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasRemoved");
                 Logger.Log.Info("Product " + product.Name + " successfully added.");
             }
             else
             {
                 _master.LabMessageForeColor = Color.Red;
-                _master.LabMessageText = "Error. Product wasn't removed.";
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasNotRemoved");
             }
 
             FillProductsGridView(true);
@@ -178,19 +187,19 @@ namespace StoreSolution.WebProject.Admin
                     if (result)
                     {
                         _master.LabMessageForeColor = Color.DarkGreen;
-                        _master.LabMessageText = "Product successfully added.";
+                        _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasAdded");
                         Logger.Log.Info("Product " + product.Name + " successfully added.");
                     }
                     else
                     {
                         _master.LabMessageForeColor = Color.Red;
-                        _master.LabMessageText = "Error. Not valid value. Please check entered values.";
+                        _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasNotAdded");
                     }
                 }
                 else
                 {
                     _master.LabMessageForeColor = Color.Red;
-                    _master.LabMessageText = "Error. Not valid value. Please check entered values.";
+                    _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasNotAdded");
                 }
             }
 
@@ -213,6 +222,15 @@ namespace StoreSolution.WebProject.Admin
             }
         }
 
+        protected void gvTable_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType != DataControlRowType.Header) return;
+            e.Row.Cells[2].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_HeaderId");
+            e.Row.Cells[3].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_HeaderName");
+            e.Row.Cells[4].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_HeaderCategory");
+            e.Row.Cells[5].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_HeaderPrice");
+        }
+
 
         private void SetButtonsEnabled(bool enabled)
         {
@@ -233,7 +251,8 @@ namespace StoreSolution.WebProject.Admin
 
         private void SetTitles(MembershipUser user)
         {
-            _master.HlUserText = "Good day, " + user.UserName + "!";
+            var hlUserText = (string) HttpContext.GetGlobalResourceObject("Lang", "Master_ToProfile");
+            if (hlUserText != null) _master.HlUserText = string.Format(hlUserText, user.UserName);
         }
 
         private void SignOut()
@@ -274,7 +293,7 @@ namespace StoreSolution.WebProject.Admin
 
         private void ShowFooter()
         {
-            var bInsert = new Button {Text = "Insert"};
+            var bInsert = new Button { Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_InsertButton") };
             var tbName = new TextBox();
             var tbCategory = new TextBox();
             var tbPrice = new TextBox();

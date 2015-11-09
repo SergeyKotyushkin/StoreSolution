@@ -1,24 +1,24 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ProductManagement.aspx.cs" 
     Inherits="StoreSolution.WebProject.Admin.ProductManagement"
-    EnableEventValidation="false" MasterPageFile="~/Master/StoreMaster.Master" 
-    Title="Product management" %>
+    EnableEventValidation="false" MasterPageFile="~/Master/StoreMaster.Master"
+    Title="<%$ Resources: Lang, ProductManagement_Title %>" %>
 
 <asp:Content ID="Head" ContentPlaceHolderID="head" runat="server">
     <link href="<%= ResolveUrl("~/Content/ProductManagement.css") %>" rel="stylesheet"/>
 </asp:Content>
 <asp:Content ContentPlaceHolderID="StoreMasterContentId" runat="server">
     <br/>
-    <asp:Label ID="labTitle" runat="server" Text="Products management"/>
+    <asp:Label ID="labTitle" runat="server" Text="<%$ Resources: Lang, ProductManagement_Title %>"/>
     <br/>
     <asp:Panel runat="server" ID="myDialogBox" EnableTheming="True" Visible="False">
         <hr/>
         <br/>
-        <asp:Label ID="labMessageBoxTitle" runat="server" Text="Are you sure you want to continue?"/>
+        <asp:Label ID="labMessageBoxTitle" runat="server" Text="<%$ Resources: Lang, ProductManagement_InsertQuestion %>"/>
         <br/>
         <br/>
         <div>
-            <asp:Button runat="server" ID="btnYes" Text="Yes" OnClick="btnYes_Click"/>
-            <asp:Button runat="server" ID="btnNo" Text="No" OnClick="btnNo_Click"/>
+            <asp:Button runat="server" ID="btnYes" Text="<%$ Resources: Lang, ProductManagement_InsertAnswerYes %>" OnClick="btnYes_Click"/>
+            <asp:Button runat="server" ID="btnNo" Text="<%$ Resources: Lang, ProductManagement_InsertAnswerNo %>" OnClick="btnNo_Click"/>
         </div>
         <br/>
         <hr/>
@@ -37,12 +37,12 @@
                   PageSize="7"
                   runat="server"
                   ShowFooter="True"
-                  Width="50%" OnDataBound="gvTable_DataBound" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px">
+                  Width="50%" OnDataBound="gvTable_DataBound" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" OnRowDataBound="gvTable_RowDataBound">
         <Columns>
-            <asp:CommandField ButtonType="Button" ShowEditButton="True" CausesValidation="False">
+            <asp:CommandField ButtonType="Button" ShowEditButton="True" CausesValidation="False" EditText="<%$ Resources: Lang, ProductManagement_EditButton %>">
             <ControlStyle CssClass="btnInGvTable" />
             </asp:CommandField>
-            <asp:CommandField ButtonType="Button" ShowDeleteButton="True">
+            <asp:CommandField ButtonType="Button" ShowDeleteButton="True" DeleteText="<%$ Resources: Lang, ProductManagement_DeleteButton %>">
             <ControlStyle CssClass="btnInGvTable" />
             </asp:CommandField>
         </Columns>

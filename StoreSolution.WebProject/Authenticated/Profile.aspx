@@ -1,10 +1,11 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Profile.aspx.cs" Inherits="StoreSolution.WebProject.Authenticated.Profile" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Profile.aspx.cs" Inherits="StoreSolution.WebProject.Authenticated.Profile"
+    Title="<%$ Resources: Lang, Profile_Title %>" %>
 
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Profile</title>
+    <title></title>
     <link href="~/Content/Common.css" rel="stylesheet" />
     <link href="~/Content/Profile.css" rel="stylesheet" />
 </head>
@@ -17,36 +18,36 @@
         </div>
         <br />
         <asp:FileUpload CssClass="btnProfile" ID="btnChooseIcon" runat="server" />
-        <asp:Button CausesValidation="False" CssClass="btnProfile" ID="btnNewIcon" OnClick="btnNewIcon_Click" runat="server" Text="Commit this icon" />
+        <asp:Button CausesValidation="False" CssClass="btnProfile" ID="btnNewIcon" OnClick="btnNewIcon_Click" runat="server" Text="<%$ Resources: Lang, Profile_CommitIcon %>" />
         <hr />
-        <asp:Label ID="labPersonData" runat="server" Text="Personal data" />
+        <asp:Label ID="labPersonData" runat="server" Text="<%$ Resources: Lang, Profile_PersonalData %>" />
         <br />
-        <asp:Label ID="labName" runat="server" Text="Name" />
+        <asp:Label ID="labName" runat="server" Text="<%$ Resources: Lang, Profile_PersonalName %>" />
         <br />
         <asp:TextBox ID="tbName" runat="server" />
         <br />
-        <asp:Label ID="labSecondName" runat="server" Text="SecondName" />
+        <asp:Label ID="labSecondName" runat="server" Text="<%$ Resources: Lang, Profile_PersonalSecondName %>" />
         <br />
         <asp:TextBox ID="tbSecondName" runat="server" />
         <br />
-        <hr />
-        <asp:Label ID="labPassword" runat="server" Text="Change password" />
         <br />
-        <asp:Label ID="labOldPassword" runat="server" Text="Old password"/>
+        <asp:Button CssClass="btnProfile" ID="btnSubmit" runat="server" Text="<%$ Resources: Lang, Profile_SubmitButton %>" OnClick="btnSubmit_Click" CausesValidation="False" />
+        <br />
+        <hr />
+        <asp:Label ID="labPassword" runat="server" Text="<%$ Resources: Lang, Profile_ChangePassword %>" />
+        <br />
+        <asp:Label ID="labOldPassword" runat="server" Text="<%$ Resources: Lang, Profile_OldPassword %>"/>
         <br />
         <asp:TextBox ID="tbOldPassword" runat="server"/>
-        <asp:RequiredFieldValidator ID="rfvOldPassword" runat="server" Display="Dynamic" ErrorMessage="*" ForeColor="Red" ControlToValidate="tbOldPassword"></asp:RequiredFieldValidator>
+        <asp:RequiredFieldValidator ID="rfvOldPassword" runat="server" Display="Dynamic" ErrorMessage="*" ForeColor="Red" ControlToValidate="tbOldPassword"/>
         <br />
-        <asp:Label ID="labNewPassword" runat="server" Text="New password" />
+        <asp:Label ID="labNewPassword" runat="server" Text="<%$ Resources: Lang, Profile_NewPassword %>" />
         <br />
         <asp:TextBox ID="tbNewPassword" runat="server" />
-        <asp:RequiredFieldValidator ID="rfvNewPassword" runat="server" Display="Dynamic" ErrorMessage="*" ForeColor="Red" ControlToValidate="tbNewPassword"></asp:RequiredFieldValidator>
-        <asp:Button CssClass="btnProfile" ID="btnNewPassword" runat="server" OnClick="btnNewPassword_Click" Text="Change" />
+        <asp:RequiredFieldValidator ID="rfvNewPassword" runat="server" Display="Dynamic" ErrorMessage="*" ForeColor="Red" ControlToValidate="tbNewPassword"/>
+        <asp:Button CssClass="btnProfile" ID="btnNewPassword" runat="server" OnClick="btnNewPassword_Click" Text="<%$ Resources: Lang, Profile_ChangeButton %>" />
         <br />
         <hr />
-        <div>
-            <asp:Button CssClass="btnProfile" ID="btnSubmit" runat="server" Text="Submit" OnClick="btnSubmit_Click" CausesValidation="False" />
-        </div>
     </div>
     <div id="footer">
         <div id="inFooter">
@@ -54,7 +55,7 @@
             <asp:Label ID="labMessage" runat="server"/>
         </div>
     </div>
-    <asp:Button ID="btnBack" runat="server" Text="Exit" CausesValidation="False" OnClick="btnBack_Click" />
+    <asp:Button ID="btnBack" runat="server" Text="<%$ Resources: Lang, Profile_ExitButton %>" CausesValidation="False" OnClick="btnBack_Click" />
     </form>
 </body>
 </html>

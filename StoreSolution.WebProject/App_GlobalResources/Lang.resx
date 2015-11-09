@@ -1,0 +1,357 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Basket_BuyButton" xml:space="preserve">
+    <value>Buy</value>
+  </data>
+  <data name="Basket_EmptyOrder" xml:space="preserve">
+    <value>Your basket is empty.</value>
+  </data>
+  <data name="Basket_HeaderCount" xml:space="preserve">
+    <value>Count</value>
+  </data>
+  <data name="Basket_HeaderName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Basket_HeaderPrice" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="Basket_HeaderTotalPrice" xml:space="preserve">
+    <value>Total price</value>
+  </data>
+  <data name="Basket_Title" xml:space="preserve">
+    <value>Your order</value>
+  </data>
+  <data name="Basket_Total" xml:space="preserve">
+    <value>Total: {0:c}</value>
+  </data>
+  <data name="Index_Login" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="Index_LoginButon" xml:space="preserve">
+    <value>Log In</value>
+  </data>
+  <data name="Index_NewUser" xml:space="preserve">
+    <value>Not registered yet?</value>
+  </data>
+  <data name="Index_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Index_SuccessfullyUserCreation" xml:space="preserve">
+    <value>Successfully user creation</value>
+  </data>
+  <data name="Index_Title" xml:space="preserve">
+    <value>Welcome to Your Store!</value>
+  </data>
+  <data name="Index_ValidateError" xml:space="preserve">
+    <value>Credentials are wrong</value>
+  </data>
+  <data name="Master_BackButton" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Master_SignOutButton" xml:space="preserve">
+    <value>Sign Out</value>
+  </data>
+  <data name="Master_ToProfile" xml:space="preserve">
+    <value>Good day, {0}!</value>
+  </data>
+  <data name="NewUser_Answer" xml:space="preserve">
+    <value>Answer</value>
+  </data>
+  <data name="NewUser_BackButton" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="NewUser_CreateUserError" xml:space="preserve">
+    <value>Error create new user.</value>
+  </data>
+  <data name="NewUser_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="NewUser_EmptyFieldsError" xml:space="preserve">
+    <value>Some fields are emprty.</value>
+  </data>
+  <data name="NewUser_Header" xml:space="preserve">
+    <value>Enter your credentials</value>
+  </data>
+  <data name="NewUser_Login" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="NewUser_LoginError" xml:space="preserve">
+    <value>Login must have only letters, numbers and underscopes. First symbol must be letter. Length must be more than 5 symbols.</value>
+  </data>
+  <data name="NewUser_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="NewUser_PasswordError" xml:space="preserve">
+    <value>Password must have letters, numbers and symbols: _,!,@,#,$,%,^,&amp;,*. First symbol must be letter. Length must be more than 5 symbols.</value>
+  </data>
+  <data name="NewUser_Question" xml:space="preserve">
+    <value>Question</value>
+  </data>
+  <data name="NewUser_SubmitButton" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="NewUser_Title" xml:space="preserve">
+    <value>Registration</value>
+  </data>
+  <data name="ProductCatalog_BusketButton" xml:space="preserve">
+    <value>Go to busket</value>
+  </data>
+  <data name="ProductCatalog_Header" xml:space="preserve">
+    <value>Choose products for youself!</value>
+  </data>
+  <data name="ProductCatalog_HeaderCategory" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="ProductCatalog_HeaderCount" xml:space="preserve">
+    <value>Count</value>
+  </data>
+  <data name="ProductCatalog_HeaderName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ProductCatalog_HeaderPrice" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="ProductCatalog_ProductAdded" xml:space="preserve">
+    <value>Product {0} was added to order.</value>
+  </data>
+  <data name="ProductCatalog_ProductRemoved" xml:space="preserve">
+    <value>Product {0} was removed from order.</value>
+  </data>
+  <data name="ProductCatalog_ProductsBought" xml:space="preserve">
+    <value>Products were bought successfully.</value>
+  </data>
+  <data name="ProductCatalog_Title" xml:space="preserve">
+    <value>Product catalog</value>
+  </data>
+  <data name="ProductManagement_DeleteButton" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ProductManagement_EditButton" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="ProductManagement_HeaderCategory" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="ProductManagement_HeaderId" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="ProductManagement_HeaderName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ProductManagement_HeaderPrice" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="ProductManagement_InsertAnswerNo" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="ProductManagement_InsertAnswerYes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="ProductManagement_InsertButton" xml:space="preserve">
+    <value>Insert</value>
+  </data>
+  <data name="ProductManagement_InsertQuestion" xml:space="preserve">
+    <value>Are you sure you want to continue?</value>
+  </data>
+  <data name="ProductManagement_ProductWasAdded" xml:space="preserve">
+    <value>Product successfully added.</value>
+  </data>
+  <data name="ProductManagement_ProductWasNotAdded" xml:space="preserve">
+    <value>Product wasn't added.</value>
+  </data>
+  <data name="ProductManagement_ProductWasNotRemoved" xml:space="preserve">
+    <value>Product wasn't removed.</value>
+  </data>
+  <data name="ProductManagement_ProductWasNotUpdated" xml:space="preserve">
+    <value>Product wasn't updated. Not valid value. Please check entered values.</value>
+  </data>
+  <data name="ProductManagement_ProductWasRemoved" xml:space="preserve">
+    <value>Product was removed.</value>
+  </data>
+  <data name="ProductManagement_ProductWasUpdated" xml:space="preserve">
+    <value>Product successfully updated.</value>
+  </data>
+  <data name="ProductManagement_Title" xml:space="preserve">
+    <value>Product management</value>
+  </data>
+  <data name="Profile_BothPasswordsError" xml:space="preserve">
+    <value>Enter both passwords.</value>
+  </data>
+  <data name="Profile_ChangeButton" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="Profile_ChangePassword" xml:space="preserve">
+    <value>Change password</value>
+  </data>
+  <data name="Profile_CommitIcon" xml:space="preserve">
+    <value>Load choosen icon</value>
+  </data>
+  <data name="Profile_ExitButton" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Profile_IconWasChanged" xml:space="preserve">
+    <value>Icon  successfully changed.</value>
+  </data>
+  <data name="Profile_IconWasNotChanged" xml:space="preserve">
+    <value>Icon wasn't changed.</value>
+  </data>
+  <data name="Profile_NewPassword" xml:space="preserve">
+    <value>New password</value>
+  </data>
+  <data name="Profile_NothingChanged" xml:space="preserve">
+    <value>Nothing changed. Try again.</value>
+  </data>
+  <data name="Profile_NotImage" xml:space="preserve">
+    <value>Image file was not choosen.</value>
+  </data>
+  <data name="Profile_NotJpg" xml:space="preserve">
+    <value>Only .Jpg image files allowed.</value>
+  </data>
+  <data name="Profile_OldPassword" xml:space="preserve">
+    <value>Old password</value>
+  </data>
+  <data name="Profile_PasswordError" xml:space="preserve">
+    <value>Password must have letters, numbers and symbols: _,!,@,#,$,%,^,&amp;,*. First symbol must be letter. Length must be more than 5 symbols.</value>
+  </data>
+  <data name="Profile_PasswordWasChanged" xml:space="preserve">
+    <value>"Password successfully changed.</value>
+  </data>
+  <data name="Profile_PersonalData" xml:space="preserve">
+    <value>Personal data</value>
+  </data>
+  <data name="Profile_PersonalDataChanged" xml:space="preserve">
+    <value>Your new personal data successfully changed.</value>
+  </data>
+  <data name="Profile_PersonalName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Profile_PersonalSecondName" xml:space="preserve">
+    <value>Second name</value>
+  </data>
+  <data name="Profile_SubmitButton" xml:space="preserve">
+    <value>Submit</value>
+  </data>
+  <data name="Profile_Title" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="Index_Header" xml:space="preserve">
+    <value>Hello! Nice to see You here. Please sign in to shop.</value>
+  </data>
+</root>
