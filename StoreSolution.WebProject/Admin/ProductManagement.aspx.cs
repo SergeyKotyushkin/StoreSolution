@@ -1,12 +1,14 @@
 ﻿using StoreSolution.DatabaseProject.Model;
 using System;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Web;
 using System.Web.Security;
 using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.MyIoC;
+using StoreSolution.WebProject.Currency;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 
@@ -165,22 +167,23 @@ namespace StoreSolution.WebProject.Admin
                 var name = textBox1.Text.Trim();
                 var category = textBox2.Text.Trim();
                 var priceStr = textBox3.Text.Trim();
-                double price;
+                decimal price;
 
                 var rgx = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z]+[a-zA-Z0-9_ ]*$");
 
                 var b1 = rgx.IsMatch(name);
                 var b2 = rgx.IsMatch(category);
-                var b3 = double.TryParse(priceStr, out price);
+                var b3 = decimal.TryParse(priceStr, out price);
                 
                 if (b1 && b2 && b3)
                 {
+                    var culturePrice = CurrencyConverter.ConvertToRu(price, CultureInfo.CurrentCulture);
                     var product = new Product()
                     {
                         Id = -1,
                         Name = name,
                         Category = category,
-                        Price = price
+                        Price = (double)culturePrice
                     };
 
                     var result = _productRepository.AddOrUpdateProduct(product);
@@ -215,10 +218,12 @@ namespace StoreSolution.WebProject.Admin
 
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
+            var rate = CurrencyConverter.GetRate(CultureInfo.CurrentCulture);
             foreach (GridViewRow row in gvTable.Rows)
             {
-                if (row.Cells[2].Controls.Count == 0)
-                    row.Cells[5].Text = string.Format("{0:c}", double.Parse(row.Cells[5].Text));
+                if (row.Cells[2].Controls.Count != 0) continue;
+                var price = CurrencyConverter.ConvertFromRu(decimal.Parse(row.Cells[5].Text), rate);
+                row.Cells[5].Text = string.Format("{0:c}", price);
             }
         }
 

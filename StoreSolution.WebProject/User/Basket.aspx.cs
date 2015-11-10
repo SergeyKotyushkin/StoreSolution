@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Web;
 using System.Web.UI.WebControls;
@@ -7,6 +8,7 @@ using StoreSolution.WebProject.Model;
 using System.Web.Security;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.MyIoC;
+using StoreSolution.WebProject.Currency;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 
@@ -83,19 +85,22 @@ namespace StoreSolution.WebProject.User
 
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
+            var rate = CurrencyConverter.GetRate(CultureInfo.CurrentCulture);
             for (var i = 0; i < gvTable.Rows.Count; i++)
             {
-                gvTable.Rows[i].Cells[1].Text = string.Format("{0:c}", double.Parse(gvTable.Rows[i].Cells[1].Text));
-                gvTable.Rows[i].Cells[3].Text = string.Format("{0:c}", double.Parse(gvTable.Rows[i].Cells[3].Text));
+                var price = CurrencyConverter.ConvertFromRu(decimal.Parse(gvTable.Rows[i].Cells[1].Text), rate);
+                var total = CurrencyConverter.ConvertFromRu(decimal.Parse(gvTable.Rows[i].Cells[3].Text), rate);
+                gvTable.Rows[i].Cells[1].Text = string.Format("{0:c}", price);
+                gvTable.Rows[i].Cells[3].Text = string.Format("{0:c}", total);
             }
         }
 
         protected void gvTable_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             if (e.Row.RowType != DataControlRowType.Header) return;
-            e.Row.Cells[0].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderCount");
-            e.Row.Cells[1].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderName");
-            e.Row.Cells[2].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderPrice");
+            e.Row.Cells[0].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderName");
+            e.Row.Cells[1].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderPrice");
+            e.Row.Cells[2].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderCount");
             e.Row.Cells[3].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderTotalPrice");
         }
 
@@ -121,7 +126,7 @@ namespace StoreSolution.WebProject.User
             {
                 btnBuy.Enabled = true;
                 var text = (string) HttpContext.GetGlobalResourceObject("Lang", "Basket_Total");
-                if (text != null) labTotal.Text = string.Format(text, sum);
+                if (text != null) labTotal.Text = string.Format(text, CurrencyConverter.ConvertFromRu((decimal)sum, CultureInfo.CurrentCulture));
             }
         }
 

@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Web;
 using System.Web.Security;
 using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.MyIoC;
+using StoreSolution.WebProject.Currency;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 using StoreSolution.WebProject.Model;
@@ -87,8 +89,12 @@ namespace StoreSolution.WebProject.User
 
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
+            var rate = CurrencyConverter.GetRate(CultureInfo.CurrentCulture);
             foreach (GridViewRow row in gvTable.Rows)
-                row.Cells[6].Text = string.Format("{0:c}", double.Parse(row.Cells[6].Text));
+            {
+                var price = CurrencyConverter.ConvertFromRu(decimal.Parse(row.Cells[6].Text), rate);
+                row.Cells[6].Text = string.Format("{0:c}", price);
+            }
         }
 
         protected void gvTable_RowCreated(object sender, GridViewRowEventArgs e)
