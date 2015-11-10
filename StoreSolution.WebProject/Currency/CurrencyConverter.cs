@@ -13,7 +13,8 @@ namespace StoreSolution.WebProject.Currency
         private static readonly List<Rate> Rates = new List<Rate>
         {
             new Rate {CultureName = "ru-RU", CurrencyName = "RUB", CurrencyRate = 1},
-            new Rate {CultureName = "en-US", CurrencyName = "USD"}
+            new Rate {CultureName = "en-US", CurrencyName = "USD"},
+            new Rate {CultureName = "en-GB", CurrencyName = "GBP"}
         };
 
         private static decimal? RefreshRate(string currencyFrom, string currencyTo)
@@ -47,19 +48,19 @@ namespace StoreSolution.WebProject.Currency
         {
             if (ci.Name == Rates[Rub].CultureName) return value;
             var result = RefreshRate(ci.Name, Rates[Rub].CultureName);
-            return result != null ? decimal.Round(value / result.Value, 3) : decimal.Zero;
+            return result != null ? decimal.Round(value / result.Value, 2) : decimal.Zero;
         }
 
         public static decimal ConvertFromRu(decimal value, decimal? rate)
         {
-            return rate != null ? decimal.Round(value / rate.Value, 3) : decimal.Zero;
+            return rate != null ? decimal.Round(value / rate.Value, 2) : decimal.Zero;
         }
 
         public static decimal ConvertToRu(decimal value, CultureInfo ci)
         {
             if (ci.Name == Rates[Rub].CultureName) return value;
             var result = RefreshRate(ci.Name, Rates[Rub].CultureName);
-            return result != null ? decimal.Round(value*result.Value, 3) : decimal.Zero;
+            return result != null ? decimal.Round(value*result.Value, 2) : decimal.Zero;
         }
 
         public static decimal GetRate(CultureInfo ci)

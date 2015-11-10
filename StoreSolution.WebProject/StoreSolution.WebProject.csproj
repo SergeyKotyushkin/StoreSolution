@@ -84,8 +84,9 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\Images\en-GB.png" />
     <Content Include="Content\Images\ru-Ru.jpg" />
-    <Content Include="Content\Images\us-EN.jpg" />
+    <Content Include="Content\Images\en-US.jpg" />
     <Content Include="Error\Error.html" />
     <Content Include="Error\Error408.html" />
     <Content Include="Error\Error401.html" />

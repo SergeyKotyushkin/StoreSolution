@@ -20,6 +20,13 @@
     font-size: medium;
 }
 
+#btnBuy:hover:disabled {
+    color: black;
+    background-color: grey;
+    border: 1px solid black;
+    font-size: medium;
+}
+
 #labTotal {
     font-size: larger;
     border-bottom: 1px dotted darkblue;

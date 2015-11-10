@@ -85,14 +85,21 @@ namespace StoreSolution.WebProject.User
 
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
+            if(gvTable.Rows.Count == 0) return;
+
             var rate = CurrencyConverter.GetRate(CultureInfo.CurrentCulture);
+            decimal sum = 0;
             for (var i = 0; i < gvTable.Rows.Count; i++)
             {
                 var price = CurrencyConverter.ConvertFromRu(decimal.Parse(gvTable.Rows[i].Cells[1].Text), rate);
-                var total = CurrencyConverter.ConvertFromRu(decimal.Parse(gvTable.Rows[i].Cells[3].Text), rate);
+                var total = decimal.Parse(gvTable.Rows[i].Cells[2].Text)*price;
+                sum += total;
                 gvTable.Rows[i].Cells[1].Text = string.Format("{0:c}", price);
                 gvTable.Rows[i].Cells[3].Text = string.Format("{0:c}", total);
             }
+
+            var text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_Total");
+            if (text != null) labTotal.Text = string.Format(text, sum);
         }
 
         protected void gvTable_RowDataBound(object sender, GridViewRowEventArgs e)
@@ -115,19 +122,10 @@ namespace StoreSolution.WebProject.User
             gvTable.DataSource = list;               
             gvTable.DataBind();
             
-            var sum = list.Sum(p => p.Total);
-
-            if (Math.Abs(sum) < Tolerance)
-            {
-                btnBuy.Enabled = false;
-                labTotal.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_EmptyOrder");
-            }
-            else
-            {
-                btnBuy.Enabled = true;
-                var text = (string) HttpContext.GetGlobalResourceObject("Lang", "Basket_Total");
-                if (text != null) labTotal.Text = string.Format(text, CurrencyConverter.ConvertFromRu((decimal)sum, CultureInfo.CurrentCulture));
-            }
+            btnBuy.Enabled = true;
+            if (list.Count != 0) return;
+            btnBuy.Enabled = false;
+            labTotal.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_EmptyOrder");
         }
 
         private void SetTitles(MembershipUser user)
