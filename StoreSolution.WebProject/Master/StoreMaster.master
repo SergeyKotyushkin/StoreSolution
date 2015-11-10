@@ -16,7 +16,8 @@
 <form id="form1" runat="server">
     <div id="cap">
         <div id="leftUp">
-            <asp:ImageButton CssClass="langFlag" ID="en_US" runat="server" ImageUrl="~/Content/Images/us-EN.jpg" OnClick="lang_Click"/>
+            <asp:ImageButton CssClass="langFlag" ID="en_US" runat="server" ImageUrl="~/Content/Images/en-US.jpg" OnClick="lang_Click"/>
+            <asp:ImageButton CssClass="langFlag" ID="en_GB" runat="server" ImageUrl="~/Content/Images/en-GB.png" OnClick="lang_Click"/>
             <asp:ImageButton CssClass="langFlag" ID="ru_RU" runat="server" ImageUrl="~/Content/Images/ru-Ru.jpg" OnClick="lang_Click"/>
         </div>
         <asp:HyperLink ID="hlUser" NavigateUrl="~/Authenticated/Profile.aspx" runat="server"/>
