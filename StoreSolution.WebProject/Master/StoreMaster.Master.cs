@@ -8,7 +8,7 @@ using StoreSolution.WebProject.Log4net;
 
 namespace StoreSolution.WebProject.Master
 {
-    public partial class StoreMaster : System.Web.UI.MasterPage
+    public partial class StoreMaster : MasterPage
     {
         public string HlUserText
         {
@@ -32,6 +32,12 @@ namespace StoreSolution.WebProject.Master
         {
             get { return btnBack.Visible; }
             set { btnBack.Visible = value; }
+        }
+
+        public bool BtnSignOutVisibility
+        {
+            get { return btnSignOut.Visible; }
+            set { btnSignOut.Visible = value; }
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -63,6 +69,8 @@ namespace StoreSolution.WebProject.Master
         protected void btnBack_Click(object sender, EventArgs e)
         {
             if (Page.Title == (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_Title")) Response.Redirect("~/User/ProductCatalog.aspx");
+            else if (Page.Title == (string)HttpContext.GetGlobalResourceObject("Lang", "NewUser_Title")) Response.Redirect("~/Index.aspx");
+            else if (Page.Title == (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_Title")) Response.Redirect("~/Index.aspx");
             else if (Page.Title == (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_Title")) SignOut();
         }
 

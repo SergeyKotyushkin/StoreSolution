@@ -3,11 +3,14 @@ using System.Drawing;
 using System.Web;
 using System.Web.Security;
 using StoreSolution.WebProject.Log4net;
+using StoreSolution.WebProject.Master;
 
 namespace StoreSolution.WebProject
 {
     public partial class Index : System.Web.UI.Page
     {
+        private StoreMaster _master;
+
         protected override void InitializeCulture()
         {
             var cookie = Request.Cookies["language"];
@@ -18,14 +21,23 @@ namespace StoreSolution.WebProject
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            _master = (StoreMaster)Page.Master;
+            if (_master == null)
+                throw new HttpUnhandledException("Wrong master page.");
+
+            _master.BtnBackVisibility = false;
+            _master.BtnSignOutVisibility = false;
             if (Session["NewUser"] != null)
             {
-                labMessage.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Index_SuccessfullyUserCreation");
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Index_SuccessfullyUserCreation");
                 Logger.Log.Info("Successfully user creation.");
-                labMessage.ForeColor = Color.ForestGreen;
+                _master.LabMessageForeColor = Color.ForestGreen;
                 Session["NewUser"] = null;
             }
-            else labMessage.ForeColor = Color.Red;
+            else _master.LabMessageForeColor = Color.Red;
+
+            //if (Request.QueryString["ReturnUrl"] != null)
+            //    Response.Redirect(Request.Url.GetLeftPart(UriPartial.Path));
 
             var user = Membership.GetUser();
             if (user == null) return;
@@ -55,7 +67,7 @@ namespace StoreSolution.WebProject
             else
             {
                 Logger.Log.Error("User " + tbLogin.Text + " didn't log in.");
-                labMessage.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Index_ValidateError");
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Index_ValidateError");
             }
         }
     }

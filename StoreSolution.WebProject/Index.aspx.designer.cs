@@ -13,15 +13,6 @@ namespace StoreSolution.WebProject {
     public partial class Index {
         
         /// <summary>
-        /// form1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
-        
-        /// <summary>
         /// labWelcome control.
         /// </summary>
         /// <remarks>
@@ -110,14 +101,5 @@ namespace StoreSolution.WebProject {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HyperLink hlCreateUser;
-        
-        /// <summary>
-        /// labMessage control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label labMessage;
     }
 }

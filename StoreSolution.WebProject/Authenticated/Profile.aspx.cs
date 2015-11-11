@@ -6,17 +6,18 @@ using System.Linq;
 using StoreSolution.DatabaseProject.Model;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Web;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.MyIoC;
 using StoreSolution.WebProject.Log4net;
+using StoreSolution.WebProject.Master;
 
 namespace StoreSolution.WebProject.Authenticated
 {
     public partial class Profile : System.Web.UI.Page
     {
+        private StoreMaster _master;
         private readonly IPersonRepository _iPersonRepository;
 
         protected Profile()
@@ -40,6 +41,10 @@ namespace StoreSolution.WebProject.Authenticated
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            _master = (StoreMaster)Page.Master;
+            if (_master == null) throw new HttpUnhandledException("Wrong master page.");
+            //_master.BtnSignOutVisibility = false;
+
             if(!Page.IsPostBack)
                 RefereshUser();
         }
@@ -54,8 +59,8 @@ namespace StoreSolution.WebProject.Authenticated
 
         protected void btnNewIcon_Click(object sender, EventArgs e)
         {
-            labMessage.Text = "";
-            labMessage.ForeColor = Color.Red;
+            _master.LabMessageText = "";
+            _master.LabMessageForeColor = Color.Red;
 
             var extension = Path.GetExtension(btnChooseIcon.FileName);
             if (extension != null)
@@ -63,7 +68,7 @@ namespace StoreSolution.WebProject.Authenticated
                 if (!btnChooseIcon.HasFile || (extension.ToLower() != ".jpg" &&
                                                extension.ToLower() != ".jpeg"))
                 {
-                    labMessage.Text = !btnChooseIcon.HasFile
+                    _master.LabMessageText = !btnChooseIcon.HasFile
                         ? (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_NotImage")
                         : (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_NotJpg");
                     return;
@@ -71,13 +76,13 @@ namespace StoreSolution.WebProject.Authenticated
             }
             else
             {
-                labMessage.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_NotImage");
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_NotImage");
                 return;
             }
 
             if (btnChooseIcon.FileBytes.Length == 0)
             {
-                labMessage.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_NotImage");
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_NotImage");
                 return;
             }
 
@@ -102,17 +107,17 @@ namespace StoreSolution.WebProject.Authenticated
 
             var result = _iPersonRepository.AddOrUpdate(updatedPerson);
 
-            labMessage.Text = "";
+            _master.LabMessageText = "";
             if (result)
             {
-                labMessage.ForeColor = Color.DarkGreen;
-                labMessage.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_IconWasChanged");
+                _master.LabMessageForeColor = Color.DarkGreen;
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_IconWasChanged");
                 Logger.Log.Info("Icon successfully changed for user - " + user.UserName + ".");
             }
             else
             {
-                labMessage.ForeColor = Color.Red;
-                labMessage.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_IconWasNotChanged");
+                _master.LabMessageForeColor = Color.Red;
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_IconWasNotChanged");
             }
             RefreshIcon(updatedPerson.Icon);
         }
@@ -137,18 +142,18 @@ namespace StoreSolution.WebProject.Authenticated
             string message;
             if (!result)
             {
-                labMessage.ForeColor = Color.Red;
+                _master.LabMessageForeColor = Color.Red;
                 message = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_NothingChanged");
             }
             else
             {
-                labMessage.ForeColor = Color.DarkGreen;
+                _master.LabMessageForeColor = Color.DarkGreen;
                 message = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_PersonalDataChanged");
                 Logger.Log.Info("Personal data successfully commited for user - " + user.UserName + ".");
             }
 
             RefereshUser();
-            labMessage.Text = message;
+            _master.LabMessageText = message;
         }
 
         protected void btnNewPassword_Click(object sender, EventArgs e)
@@ -156,16 +161,16 @@ namespace StoreSolution.WebProject.Authenticated
             Page.Validate();
             if (!Page.IsValid)
             {
-                labMessage.ForeColor = Color.Red;
-                labMessage.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_BothPasswordsError");
+                _master.LabMessageForeColor = Color.Red;
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_BothPasswordsError");
                 return;
             }
 
             var rgxPassword = new Regex("^[a-zA-Z0-9_!@#$%^&*]{5,}$");
             if (!rgxPassword.IsMatch(tbNewPassword.Text) || !rgxPassword.IsMatch(tbOldPassword.Text))
             {
-                labMessage.ForeColor = Color.Red;
-                labMessage.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_PasswordError");
+                _master.LabMessageForeColor = Color.Red;
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_PasswordError");
                 rfvNewPassword.IsValid = false;
                 rfvOldPassword.IsValid = false;
                 return;
@@ -174,14 +179,14 @@ namespace StoreSolution.WebProject.Authenticated
             var user = GetUser();
             if (user.ChangePassword(tbOldPassword.Text, tbNewPassword.Text))
             {
-                labMessage.ForeColor = Color.DarkGreen;
-                labMessage.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_PasswordWasChanged");
+                _master.LabMessageForeColor = Color.DarkGreen;
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_PasswordWasChanged");
                 Logger.Log.Info("Password successfully changed for user - " + user.UserName + ".");
             }
             else
             {
-                labMessage.ForeColor = Color.Red;
-                labMessage.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_PasswordWasChanged");
+                _master.LabMessageForeColor = Color.Red;
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_PasswordWasChanged");
             }
         }
         
@@ -198,7 +203,7 @@ namespace StoreSolution.WebProject.Authenticated
 
         private void RefereshUser()
         {
-            labMessage.Text = "";
+            _master.LabMessageText = "";
 
             var user = GetUser();
 

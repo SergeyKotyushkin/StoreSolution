@@ -17,7 +17,6 @@ namespace StoreSolution.WebProject.User
     public partial class Basket : System.Web.UI.Page
     {
         private StoreMaster _master;
-        private const double Tolerance = double.Epsilon;
         private readonly IProductRepository _productRepository;
 
         protected Basket()
@@ -42,7 +41,9 @@ namespace StoreSolution.WebProject.User
         protected void Page_Load(object sender, EventArgs e)
         {
             _master = (StoreMaster)Page.Master;
-            if (_master != null) _master.BtnBackVisibility = true;
+            if (_master == null) throw new HttpUnhandledException("Wrong master page.");
+            
+            _master.BtnBackVisibility = true;
 
             var user = Membership.GetUser();
             if (user == null) SignOut();

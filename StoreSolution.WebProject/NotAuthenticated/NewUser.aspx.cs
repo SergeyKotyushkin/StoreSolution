@@ -3,11 +3,14 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Security;
 using StoreSolution.WebProject.Log4net;
+using StoreSolution.WebProject.Master;
 
 namespace StoreSolution.WebProject.NotAuthenticated
 {
     public partial class NewUser : System.Web.UI.Page
     {
+        private StoreMaster _master;
+
         protected override void InitializeCulture()
         {
             var cookie = Request.Cookies["language"];
@@ -18,18 +21,21 @@ namespace StoreSolution.WebProject.NotAuthenticated
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            _master = (StoreMaster)Page.Master;
+            if (_master == null) throw new HttpUnhandledException("Wrong master page.");
 
+            _master.BtnSignOutVisibility = false;
         }
 
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
             Page.Validate();
 
-            labMessage.Text = "";
+            _master.LabMessageText = "";
             var rgxLogin = new Regex("^[a-zA-Z]+[a-zA-Z0-9_]{5,}$");
             if (!rgxLogin.IsMatch(tbLogin.Text))
             {
-                labMessage.Text = (string) HttpContext.GetGlobalResourceObject("Lang", "NewUser_LoginError");
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "NewUser_LoginError");
                 rfvLogin.IsValid = false;
                 return;
             }
@@ -37,14 +43,14 @@ namespace StoreSolution.WebProject.NotAuthenticated
             var rgxPassword = new Regex("^[a-zA-Z0-9_!@#$%^&*]{5,}$");
             if (!rgxPassword.IsMatch(tbPassword.Text))
             {
-                labMessage.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "NewUser_PasswordError");
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "NewUser_PasswordError");
                 rfvPassword.IsValid = false;
                 return;
             }
 
             if (!Page.IsValid)
             {
-                labMessage.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "NewUser_EmptyFieldsError");
+                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "NewUser_EmptyFieldsError");
             }
             else
             {
@@ -61,7 +67,7 @@ namespace StoreSolution.WebProject.NotAuthenticated
                 }
                 else
                 {
-                    labMessage.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "NewUser_CreateUserError");
+                    _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "NewUser_CreateUserError");
                     Logger.Log.Debug("User " + tbLogin.Text + " didn't create.");
                 }
             }

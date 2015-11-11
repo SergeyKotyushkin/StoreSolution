@@ -1,17 +1,11 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Index.aspx.cs" 
-    Inherits="StoreSolution.WebProject.Index" Title="<%$ Resources: Lang, Index_Title%>" %>
+    Inherits="StoreSolution.WebProject.Index" MasterPageFile="~/Master/StoreMaster.Master"
+    Title="<%$ Resources: Lang, Index_Title%>" %>
 
-<!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head runat="server">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <link href="~/Content/Index.css" rel="stylesheet"/>
-    <link href="~/Content/Common.css" rel="stylesheet"/>
-    <title></title>
-</head>
-<body>
-<form id="form1" runat="server">
+<asp:Content ID="Head" ContentPlaceHolderID="head" runat="server">
+    <link href="<%= ResolveUrl("~/Content/Index.css") %>" rel="stylesheet"/>
+</asp:Content>
+<asp:Content ContentPlaceHolderID="StoreMasterContentId" runat="server">
     <div id="header">
         <asp:Label CssClass="cellCenter" ID="labWelcome" runat="server" Text="<%$ Resources: Lang, Index_Header %>"/>
     </div>
@@ -43,12 +37,4 @@
             </div>
         </div>
     </div>
-    <div id="footer">
-        <div id="inFooter">
-            <hr/>
-            <asp:Label ID="labMessage" runat="server"/>
-        </div>
-    </div>
-</form>
-</body>
-</html>
+</asp:Content>

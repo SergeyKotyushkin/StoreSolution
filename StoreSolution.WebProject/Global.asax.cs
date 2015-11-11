@@ -12,7 +12,6 @@ namespace StoreSolution.WebProject
         protected void Application_Start(object sender, EventArgs e)
         {
             #region Log4Net
-            Logger.InitLogger(); 
             Logger.Log.Info("Log4Net is ready.");
             #endregion
 

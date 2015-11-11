@@ -1,17 +1,11 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="NewUser.aspx.cs" Inherits="StoreSolution.WebProject.NotAuthenticated.NewUser" 
-    Title="<%$ Resources: Lang, NewUser_Title %>"%>
+    MasterPageFile="~/Master/StoreMaster.Master" Title="<%$ Resources: Lang, NewUser_Title %>"%>
 
-<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head runat="server">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title></title>
-    <link href="~/Content/Common.css" rel="stylesheet" />
-    <link href="~/Content/NewUser.css" rel="stylesheet" />
-</head>
-<body>
-    <form id="form1" runat="server">
+<asp:Content ID="Head" ContentPlaceHolderID="head" runat="server">
+    <link href="<%= ResolveUrl("~/Content/NewUser.css") %>" rel="stylesheet"/>
+</asp:Content>
+<asp:Content ContentPlaceHolderID="StoreMasterContentId" runat="server">
         <div>
             <asp:Label ID="labTitle" runat="server" Text="<%$ Resources: Lang, NewUser_Header %>"/>
             <br />
@@ -51,13 +45,4 @@
             <br />
             <asp:Button ID="btnSubmit" runat="server" Text="<%$ Resources: Lang, NewUser_SubmitButton %>" OnClick="btnSubmit_Click" />
         </div>
-        <div id="footer">
-            <div id="inFooter">
-                <hr/>
-                <asp:Label ID="labMessage" runat="server"/>
-            </div>
-        </div>
-        <asp:Button ID="btnBack" OnClick="btnBack_Click" runat="server" Text="<%$ Resources: Lang, NewUser_BackButton %>" CausesValidation="False" />
-    </form>
-</body>
-</html>
+</asp:Content>

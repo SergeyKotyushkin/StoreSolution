@@ -40,15 +40,6 @@ namespace StoreSolution.WebProject.Master {
         protected global::System.Web.UI.WebControls.ImageButton en_US;
         
         /// <summary>
-        /// en_GB control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.ImageButton en_GB;
-        
-        /// <summary>
         /// ru_RU control.
         /// </summary>
         /// <remarks>
@@ -56,6 +47,15 @@ namespace StoreSolution.WebProject.Master {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.ImageButton ru_RU;
+        
+        /// <summary>
+        /// en_GB control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.ImageButton en_GB;
         
         /// <summary>
         /// hlUser control.
