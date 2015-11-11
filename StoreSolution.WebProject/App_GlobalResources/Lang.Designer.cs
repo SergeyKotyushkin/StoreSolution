@@ -349,6 +349,15 @@ namespace StoreSolution.WebProject.App_GlobalResources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All.
+        /// </summary>
+        public static string ProductCatalog_AllCategories {
+            get {
+                return ResourceManager.GetString("ProductCatalog_AllCategories", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Go to busket.
         /// </summary>
         public static string ProductCatalog_BusketButton {
@@ -426,6 +435,42 @@ namespace StoreSolution.WebProject.App_GlobalResources {
         public static string ProductCatalog_ProductsBought {
             get {
                 return ResourceManager.GetString("ProductCatalog_ProductsBought", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search.
+        /// </summary>
+        public static string ProductCatalog_SearchButton {
+            get {
+                return ResourceManager.GetString("ProductCatalog_SearchButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Category:.
+        /// </summary>
+        public static string ProductCatalog_SearchCategory {
+            get {
+                return ResourceManager.GetString("ProductCatalog_SearchCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Products searching board.
+        /// </summary>
+        public static string ProductCatalog_SearchHeader {
+            get {
+                return ResourceManager.GetString("ProductCatalog_SearchHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name:.
+        /// </summary>
+        public static string ProductCatalog_SearchName {
+            get {
+                return ResourceManager.GetString("ProductCatalog_SearchName", resourceCulture);
             }
         }
         

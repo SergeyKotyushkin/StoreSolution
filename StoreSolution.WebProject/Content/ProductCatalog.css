@@ -22,3 +22,32 @@
     border: 1px solid black;
     font-size: medium;
 }
+
+#labSearchHeader {
+    font-weight: bold;
+}
+
+#btnSearch {
+    border: 1px solid darkblue;
+    color: black;
+}
+
+#btnSearch:hover {
+    border: 1px solid darkblue;
+    background-color: #006699;
+    color: white;
+}
+
+#labSearchCategory {
+    margin-left: 5px;
+}
+
+#ddlSearchCategory {
+    margin-right: 5px;
+}
+
+#pSearchingBoard {
+    border: 1px solid darkblue;
+    background-color: lightblue;
+    padding: 2px;
+}

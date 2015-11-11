@@ -354,4 +354,19 @@
   <data name="Index_Header" xml:space="preserve">
     <value>Добро пожаловать в наш магазин!</value>
   </data>
+  <data name="ProductCatalog_SearchHeader" xml:space="preserve">
+    <value>Поиск товаров</value>
+  </data>
+  <data name="ProductCatalog_SearchButton" xml:space="preserve">
+    <value>Искать</value>
+  </data>
+  <data name="ProductCatalog_AllCategories" xml:space="preserve">
+    <value>Все</value>
+  </data>
+  <data name="ProductCatalog_SearchCategory" xml:space="preserve">
+    <value>Категория:</value>
+  </data>
+  <data name="ProductCatalog_SearchName" xml:space="preserve">
+    <value>Наименование:</value>
+  </data>
 </root>

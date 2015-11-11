@@ -7,6 +7,7 @@ using System.Web;
 using System.Web.Security;
 using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
+using StoreSolution.DatabaseProject.Model;
 using StoreSolution.MyIoC;
 using StoreSolution.WebProject.Currency;
 using StoreSolution.WebProject.Log4net;
@@ -17,6 +18,7 @@ namespace StoreSolution.WebProject.User
 {
     public partial class ProductCatalog : System.Web.UI.Page
     {
+        private bool _isSearch;
         private StoreMaster _master;
         private readonly IProductRepository _productRepository;
 
@@ -45,6 +47,9 @@ namespace StoreSolution.WebProject.User
 
             var user = Membership.GetUser();
             if (user == null) SignOut();
+
+            pSearchingBoard.Visible = cbSearchHeader.Checked;
+            _isSearch = cbSearchHeader.Checked;
             
             SetTitles(user);
 
@@ -158,9 +163,40 @@ namespace StoreSolution.WebProject.User
         {
             var products = _productRepository.Products;
 
+            if (_isSearch)
+            {
+                if (tbSearchName.Text.Trim() != string.Empty)
+                    products = products.Where(p => p.Name.ToLower().Contains(tbSearchName.Text.Trim().ToLower())).Select(p => p);
+                if (ddlSearchCategory.SelectedIndex != 0)
+                {
+                    var category = ddlSearchCategory.Items[ddlSearchCategory.SelectedIndex].Text;
+                    products =
+                        products.Where(p => p.Category == category).Select(p => p);
+                }
+                
+                FillCategories(products);
+            }
+
+            if (!Page.IsPostBack)
+            {
+                FillCategories(products);
+            }
+
             gvTable.DataSource = products.Select(p => new {p.Id, p.Name, p.Category, p.Price}).ToList();
             if (!Page.IsPostBack || bind)
                 gvTable.DataBind();
+        }
+
+        private void FillCategories(IQueryable<Product> products)
+        {
+            var categories = products.Select(p => p.Category).Distinct().ToList();
+            var ddlSearchCategorySelectedIndex = ddlSearchCategory.SelectedIndex;
+            ddlSearchCategory.Items.Clear();
+            ddlSearchCategory.Items.Add((string) HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_AllCategories"));
+            foreach (var category in categories) ddlSearchCategory.Items.Add(category);
+            ddlSearchCategory.SelectedIndex = ddlSearchCategorySelectedIndex < ddlSearchCategory.Items.Count
+                ? ddlSearchCategorySelectedIndex
+                : ddlSearchCategory.Items.Count - 1;
         }
 
         private void FillCountColumn()
@@ -215,6 +251,23 @@ namespace StoreSolution.WebProject.User
             _master.LabMessageForeColor = Color.DarkBlue;
             var text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_ProductRemoved");
             if (text != null) _master.LabMessageText = string.Format(text, _productRepository.GetProductById(id).Name);
+        }
+
+        protected void btnSearch_Click(object sender, EventArgs e)
+        {
+            FillGridView(true);
+            FillCountColumn();
+        }
+
+        protected void cbSearchHeader_CheckedChanged(object sender, EventArgs e)
+        {
+            _isSearch = cbSearchHeader.Checked;
+
+            if(cbSearchHeader.Checked) return;
+            ddlSearchCategory.SelectedIndex = 0;
+            tbSearchName.Text = string.Empty;
+            FillGridView(true);
+            FillCountColumn();
         }
     }
 }

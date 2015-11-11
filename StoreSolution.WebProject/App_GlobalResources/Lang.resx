@@ -354,4 +354,19 @@
   <data name="Index_Header" xml:space="preserve">
     <value>Hello! Nice to see You here. Please sign in to shop.</value>
   </data>
+  <data name="ProductCatalog_SearchHeader" xml:space="preserve">
+    <value>Products searching board</value>
+  </data>
+  <data name="ProductCatalog_SearchButton" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="ProductCatalog_AllCategories" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="ProductCatalog_SearchCategory" xml:space="preserve">
+    <value>Category:</value>
+  </data>
+  <data name="ProductCatalog_SearchName" xml:space="preserve">
+    <value>Name:</value>
+  </data>
 </root>
