@@ -56,12 +56,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contracts\IOrderHistoryRepository.cs" />
     <Compile Include="Contracts\IPersonRepository.cs" />
     <Compile Include="Contracts\IProductRepository.cs" />
     <Compile Include="EfContext\EfProductContext.cs" />
+    <Compile Include="Model\OrderHistory.cs" />
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\Product.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Realizations\EfOrderHistoryRepository.cs" />
     <Compile Include="Realizations\EfProductRepository.cs" />
     <Compile Include="EfContext\EfPersonContext.cs" />
     <Compile Include="Realizations\EfPersonRepository.cs" />

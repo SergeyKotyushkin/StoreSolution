@@ -12,5 +12,6 @@ namespace StoreSolution.DatabaseProject.EfContext
         }
 
         public DbSet<Person> PersonTable { get; set; }
+        public DbSet<OrderHistory> OrdersHistoryTable { get; set; }
     }
 }

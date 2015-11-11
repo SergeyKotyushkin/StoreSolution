@@ -18,6 +18,7 @@ namespace StoreSolution.WebProject
             #region IoC
             SimpleContainer.Register<IPersonRepository>(typeof(EfPersonRepository));
             SimpleContainer.Register<IProductRepository>(typeof(EfProductRepository));
+            SimpleContainer.Register<IOrderHistoryRepository>(typeof(EfOrderHistoryRepository));
             Logger.Log.Info("IoC is ready.");
             #endregion
 

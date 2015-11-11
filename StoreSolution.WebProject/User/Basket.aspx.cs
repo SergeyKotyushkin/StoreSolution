@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Web;
+using System.Web.Script.Serialization;
 using System.Web.UI.WebControls;
 using StoreSolution.WebProject.Model;
 using System.Web.Security;
 using StoreSolution.DatabaseProject.Contracts;
+using StoreSolution.DatabaseProject.Model;
 using StoreSolution.MyIoC;
 using StoreSolution.WebProject.Currency;
 using StoreSolution.WebProject.Log4net;
@@ -18,16 +20,18 @@ namespace StoreSolution.WebProject.User
     {
         private StoreMaster _master;
         private readonly IProductRepository _productRepository;
+        private readonly IOrderHistoryRepository _orderHistoryRepository;
 
         protected Basket()
-            : this(SimpleContainer.Resolve<IProductRepository>())
+            : this(SimpleContainer.Resolve<IProductRepository>(), SimpleContainer.Resolve<IOrderHistoryRepository>())
         {
             
         }
 
-        protected Basket(IProductRepository iProductRepository)
+        protected Basket(IProductRepository iProductRepository, IOrderHistoryRepository iOrderHistoryRepository)
         {
             _productRepository = iProductRepository;
+            _orderHistoryRepository = iOrderHistoryRepository;
         }
 
         protected override void InitializeCulture()
@@ -62,6 +66,30 @@ namespace StoreSolution.WebProject.User
                 SignOut();
                 return;
             }
+
+            var products = _productRepository.Products.ToList();
+            var orders = GetOrdersFromSession();
+            var list = products.Join(orders, p => p.Id, q => q.Id, (p, q) => new
+            {
+                p.Name, 
+                Price = CurrencyConverter.ConvertFromRu((decimal)p.Price, CultureInfo.CurrentCulture),
+                q.Count,
+                Total = CurrencyConverter.ConvertFromRu((decimal)(q.Count * p.Price), CultureInfo.CurrentCulture)
+            }).ToList();
+            var total = list.Sum(p => p.Total);
+            var jsonSerialiser = new JavaScriptSerializer();
+            var order = jsonSerialiser.Serialize(list);
+
+            var orderToHistory = new OrderHistory
+            {
+                Order = order,
+                PersonName = user.UserName,
+                PersonEmail = user.Email,
+                Total = total,
+                Date = DateTime.Now,
+                Culture = CultureInfo.CurrentCulture.Name
+            };
+            _orderHistoryRepository.AddOrUpdate(orderToHistory);
 
             Logger.Log.Info("Products has bought by user - " + user.UserName + ". " + labTotal.Text);
             Session["Bought"] = 1;
