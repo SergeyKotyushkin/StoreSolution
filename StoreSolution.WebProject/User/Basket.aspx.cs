@@ -11,6 +11,7 @@ using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.DatabaseProject.Model;
 using StoreSolution.MyIoC;
 using StoreSolution.WebProject.Currency;
+using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 
@@ -25,7 +26,6 @@ namespace StoreSolution.WebProject.User
         protected Basket()
             : this(SimpleContainer.Resolve<IProductRepository>(), SimpleContainer.Resolve<IOrderHistoryRepository>())
         {
-            
         }
 
         protected Basket(IProductRepository iProductRepository, IOrderHistoryRepository iOrderHistoryRepository)
@@ -37,7 +37,11 @@ namespace StoreSolution.WebProject.User
         protected override void InitializeCulture()
         {
             var cookie = Request.Cookies["language"];
-            if (null == cookie) return;
+            if (cookie == null)
+            {
+                cookie = new HttpCookie("language", "en-US");
+                Response.Cookies.Add(cookie);
+            }
             Page.Culture = cookie.Value;
             Page.UICulture = cookie.Value;
         }
@@ -47,10 +51,12 @@ namespace StoreSolution.WebProject.User
             _master = (StoreMaster)Page.Master;
             if (_master == null) throw new HttpUnhandledException("Wrong master page.");
             
-            _master.BtnBackVisibility = true;
-
             var user = Membership.GetUser();
-            if (user == null) SignOut();
+            if (user == null)
+            {
+                _master.SignOut(false);
+                return;
+            }
 
             SetTitles(user);
 
@@ -63,20 +69,23 @@ namespace StoreSolution.WebProject.User
             var user = Membership.GetUser();
             if (user == null)
             {
-                SignOut();
+                _master.SignOut(false);
                 return;
             }
 
             var products = _productRepository.Products.ToList();
             var orders = GetOrdersFromSession();
+            var cultureInfo = _master.GetCurrencyCultureInfo();
             var list = products.Join(orders, p => p.Id, q => q.Id, (p, q) => new
             {
                 p.Name, 
-                Price = CurrencyConverter.ConvertFromRu((decimal)p.Price, CultureInfo.CurrentCulture),
+                Price = CurrencyConverter.ConvertFromRu(p.Price, cultureInfo.Name),
                 q.Count,
-                Total = CurrencyConverter.ConvertFromRu((decimal)(q.Count * p.Price), CultureInfo.CurrentCulture)
+                Total = (q.Count * CurrencyConverter.ConvertFromRu(p.Price, cultureInfo.Name))
             }).ToList();
+
             var total = list.Sum(p => p.Total);
+
             var jsonSerialiser = new JavaScriptSerializer();
             var order = jsonSerialiser.Serialize(list);
 
@@ -87,19 +96,15 @@ namespace StoreSolution.WebProject.User
                 PersonEmail = user.Email,
                 Total = total,
                 Date = DateTime.Now,
-                Culture = CultureInfo.CurrentCulture.Name
+                Culture = cultureInfo.Name
             };
+
             _orderHistoryRepository.AddOrUpdate(orderToHistory);
 
-            Logger.Log.Info("Products has bought by user - " + user.UserName + ". " + labTotal.Text);
+            Logger.Log.Info(string.Format("Products has bought by user - {0}. {1}", user.UserName, labTotal.Text));
             Session["Bought"] = 1;
             Session["CurrentOrder"] = null;
             Response.Redirect("~/User/ProductCatalog.aspx");
-        }
-
-        protected void btnSignOut_Click(object sender, EventArgs e)
-        {
-            SignOut();
         }
 
         protected void GV_table_PageIndexChanging(object sender, GridViewPageEventArgs e)
@@ -116,28 +121,24 @@ namespace StoreSolution.WebProject.User
         {
             if(gvTable.Rows.Count == 0) return;
 
-            var rate = CurrencyConverter.GetRate(CultureInfo.CurrentCulture);
-            decimal sum = 0;
+            var cultureInfo = _master.GetCurrencyCultureInfo();
+
+            var rate = CurrencyConverter.GetRate(cultureInfo.Name);
             for (var i = 0; i < gvTable.Rows.Count; i++)
             {
                 var price = CurrencyConverter.ConvertFromRu(decimal.Parse(gvTable.Rows[i].Cells[1].Text), rate);
-                var total = decimal.Parse(gvTable.Rows[i].Cells[2].Text)*price;
-                sum += total;
-                gvTable.Rows[i].Cells[1].Text = string.Format("{0:c}", price);
-                gvTable.Rows[i].Cells[3].Text = string.Format("{0:c}", total);
+                gvTable.Rows[i].Cells[1].Text = price.ToString("C", cultureInfo);
+                gvTable.Rows[i].Cells[3].Text = decimal.Parse(gvTable.Rows[i].Cells[3].Text).ToString("C", cultureInfo);
             }
-
-            var text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_Total");
-            if (text != null) labTotal.Text = string.Format(text, sum);
         }
 
         protected void gvTable_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             if (e.Row.RowType != DataControlRowType.Header) return;
-            e.Row.Cells[0].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderName");
-            e.Row.Cells[1].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderPrice");
-            e.Row.Cells[2].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderCount");
-            e.Row.Cells[3].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_HeaderTotalPrice");
+            e.Row.Cells[0].Text = LangSetter.Set("Basket_HeaderName");
+            e.Row.Cells[1].Text = LangSetter.Set("Basket_HeaderPrice");
+            e.Row.Cells[2].Text = LangSetter.Set("Basket_HeaderCount");
+            e.Row.Cells[3].Text = LangSetter.Set("Basket_HeaderTotalPrice");
         }
 
 
@@ -147,38 +148,38 @@ namespace StoreSolution.WebProject.User
 
             var orders = GetOrdersFromSession();
 
-            var list = products.Join(orders, p => p.Id, q => q.Id, (p, q) => new { p.Name, p.Price, q.Count, Total = (q.Count * p.Price) }).ToList();
+            var cultureInfo = _master.GetCurrencyCultureInfo();
+            var list =
+                products.Join(orders, p => p.Id, q => q.Id,
+                    (p, q) =>
+                        new
+                        {
+                            p.Name,
+                            p.Price,
+                            q.Count,
+                            Total = (q.Count * CurrencyConverter.ConvertFromRu(p.Price, cultureInfo.Name))
+                        })
+                    .ToList();
             gvTable.DataSource = list;               
             gvTable.DataBind();
+
+            var sum = list.Sum(p => p.Total);
+
+            var text = LangSetter.Set("Basket_Total");
+            if (text != null) labTotal.Text = string.Format(text, sum.ToString("C", cultureInfo));
             
             btnBuy.Enabled = true;
             if (list.Count != 0) return;
             btnBuy.Enabled = false;
-            labTotal.Text = (string)HttpContext.GetGlobalResourceObject("Lang", "Basket_EmptyOrder");
+            labTotal.Text = LangSetter.Set("Basket_EmptyOrder");
         }
 
         private void SetTitles(MembershipUser user)
         {
-            var hlUserText = (string)HttpContext.GetGlobalResourceObject("Lang", "Master_ToProfile");
+            var hlUserText = LangSetter.Set("Master_ToProfile");
             if (hlUserText != null) _master.HlUserText = string.Format(hlUserText, user.UserName);
         }
-
-        private void SignOut()
-        {
-            var user = Membership.GetUser();
-            if (user == null)
-            {
-                Logger.Log.Error("No user at Product Management page start.");
-                Logger.Log.Error("Sign out.");
-            }
-            else Logger.Log.Error("User " + user.UserName + " sing out.");
-
-            Session.Abandon();
-            FormsAuthentication.SignOut();
-            FormsAuthentication.RedirectToLoginPage();
-            Response.End();
-        }
-
+        
         private IEnumerable<Order> GetOrdersFromSession()
         {
             return Session["CurrentOrder"] as List<Order> ?? new List<Order>();

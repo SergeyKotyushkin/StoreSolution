@@ -44,10 +44,10 @@ namespace StoreSolution.WebProject.Currency
             return currentRateFrom.CurrencyRate;
         }
 
-        public static decimal ConvertFromRu(decimal value, CultureInfo ci)
+        public static decimal ConvertFromRu(decimal value, string cultureName)
         {
-            if (ci.Name == Rates[Rub].CultureName) return value;
-            var result = RefreshRate(ci.Name, Rates[Rub].CultureName);
+            if (cultureName == Rates[Rub].CultureName) return value;
+            var result = RefreshRate(cultureName, Rates[Rub].CultureName);
             return result != null ? decimal.Round(value / result.Value, 2) : decimal.Zero;
         }
 
@@ -56,16 +56,26 @@ namespace StoreSolution.WebProject.Currency
             return rate != null ? decimal.Round(value / rate.Value, 2) : decimal.Zero;
         }
 
-        public static decimal ConvertToRu(decimal value, CultureInfo ci)
+        public static decimal ConvertToRu(decimal value, string cultureName)
         {
-            if (ci.Name == Rates[Rub].CultureName) return value;
-            var result = RefreshRate(ci.Name, Rates[Rub].CultureName);
+            if (cultureName == Rates[Rub].CultureName) return value;
+            var result = RefreshRate(cultureName, Rates[Rub].CultureName);
             return result != null ? decimal.Round(value*result.Value, 2) : decimal.Zero;
         }
 
-        public static decimal GetRate(CultureInfo ci)
+        public static decimal GetRate(string cultureName)
         {
-            return ConvertToRu(1, ci);
+            return ConvertToRu(1, cultureName);
+        }
+
+        public static string GetCurrencyNameForCulture(string cultureName)
+        {
+            return Rates.Where(r => r.CultureName == cultureName).Select(r => r.CurrencyName).FirstOrDefault() ?? "usd";
+        }
+
+        public static string GetCultureNameForCurrency(string currency)
+        {
+            return Rates.Where(r => r.CurrencyName == currency).Select(r => r.CultureName).FirstOrDefault() ?? "en-US";
         }
     }
 }

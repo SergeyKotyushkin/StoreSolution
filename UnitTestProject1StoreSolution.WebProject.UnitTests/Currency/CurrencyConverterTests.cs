@@ -11,9 +11,9 @@ namespace UnitTestProject1StoreSolution.WebProject.UnitTests.Currency
         public void CurrencyConverter_ConvertFromRu_ReturnNotZero()
         {
             var value = 100m;
-            var ci = CultureInfo.GetCultureInfo("en-US");
+            var cultureName = "en-US";
 
-            var actual = CurrencyConverter.ConvertFromRu(value, ci);
+            var actual = CurrencyConverter.ConvertFromRu(value, cultureName);
             
             var expected = decimal.Zero;
 
@@ -24,9 +24,9 @@ namespace UnitTestProject1StoreSolution.WebProject.UnitTests.Currency
         public void CurrencyConverter_ConvertToRu_ReturnNotZero()
         {
             var value = 5m;
-            var ci = CultureInfo.GetCultureInfo("en-US");
+            var cultureName = "en-US";
 
-            var actual = CurrencyConverter.ConvertToRu(value, ci);
+            var actual = CurrencyConverter.ConvertToRu(value, cultureName);
 
             var expected = decimal.Zero;
 

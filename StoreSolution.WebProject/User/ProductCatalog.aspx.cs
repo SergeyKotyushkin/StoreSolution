@@ -10,6 +10,7 @@ using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.DatabaseProject.Model;
 using StoreSolution.MyIoC;
 using StoreSolution.WebProject.Currency;
+using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 using StoreSolution.WebProject.Model;
@@ -35,7 +36,11 @@ namespace StoreSolution.WebProject.User
         protected override void InitializeCulture()
         {
             var cookie = Request.Cookies["language"];
-            if (null == cookie) return;
+            if (cookie == null)
+            {
+                cookie = new HttpCookie("language", "en-US");
+                Response.Cookies.Add(cookie);
+            }
             Page.Culture = cookie.Value;
             Page.UICulture = cookie.Value;
         }
@@ -43,10 +48,16 @@ namespace StoreSolution.WebProject.User
         protected void Page_Load(object sender, EventArgs e)
         {
             _master = (StoreMaster)Page.Master;
-            if (_master != null) _master.BtnBackVisibility = false;
+            if (_master == null) throw new HttpUnhandledException("Wrong master page.");
+                
+            _master.BtnBackVisibility = false;
 
             var user = Membership.GetUser();
-            if (user == null) SignOut();
+            if (user == null)
+            {
+                _master.SignOut(false);
+                return;
+            }
 
             pSearchingBoard.Visible = cbSearchHeader.Checked;
             _isSearch = cbSearchHeader.Checked;
@@ -73,7 +84,7 @@ namespace StoreSolution.WebProject.User
             var user = Membership.GetUser();
             if (user == null) return;
 
-            Logger.Log.Debug("User " + user.UserName + " redirected to Basket page.");
+            Logger.Log.Debug(string.Format("User {0} redirected to Basket page.", user.UserName));
             Response.Redirect("~/User/Basket.aspx");
         }
         
@@ -94,11 +105,13 @@ namespace StoreSolution.WebProject.User
 
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
-            var rate = CurrencyConverter.GetRate(CultureInfo.CurrentCulture);
+            var cultureInfo = _master.GetCurrencyCultureInfo();
+
+            var rate = CurrencyConverter.GetRate(cultureInfo.Name);
             foreach (GridViewRow row in gvTable.Rows)
             {
                 var price = CurrencyConverter.ConvertFromRu(decimal.Parse(row.Cells[6].Text), rate);
-                row.Cells[6].Text = string.Format("{0:c}", price);
+                row.Cells[6].Text = price.ToString("C", cultureInfo);
             }
         }
 
@@ -124,38 +137,38 @@ namespace StoreSolution.WebProject.User
         protected void gvTable_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             if (e.Row.RowType != DataControlRowType.Header) return;
-            e.Row.Cells[1].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_HeaderCount");
-            e.Row.Cells[4].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_HeaderName");
-            e.Row.Cells[5].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_HeaderCategory");
-            e.Row.Cells[6].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_HeaderPrice");
+            e.Row.Cells[1].Text = LangSetter.Set("ProductCatalog_HeaderCount");
+            e.Row.Cells[4].Text = LangSetter.Set("ProductCatalog_HeaderName");
+            e.Row.Cells[5].Text = LangSetter.Set("ProductCatalog_HeaderCategory");
+            e.Row.Cells[6].Text = LangSetter.Set("ProductCatalog_HeaderPrice");
         }
 
-
-        private void SignOut()
+        protected void btnSearch_Click(object sender, EventArgs e)
         {
-            var user = Membership.GetUser();
-            if (user == null)
-            {
-                Logger.Log.Error("No user at Product Management page start.");
-                Logger.Log.Error("Sign out.");
-            }
-            else Logger.Log.Error("User " + user.UserName + " sing out.");
-
-            Session.Abandon();
-            FormsAuthentication.SignOut();
-            FormsAuthentication.RedirectToLoginPage();
-            Response.End();
+            FillGridView(true);
+            FillCountColumn();
         }
 
+        protected void cbSearchHeader_CheckedChanged(object sender, EventArgs e)
+        {
+            _isSearch = cbSearchHeader.Checked;
+
+            if(cbSearchHeader.Checked) return;
+            ddlSearchCategory.SelectedIndex = 0;
+            tbSearchName.Text = string.Empty;
+            FillGridView(true);
+            FillCountColumn();
+        }
+
+        
         private void SetTitles(MembershipUser user)
         {
-            var hlUserText = (string)HttpContext.GetGlobalResourceObject("Lang", "Master_ToProfile");
+            var hlUserText = LangSetter.Set("Master_ToProfile");
             if (hlUserText != null) _master.HlUserText = string.Format(hlUserText, user.UserName);
 
-            _master.LabMessageText = "";
             if (Session["Bought"] == null) return;
             _master.LabMessageForeColor = Color.DarkGreen;
-            _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_ProductsBought");
+            _master.LabMessageText = LangSetter.Set("ProductCatalog_ProductsBought");
             Session["Bought"] = null;
         }
 
@@ -182,7 +195,13 @@ namespace StoreSolution.WebProject.User
                 FillCategories(products);
             }
 
-            gvTable.DataSource = products.Select(p => new {p.Id, p.Name, p.Category, p.Price}).ToList();
+            gvTable.DataSource = products.Select(p => new
+            {
+                p.Id, 
+                p.Name, 
+                p.Category, 
+                p.Price
+            }).ToList();
             if (!Page.IsPostBack || bind)
                 gvTable.DataBind();
         }
@@ -192,7 +211,7 @@ namespace StoreSolution.WebProject.User
             var categories = products.Select(p => p.Category).Distinct().ToList();
             var ddlSearchCategorySelectedIndex = ddlSearchCategory.SelectedIndex;
             ddlSearchCategory.Items.Clear();
-            ddlSearchCategory.Items.Add((string) HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_AllCategories"));
+            ddlSearchCategory.Items.Add(LangSetter.Set("ProductCatalog_AllCategories"));
             foreach (var category in categories) ddlSearchCategory.Items.Add(category);
             ddlSearchCategory.SelectedIndex = ddlSearchCategorySelectedIndex < ddlSearchCategory.Items.Count
                 ? ddlSearchCategorySelectedIndex
@@ -237,7 +256,7 @@ namespace StoreSolution.WebProject.User
             else order.Count++;
 
             _master.LabMessageForeColor = Color.DarkGreen;
-            var text = (string) HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_ProductAdded");
+            var text = LangSetter.Set("ProductCatalog_ProductAdded");
             if (text != null) _master.LabMessageText = string.Format(text, _productRepository.GetProductById(id).Name);
         }
 
@@ -249,25 +268,8 @@ namespace StoreSolution.WebProject.User
             else order.Count--;
 
             _master.LabMessageForeColor = Color.DarkBlue;
-            var text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductCatalog_ProductRemoved");
+            var text = LangSetter.Set("ProductCatalog_ProductRemoved");
             if (text != null) _master.LabMessageText = string.Format(text, _productRepository.GetProductById(id).Name);
-        }
-
-        protected void btnSearch_Click(object sender, EventArgs e)
-        {
-            FillGridView(true);
-            FillCountColumn();
-        }
-
-        protected void cbSearchHeader_CheckedChanged(object sender, EventArgs e)
-        {
-            _isSearch = cbSearchHeader.Checked;
-
-            if(cbSearchHeader.Checked) return;
-            ddlSearchCategory.SelectedIndex = 0;
-            tbSearchName.Text = string.Empty;
-            FillGridView(true);
-            FillCountColumn();
         }
     }
 }

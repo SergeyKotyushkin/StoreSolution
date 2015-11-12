@@ -85,8 +85,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\Images\en-GB.png" />
+    <Content Include="Content\Images\gbp.png" />
     <Content Include="Content\Images\ru-Ru.jpg" />
     <Content Include="Content\Images\en-US.jpg" />
+    <Content Include="Content\Images\rub.png" />
+    <Content Include="Content\Images\usd.png" />
     <Content Include="Error\Error.html" />
     <Content Include="Error\Error408.html" />
     <Content Include="Error\Error401.html" />
@@ -176,6 +179,7 @@
     <Compile Include="Index.aspx.designer.cs">
       <DependentUpon>Index.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Lang\LangSetter.cs" />
     <Compile Include="Log4net\Logger.cs" />
     <Compile Include="NotAuthenticated\NewUser.aspx.cs">
       <DependentUpon>NewUser.aspx</DependentUpon>

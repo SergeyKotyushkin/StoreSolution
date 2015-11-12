@@ -8,6 +8,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title></title>
     <link href="~/Content/Common.css" rel="stylesheet" />
+
     <asp:ContentPlaceHolder ID="head" runat="server">
         
     </asp:ContentPlaceHolder>
@@ -18,7 +19,11 @@
         <div id="leftUp">
             <asp:ImageButton CausesValidation="false" CssClass="langFlag" ID="en_US" runat="server" ImageUrl="~/Content/Images/en-US.jpg" OnClick="lang_Click"/>
             <asp:ImageButton CausesValidation="false" CssClass="langFlag" ID="ru_RU" runat="server" ImageUrl="~/Content/Images/ru-Ru.jpg" OnClick="lang_Click"/>
-            <asp:ImageButton CausesValidation="false" CssClass="langFlag" ID="en_GB" runat="server" ImageUrl="~/Content/Images/en-GB.png" OnClick="lang_Click"/>
+        </div>
+        <div id="leftUpMoney">
+            <asp:ImageButton CausesValidation="false" CssClass="langMoney" ID="rub" runat="server" ImageUrl="~/Content/Images/rub.png" OnClick="langMoney_Click"/>
+            <asp:ImageButton CausesValidation="false" CssClass="langMoney" ID="usd" runat="server" ImageUrl="~/Content/Images/usd.png" OnClick="langMoney_Click"/>
+            <asp:ImageButton CausesValidation="false" CssClass="langMoney" ID="gbp" runat="server" ImageUrl="~/Content/Images/gbp.png" OnClick="langMoney_Click"/>
         </div>
         <asp:HyperLink ID="hlUser" NavigateUrl="~/Authenticated/Profile.aspx" runat="server"/>
         <asp:Button CausesValidation="false" ID="btnSignOut" runat="server" Text="<%$ Resources: Lang, Master_SignOutButton %>" OnClick="btnSignOut_Click"/>

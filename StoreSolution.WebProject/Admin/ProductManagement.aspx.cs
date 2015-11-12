@@ -9,6 +9,7 @@ using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.MyIoC;
 using StoreSolution.WebProject.Currency;
+using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 
@@ -22,7 +23,6 @@ namespace StoreSolution.WebProject.Admin
         protected ProductManagement()
             : this(SimpleContainer.Resolve<IProductRepository>())
         {
-            
         }
 
         protected ProductManagement(IProductRepository iProductRepository)
@@ -33,7 +33,11 @@ namespace StoreSolution.WebProject.Admin
         protected override void InitializeCulture()
         {
             var cookie = Request.Cookies["language"];
-            if (null == cookie) return;
+            if (cookie == null)
+            {
+                cookie = new HttpCookie("language", "en-US");
+                Response.Cookies.Add(cookie);
+            }
             Page.Culture = cookie.Value;
             Page.UICulture = cookie.Value;
         }
@@ -41,21 +45,22 @@ namespace StoreSolution.WebProject.Admin
         protected void Page_Load(object sender, EventArgs e)
         {
             _master = (StoreMaster)Page.Master;
-            if (_master != null) _master.BtnBackVisibility = true;
+            if (_master == null) throw new HttpUnhandledException("Wrong master page.");
+            
+            _master.BtnBackVisibility = false;
 
             var user = Membership.GetUser();
-            if (user == null) SignOut();
+            if (user == null)
+            {
+                _master.SignOut(false);
+                return;
+            }
 
             SetTitles(user);
 
             FillProductsGridView(false);
         }
-
-        protected void btnSignOut_Click(object sender, EventArgs e)
-        {
-            SignOut();
-        }
-
+        
         protected void gvTable_RowEditing(object sender, GridViewEditEventArgs e)
         {
             _master.LabMessageText = "";
@@ -71,11 +76,11 @@ namespace StoreSolution.WebProject.Admin
             var rgx = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z]+[a-zA-Z0-9_ ]*$");
             var name = e.NewValues["Name"].ToString().Trim();
             var category = e.NewValues["Category"].ToString().Trim();
-            double price;
+            decimal price;
 
             var b1 = rgx.IsMatch(name);
             var b2 = rgx.IsMatch(category);
-            var b3 = double.TryParse(e.NewValues["Price"].ToString().Trim(), out price);
+            var b3 = decimal.TryParse(e.NewValues["Price"].ToString().Trim(), out price);
 
             if (b1 && b2 && b3)
             {
@@ -87,23 +92,22 @@ namespace StoreSolution.WebProject.Admin
                     Price = price
                 };
 
-                var result = _productRepository.AddOrUpdateProduct(product);
-                if (result)
+                if (_productRepository.AddOrUpdateProduct(product))
                 {
                     _master.LabMessageForeColor = Color.DarkGreen;
-                    _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasUpdated");
-                    Logger.Log.Info("Product " + product.Name + " successfully updated.");
+                    _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasUpdated");
+                    Logger.Log.Info(string.Format("Product {0} successfully updated.", product.Name));
                 }
                 else
                 {
                     _master.LabMessageForeColor = Color.Red;
-                    _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasNotUpdated");
+                    _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotUpdated");
                 }
             }
             else
             {
                 _master.LabMessageForeColor = Color.Red;
-                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasNotUpdated");
+                _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotUpdated");
             }
 
             gvTable.EditIndex = -1;
@@ -137,13 +141,13 @@ namespace StoreSolution.WebProject.Admin
             if (_productRepository.RemoveProduct(id))
             {
                 _master.LabMessageForeColor = Color.DarkGreen;
-                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasRemoved");
-                Logger.Log.Info("Product " + product.Name + " successfully added.");
+                _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasRemoved");
+                Logger.Log.Info(string.Format("Product {0} successfully added.", product.Name));
             }
             else
             {
                 _master.LabMessageForeColor = Color.Red;
-                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasNotRemoved");
+                _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotRemoved");
             }
 
             FillProductsGridView(true);
@@ -171,38 +175,39 @@ namespace StoreSolution.WebProject.Admin
 
                 var rgx = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z]+[a-zA-Z0-9_ ]*$");
 
+                var cultureInfo = _master.GetCurrencyCultureInfo();
                 var b1 = rgx.IsMatch(name);
                 var b2 = rgx.IsMatch(category);
-                var b3 = decimal.TryParse(priceStr, out price);
+                var b3 = decimal.TryParse(priceStr, NumberStyles.AllowDecimalPoint, cultureInfo, out price);
                 
                 if (b1 && b2 && b3)
                 {
-                    var culturePrice = CurrencyConverter.ConvertToRu(price, CultureInfo.CurrentCulture);
+
+                    var culturePrice = CurrencyConverter.ConvertToRu(price, cultureInfo.Name);
                     var product = new Product()
                     {
                         Id = -1,
                         Name = name,
                         Category = category,
-                        Price = (double)culturePrice
+                        Price = culturePrice
                     };
 
-                    var result = _productRepository.AddOrUpdateProduct(product);
-                    if (result)
+                    if (_productRepository.AddOrUpdateProduct(product))
                     {
                         _master.LabMessageForeColor = Color.DarkGreen;
-                        _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasAdded");
-                        Logger.Log.Info("Product " + product.Name + " successfully added.");
+                        _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasAdded");
+                        Logger.Log.Info(string.Format("Product {0} successfully added.", product.Name));
                     }
                     else
                     {
                         _master.LabMessageForeColor = Color.Red;
-                        _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasNotAdded");
+                        _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotAdded");
                     }
                 }
                 else
                 {
                     _master.LabMessageForeColor = Color.Red;
-                    _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_ProductWasNotAdded");
+                    _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotAdded");
                 }
             }
 
@@ -218,22 +223,24 @@ namespace StoreSolution.WebProject.Admin
 
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
-            var rate = CurrencyConverter.GetRate(CultureInfo.CurrentCulture);
+            var cultureInfo = _master.GetCurrencyCultureInfo();
+
+            var rate = CurrencyConverter.GetRate(cultureInfo.Name);
             foreach (GridViewRow row in gvTable.Rows)
             {
                 if (row.Cells[2].Controls.Count != 0) continue;
                 var price = CurrencyConverter.ConvertFromRu(decimal.Parse(row.Cells[5].Text), rate);
-                row.Cells[5].Text = string.Format("{0:c}", price);
+                row.Cells[5].Text = price.ToString("C", cultureInfo);
             }
         }
 
         protected void gvTable_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             if (e.Row.RowType != DataControlRowType.Header) return;
-            e.Row.Cells[2].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_HeaderId");
-            e.Row.Cells[3].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_HeaderName");
-            e.Row.Cells[4].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_HeaderCategory");
-            e.Row.Cells[5].Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_HeaderPrice");
+            e.Row.Cells[2].Text = LangSetter.Set("ProductManagement_HeaderId");
+            e.Row.Cells[3].Text = LangSetter.Set("ProductManagement_HeaderName");
+            e.Row.Cells[4].Text = LangSetter.Set("ProductManagement_HeaderCategory");
+            e.Row.Cells[5].Text = LangSetter.Set("ProductManagement_HeaderPrice");
         }
 
 
@@ -256,24 +263,8 @@ namespace StoreSolution.WebProject.Admin
 
         private void SetTitles(MembershipUser user)
         {
-            var hlUserText = (string) HttpContext.GetGlobalResourceObject("Lang", "Master_ToProfile");
+            var hlUserText = LangSetter.Set("Master_ToProfile");
             if (hlUserText != null) _master.HlUserText = string.Format(hlUserText, user.UserName);
-        }
-
-        private void SignOut()
-        {
-            var user = Membership.GetUser();
-            if (user == null)
-            {
-                Logger.Log.Error("No user at Product Management page start.");
-                Logger.Log.Error("Sign out.");
-            }
-            else Logger.Log.Error("User " + user.UserName + " sing out.");
-
-            Session.Abandon();
-            FormsAuthentication.SignOut();
-            FormsAuthentication.RedirectToLoginPage();
-            Response.End();
         }
 
         private void FillProductsGridView(bool bind)
@@ -298,7 +289,7 @@ namespace StoreSolution.WebProject.Admin
 
         private void ShowFooter()
         {
-            var bInsert = new Button { Text = (string)HttpContext.GetGlobalResourceObject("Lang", "ProductManagement_InsertButton") };
+            var bInsert = new Button { Text = LangSetter.Set("ProductManagement_InsertButton") };
             var tbName = new TextBox();
             var tbCategory = new TextBox();
             var tbPrice = new TextBox();

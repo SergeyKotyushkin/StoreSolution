@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.MyIoC;
+using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 
@@ -23,7 +24,6 @@ namespace StoreSolution.WebProject.Authenticated
         protected Profile()
             : this(SimpleContainer.Resolve<IPersonRepository>())
         {
-            
         }
 
         protected Profile(IPersonRepository iPersonRepository)
@@ -34,7 +34,11 @@ namespace StoreSolution.WebProject.Authenticated
         protected override void InitializeCulture()
         {
             var cookie = Request.Cookies["language"];
-            if (null == cookie) return;
+            if (cookie == null)
+            {
+                cookie = new HttpCookie("language", "en-US");
+                Response.Cookies.Add(cookie);
+            }
             Page.Culture = cookie.Value;
             Page.UICulture = cookie.Value;
         }
@@ -43,7 +47,8 @@ namespace StoreSolution.WebProject.Authenticated
         {
             _master = (StoreMaster)Page.Master;
             if (_master == null) throw new HttpUnhandledException("Wrong master page.");
-            //_master.BtnSignOutVisibility = false;
+
+            _master.HiddenMoney();
 
             if(!Page.IsPostBack)
                 RefereshUser();
@@ -51,10 +56,10 @@ namespace StoreSolution.WebProject.Authenticated
 
         protected void btnBack_Click(object sender, EventArgs e)
         {
-            var user = GetUser();
-            Logger.Log.Debug("User " + user.UserName + " escaped Profile page.");
+            var user = GetUserOrResponseEnd();
+            Logger.Log.Debug(string.Format("User {0} escaped Profile page.", user.UserName));
 
-            FormsAuthentication.RedirectToLoginPage();
+            Response.Redirect("~/Index.aspx");
         }
 
         protected void btnNewIcon_Click(object sender, EventArgs e)
@@ -63,30 +68,27 @@ namespace StoreSolution.WebProject.Authenticated
             _master.LabMessageForeColor = Color.Red;
 
             var extension = Path.GetExtension(btnChooseIcon.FileName);
-            if (extension != null)
+            if (extension == null)
             {
-                if (!btnChooseIcon.HasFile || (extension.ToLower() != ".jpg" &&
-                                               extension.ToLower() != ".jpeg"))
-                {
-                    _master.LabMessageText = !btnChooseIcon.HasFile
-                        ? (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_NotImage")
-                        : (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_NotJpg");
-                    return;
-                }
+                _master.LabMessageText = LangSetter.Set("Profile_NotImage");
+                return;
             }
-            else
+
+            if (!btnChooseIcon.HasFile || (extension.ToLower() != ".jpg" && extension.ToLower() != ".jpeg"))
             {
-                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_NotImage");
+                _master.LabMessageText = !btnChooseIcon.HasFile
+                    ? LangSetter.Set("Profile_NotImage")
+                    : LangSetter.Set("Profile_NotJpg");
                 return;
             }
 
             if (btnChooseIcon.FileBytes.Length == 0)
             {
-                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_NotImage");
+                _master.LabMessageText = LangSetter.Set("Profile_NotImage");
                 return;
             }
 
-            var user = GetUser();
+            var user = GetUserOrResponseEnd();
             var person = _iPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName) ?? new Person
             {
                 Login = user.UserName,
@@ -105,26 +107,21 @@ namespace StoreSolution.WebProject.Authenticated
                 Icon = ImageToByteArray(newImage)
             };
 
-            var result = _iPersonRepository.AddOrUpdate(updatedPerson);
-
             _master.LabMessageText = "";
-            if (result)
+            if (_iPersonRepository.AddOrUpdate(updatedPerson))
             {
                 _master.LabMessageForeColor = Color.DarkGreen;
-                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_IconWasChanged");
-                Logger.Log.Info("Icon successfully changed for user - " + user.UserName + ".");
+                _master.LabMessageText = LangSetter.Set("Profile_IconWasChanged");
+                Logger.Log.Info(string.Format("Icon successfully changed for user - {0}.", user.UserName));
             }
-            else
-            {
-                _master.LabMessageForeColor = Color.Red;
-                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_IconWasNotChanged");
-            }
+            else _master.LabMessageText = LangSetter.Set("Profile_IconWasNotChanged");
+
             RefreshIcon(updatedPerson.Icon);
         }
 
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
-            var user = GetUser();
+            var user = GetUserOrResponseEnd();
 
             var person = _iPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName);
             if(person == null) return;
@@ -143,13 +140,13 @@ namespace StoreSolution.WebProject.Authenticated
             if (!result)
             {
                 _master.LabMessageForeColor = Color.Red;
-                message = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_NothingChanged");
+                message = LangSetter.Set("Profile_NothingChanged");
             }
             else
             {
                 _master.LabMessageForeColor = Color.DarkGreen;
-                message = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_PersonalDataChanged");
-                Logger.Log.Info("Personal data successfully commited for user - " + user.UserName + ".");
+                message = LangSetter.Set("Profile_PersonalDataChanged");
+                Logger.Log.Info(string.Format("Personal data successfully commited for user - {0}.", user.UserName));
             }
 
             RefereshUser();
@@ -158,36 +155,32 @@ namespace StoreSolution.WebProject.Authenticated
 
         protected void btnNewPassword_Click(object sender, EventArgs e)
         {
+            _master.LabMessageForeColor = Color.Red;
+
             Page.Validate();
             if (!Page.IsValid)
             {
-                _master.LabMessageForeColor = Color.Red;
-                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_BothPasswordsError");
+                _master.LabMessageText = LangSetter.Set("Profile_BothPasswordsError");
                 return;
             }
 
             var rgxPassword = new Regex("^[a-zA-Z0-9_!@#$%^&*]{5,}$");
             if (!rgxPassword.IsMatch(tbNewPassword.Text) || !rgxPassword.IsMatch(tbOldPassword.Text))
             {
-                _master.LabMessageForeColor = Color.Red;
-                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_PasswordError");
+                _master.LabMessageText = LangSetter.Set("Profile_PasswordError");
                 rfvNewPassword.IsValid = false;
                 rfvOldPassword.IsValid = false;
                 return;
             }
 
-            var user = GetUser();
+            var user = GetUserOrResponseEnd();
             if (user.ChangePassword(tbOldPassword.Text, tbNewPassword.Text))
             {
                 _master.LabMessageForeColor = Color.DarkGreen;
-                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_PasswordWasChanged");
-                Logger.Log.Info("Password successfully changed for user - " + user.UserName + ".");
+                _master.LabMessageText = LangSetter.Set("Profile_PasswordWasChanged");
+                Logger.Log.Info(string.Format("Password successfully changed for user - {0}.", user.UserName));
             }
-            else
-            {
-                _master.LabMessageForeColor = Color.Red;
-                _master.LabMessageText = (string)HttpContext.GetGlobalResourceObject("Lang", "Profile_PasswordWasChanged");
-            }
+            else _master.LabMessageText = LangSetter.Set("Profile_PasswordWasChanged");
         }
         
 
@@ -205,7 +198,7 @@ namespace StoreSolution.WebProject.Authenticated
         {
             _master.LabMessageText = "";
 
-            var user = GetUser();
+            var user = GetUserOrResponseEnd();
 
             labTitle.Text = user.UserName;
 
@@ -220,29 +213,13 @@ namespace StoreSolution.WebProject.Authenticated
             RefreshIcon(person.Icon);
         }
 
-        private MembershipUser GetUser()
+        private MembershipUser GetUserOrResponseEnd()
         {
             var user = Membership.GetUser();
             if (user != null) return user;
 
-            SignOut();
+            _master.SignOut(true);
             return null;
-        }
-
-        private void SignOut()
-        {
-            var user = Membership.GetUser();
-            if (user == null)
-            {
-                Logger.Log.Error("No user at Product Management page start.");
-                Logger.Log.Error("Sign out.");
-            }
-            else Logger.Log.Error("User " + user.UserName + " sing out.");
-
-            Session.Abandon();
-            FormsAuthentication.SignOut();
-            FormsAuthentication.RedirectToLoginPage();
-            Response.End();
         }
 
         private static Image ByteArrayToImage(byte[] byteArrayIn)

@@ -103,9 +103,11 @@ div#back {
     background-color: white;
 }
 
-#leftUp {
+#leftUp, #leftUpMoney {
     float: left;
     display: table-cell;
+    padding-right: 5px;
+    border-right: 1px solid white;
 }
 
 .langFlag {
@@ -113,9 +115,20 @@ div#back {
     height: 12px;
     margin-left: 5px;
     margin-right: 5px;
-    /*vertical-align: middle;*/
+    vertical-align: middle;
 }
 
 .langFlag:hover {
+    border: 1px solid gold;
+}
+
+.langMoney {
+    width: 15px;
+    height: 15px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.langMoney:hover {
     border: 1px solid gold;
 }
