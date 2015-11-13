@@ -181,6 +181,9 @@
     </Compile>
     <Compile Include="Lang\LangSetter.cs" />
     <Compile Include="Log4net\Logger.cs" />
+    <Compile Include="Model\OrderFromHistory.cs" />
+    <Compile Include="Model\OrderToGrid.cs" />
+    <Compile Include="Model\ProductsOrder.cs" />
     <Compile Include="NotAuthenticated\NewUser.aspx.cs">
       <DependentUpon>NewUser.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

@@ -115,6 +115,24 @@ namespace StoreSolution.WebProject.App_GlobalResources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &lt;p&gt;Thank You for shopping in &lt;b&gt;&quot;Online Store&quot;&lt;/b&gt;.&lt;br/&gt;Today ({0}) You have bought:&lt;br/&gt;{1}Total price is: &lt;b&gt;{2}&lt;/b&gt;.&lt;br/&gt;Hope to see You soon!&lt;/p&gt;.
+        /// </summary>
+        public static string Basket_MailMessage {
+            get {
+                return ResourceManager.GetString("Basket_MailMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;li&gt;&lt;b&gt;{0}&lt;/b&gt; [quantity: {1}; price: {2}]&lt;/li&gt;.
+        /// </summary>
+        public static string Basket_MailOrderList {
+            get {
+                return ResourceManager.GetString("Basket_MailOrderList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Your order.
         /// </summary>
         public static string Basket_Title {
@@ -682,6 +700,51 @@ namespace StoreSolution.WebProject.App_GlobalResources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Date.
+        /// </summary>
+        public static string Profile_HeaderDate {
+            get {
+                return ResourceManager.GetString("Profile_HeaderDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email.
+        /// </summary>
+        public static string Profile_HeaderEmail {
+            get {
+                return ResourceManager.GetString("Profile_HeaderEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #.
+        /// </summary>
+        public static string Profile_HeaderNumber {
+            get {
+                return ResourceManager.GetString("Profile_HeaderNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Order.
+        /// </summary>
+        public static string Profile_HeaderOrder {
+            get {
+                return ResourceManager.GetString("Profile_HeaderOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total.
+        /// </summary>
+        public static string Profile_HeaderTotal {
+            get {
+                return ResourceManager.GetString("Profile_HeaderTotal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Icon  successfully changed..
         /// </summary>
         public static string Profile_IconWasChanged {
@@ -700,7 +763,7 @@ namespace StoreSolution.WebProject.App_GlobalResources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to New password.
+        ///   Looks up a localized string similar to New password:.
         /// </summary>
         public static string Profile_NewPassword {
             get {
@@ -736,11 +799,20 @@ namespace StoreSolution.WebProject.App_GlobalResources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Old password.
+        ///   Looks up a localized string similar to Old password:.
         /// </summary>
         public static string Profile_OldPassword {
             get {
                 return ResourceManager.GetString("Profile_OldPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Orders history.
+        /// </summary>
+        public static string Profile_OrderHistoryHeader {
+            get {
+                return ResourceManager.GetString("Profile_OrderHistoryHeader", resourceCulture);
             }
         }
         
@@ -781,7 +853,7 @@ namespace StoreSolution.WebProject.App_GlobalResources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name.
+        ///   Looks up a localized string similar to Name:.
         /// </summary>
         public static string Profile_PersonalName {
             get {
@@ -790,11 +862,29 @@ namespace StoreSolution.WebProject.App_GlobalResources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Second name.
+        ///   Looks up a localized string similar to Second name:.
         /// </summary>
         public static string Profile_PersonalSecondName {
             get {
                 return ResourceManager.GetString("Profile_PersonalSecondName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Price.
+        /// </summary>
+        public static string Profile_Price {
+            get {
+                return ResourceManager.GetString("Profile_Price", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Quantity.
+        /// </summary>
+        public static string Profile_Quantity {
+            get {
+                return ResourceManager.GetString("Profile_Quantity", resourceCulture);
             }
         }
         
@@ -813,6 +903,15 @@ namespace StoreSolution.WebProject.App_GlobalResources {
         public static string Profile_Title {
             get {
                 return ResourceManager.GetString("Profile_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to total.
+        /// </summary>
+        public static string Profile_Total {
+            get {
+                return ResourceManager.GetString("Profile_Total", resourceCulture);
             }
         }
     }

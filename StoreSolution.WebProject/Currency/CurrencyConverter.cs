@@ -31,9 +31,16 @@ namespace StoreSolution.WebProject.Currency
             string rate;
             using (var wc = new WebClient())
             {
-                var data = wc.DownloadData(url);
-                rate = System.Text.Encoding.Default.GetString(data);
-                rate = rate.Substring(0, rate.Length - 1).Substring(rate.IndexOf(',') + 1);
+                try
+                {
+                    var data = wc.DownloadData(url);
+                    rate = System.Text.Encoding.Default.GetString(data);
+                    rate = rate.Substring(0, rate.Length - 1).Substring(rate.IndexOf(',') + 1);
+                }
+                catch
+                {
+                    rate = "1";
+                }
             }
 
             decimal result;

@@ -5,7 +5,7 @@ namespace StoreSolution.DatabaseProject.Contracts
 {
     public interface IOrderHistoryRepository
     {
-        IQueryable<OrderHistory> OrderHistories { get; }
+        IQueryable<OrderHistory> OrdersHistory { get; }
 
         bool AddOrUpdate(OrderHistory orderHistory);
     }

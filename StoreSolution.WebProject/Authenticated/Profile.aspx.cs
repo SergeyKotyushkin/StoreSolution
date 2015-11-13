@@ -8,11 +8,14 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Web.Script.Serialization;
+using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.MyIoC;
 using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
+using StoreSolution.WebProject.Model;
 
 namespace StoreSolution.WebProject.Authenticated
 {
@@ -20,15 +23,17 @@ namespace StoreSolution.WebProject.Authenticated
     {
         private StoreMaster _master;
         private readonly IPersonRepository _iPersonRepository;
+        private readonly IOrderHistoryRepository _iOrderHistoryRepository;
 
         protected Profile()
-            : this(SimpleContainer.Resolve<IPersonRepository>())
+            : this(SimpleContainer.Resolve<IPersonRepository>(), SimpleContainer.Resolve<IOrderHistoryRepository>())
         {
         }
 
-        protected Profile(IPersonRepository iPersonRepository)
+        protected Profile(IPersonRepository iPersonRepository, IOrderHistoryRepository iIOrderHistoryRepository)
         {
             _iPersonRepository = iPersonRepository;
+            _iOrderHistoryRepository = iIOrderHistoryRepository;
         }
 
         protected override void InitializeCulture()
@@ -52,6 +57,8 @@ namespace StoreSolution.WebProject.Authenticated
 
             if(!Page.IsPostBack)
                 RefereshUser();
+
+            FillOrdersHistoryTable(true);
         }
 
         protected void btnBack_Click(object sender, EventArgs e)
@@ -97,7 +104,7 @@ namespace StoreSolution.WebProject.Authenticated
             };
 
             var image = ByteArrayToImage(btnChooseIcon.FileBytes);
-            var newImage = (Image) (new Bitmap(image, GetSize(image.Size, 500)));
+            var newImage = (DrawingImage.Image) (new Bitmap(image, GetSize(image.Size, 500)));
 
             var updatedPerson = new Person
             {
@@ -182,7 +189,36 @@ namespace StoreSolution.WebProject.Authenticated
             }
             else _master.LabMessageText = LangSetter.Set("Profile_PasswordWasChanged");
         }
-        
+
+        protected void gvOrderHistory_RowDataBound(object sender, System.Web.UI.WebControls.GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType == DataControlRowType.DataRow)
+            { 
+                e.Row.Cells[3].Text =
+                    e.Row.Cells[3].Text.Replace(Environment.NewLine, "<br/>")
+                        .Replace(HttpContext.Current.Server.HtmlEncode("<b>"), "<b>")
+                        .Replace(HttpContext.Current.Server.HtmlEncode("</b>"), "</b>");
+
+                e.Row.Cells[4].Text = e.Row.Cells[4].Text
+                    .Replace(HttpContext.Current.Server.HtmlEncode("<b>"), "<b>")
+                    .Replace(HttpContext.Current.Server.HtmlEncode("</b>"), "</b>");
+            }
+            else if (e.Row.RowType == DataControlRowType.Header)
+            {
+                e.Row.Cells[0].Text = LangSetter.Set("Profile_HeaderNumber");
+                e.Row.Cells[1].Text = LangSetter.Set("Profile_HeaderDate");
+                e.Row.Cells[2].Text = LangSetter.Set("Profile_HeaderEmail");
+                e.Row.Cells[3].Text = LangSetter.Set("Profile_HeaderOrder");
+                e.Row.Cells[4].Text = LangSetter.Set("Profile_HeaderTotal");
+            }
+        }
+
+        protected void gvOrderHistory_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            gvOrderHistory.PageIndex = e.NewPageIndex;
+            gvOrderHistory.DataBind();
+        }
+
 
         private void RefreshIcon(byte[] iconArray)
         {
@@ -208,9 +244,7 @@ namespace StoreSolution.WebProject.Authenticated
             tbName.Text = person.Name;
             tbSecondName.Text = person.SecondName;
 
-            if (person.Icon == null) return;
-
-            RefreshIcon(person.Icon);
+            if (person.Icon != null)  RefreshIcon(person.Icon);
         }
 
         private MembershipUser GetUserOrResponseEnd()
@@ -222,21 +256,21 @@ namespace StoreSolution.WebProject.Authenticated
             return null;
         }
 
-        private static Image ByteArrayToImage(byte[] byteArrayIn)
+        private static DrawingImage.Image ByteArrayToImage(byte[] byteArrayIn)
         {
             using (var ms = new MemoryStream(byteArrayIn))
             {
-                return Image.FromStream(ms);
+                return DrawingImage.Image.FromStream(ms);
             }
         }
 
-        public byte[] ImageToByteArray(Image imageIn)
+        private static byte[] ImageToByteArray(DrawingImage.Image imageIn)
         {
             var ms = new MemoryStream();
             imageIn.Save(ms, ImageFormat.Jpeg);
             return ms.ToArray();
         }
-        
+
         private static Size GetSize(Size size, int bound)
         {
             var newSize = new Size();
@@ -255,5 +289,35 @@ namespace StoreSolution.WebProject.Authenticated
             return newSize;
         }
 
+        private void FillOrdersHistoryTable(bool bind)
+        {
+            var user = GetUserOrResponseEnd();
+            var history = _iOrderHistoryRepository.OrdersHistory.Where(u => u.PersonEmail == user.Email).OrderBy(u => u.Date).ToList();
+
+            if (history.Count == 0)
+            {
+                labOrderHistory.Visible = false;
+                return;
+            }
+
+            var jss= new JavaScriptSerializer();
+
+            var number = 1;
+            var ordersFromHistory = (from h in history
+                let productsOrder = jss.Deserialize<ProductsOrder[]>(h.Order)
+                select new OrderFromHistory
+                {
+                    Number = number++, Email = h.PersonEmail, Date = h.Date, ProductsOrder = productsOrder, Total = h.Total, CultureName = h.Culture
+                }).ToList();
+
+            var orderToGrid =
+                ordersFromHistory.Select(o => new OrderToGrid(o))
+                    .Select(o => new { o.Number, o.Date, o.Email, Order = HttpContext.Current.Server.HtmlDecode(o.Order), o.Total })
+                    .ToList();
+
+            gvOrderHistory.DataSource = orderToGrid;
+            if (bind)
+                gvOrderHistory.DataBind();
+        }
     }
 }

@@ -10,7 +10,7 @@ namespace StoreSolution.DatabaseProject.Realizations
     {
         private readonly EfPersonContext _context = new EfPersonContext();
 
-        public IQueryable<OrderHistory> OrderHistories
+        public IQueryable<OrderHistory> OrdersHistory
         {
             get { return _context.OrdersHistoryTable; }
         }

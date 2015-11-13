@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
+using System.Net.Mail;
 using System.Web;
 using System.Web.Script.Serialization;
 using System.Web.UI.WebControls;
@@ -20,18 +20,18 @@ namespace StoreSolution.WebProject.User
     public partial class Basket : System.Web.UI.Page
     {
         private StoreMaster _master;
-        private readonly IProductRepository _productRepository;
-        private readonly IOrderHistoryRepository _orderHistoryRepository;
+        private readonly IProductRepository _iProductRepository;
+        private readonly IOrderHistoryRepository _iOrderHistoryRepository;
 
         protected Basket()
             : this(SimpleContainer.Resolve<IProductRepository>(), SimpleContainer.Resolve<IOrderHistoryRepository>())
         {
         }
 
-        protected Basket(IProductRepository iProductRepository, IOrderHistoryRepository iOrderHistoryRepository)
+        protected Basket(IProductRepository iIProductRepository, IOrderHistoryRepository iIOrderHistoryRepository)
         {
-            _productRepository = iProductRepository;
-            _orderHistoryRepository = iOrderHistoryRepository;
+            _iProductRepository = iIProductRepository;
+            _iOrderHistoryRepository = iIOrderHistoryRepository;
         }
 
         protected override void InitializeCulture()
@@ -73,7 +73,7 @@ namespace StoreSolution.WebProject.User
                 return;
             }
 
-            var products = _productRepository.Products.ToList();
+            var products = _iProductRepository.Products.ToList();
             var orders = GetOrdersFromSession();
             var cultureInfo = _master.GetCurrencyCultureInfo();
             var list = products.Join(orders, p => p.Id, q => q.Id, (p, q) => new
@@ -99,7 +99,18 @@ namespace StoreSolution.WebProject.User
                 Culture = cultureInfo.Name
             };
 
-            _orderHistoryRepository.AddOrUpdate(orderToHistory);
+            _iOrderHistoryRepository.AddOrUpdate(orderToHistory);
+
+            var orderList = string.Format("{0}</ul>", list.Aggregate("<ul>",
+                            (current, p) =>
+                                current +
+                                string.Format(LangSetter.Set("Basket_MailOrderList"), p.Name, p.Count,
+                                    p.Price.ToString("C", cultureInfo))));
+
+            var text =
+                string.Format(LangSetter.Set("Basket_MailMessage"), DateTime.Now.Date.ToShortDateString(), orderList,
+                    total.ToString("C", cultureInfo));
+            SendEmailToConsumer(user, text);
 
             Logger.Log.Info(string.Format("Products has bought by user - {0}. {1}", user.UserName, labTotal.Text));
             Session["Bought"] = 1;
@@ -144,7 +155,7 @@ namespace StoreSolution.WebProject.User
 
         private void FillOrdersGridView()
         {
-            var products = _productRepository.Products.ToList();
+            var products = _iProductRepository.Products.ToList();
 
             var orders = GetOrdersFromSession();
 
@@ -183,6 +194,26 @@ namespace StoreSolution.WebProject.User
         private IEnumerable<Order> GetOrdersFromSession()
         {
             return Session["CurrentOrder"] as List<Order> ?? new List<Order>();
+        }
+
+        private static void SendEmailToConsumer(MembershipUser user, string text)
+        {
+            var admin = Membership.GetUser("Sergey");
+            if (admin == null) return;
+
+            using (var message = new MailMessage())
+            {
+                message.From = new MailAddress("OnlineStore@admmin");
+                message.To.Add(new MailAddress(user.Email));
+                message.CC.Add(new MailAddress(user.Email));
+                message.Subject = "Online Store Alert!";
+                message.IsBodyHtml = true;
+                message.Body = text;
+                using (var client = new SmtpClient())
+                {
+                    client.Send(message);
+                }
+            }
         }
     }
 }

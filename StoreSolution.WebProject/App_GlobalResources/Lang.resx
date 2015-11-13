@@ -313,7 +313,7 @@
     <value>Icon wasn't changed.</value>
   </data>
   <data name="Profile_NewPassword" xml:space="preserve">
-    <value>New password</value>
+    <value>New password:</value>
   </data>
   <data name="Profile_NothingChanged" xml:space="preserve">
     <value>Nothing changed. Try again.</value>
@@ -325,7 +325,7 @@
     <value>Only .Jpg image files allowed.</value>
   </data>
   <data name="Profile_OldPassword" xml:space="preserve">
-    <value>Old password</value>
+    <value>Old password:</value>
   </data>
   <data name="Profile_PasswordError" xml:space="preserve">
     <value>Password must have letters, numbers and symbols: _,!,@,#,$,%,^,&amp;,*. First symbol must be letter. Length must be more than 5 symbols.</value>
@@ -340,10 +340,10 @@
     <value>Your new personal data successfully changed.</value>
   </data>
   <data name="Profile_PersonalName" xml:space="preserve">
-    <value>Name</value>
+    <value>Name:</value>
   </data>
   <data name="Profile_PersonalSecondName" xml:space="preserve">
-    <value>Second name</value>
+    <value>Second name:</value>
   </data>
   <data name="Profile_SubmitButton" xml:space="preserve">
     <value>Submit</value>
@@ -368,5 +368,38 @@
   </data>
   <data name="ProductCatalog_SearchName" xml:space="preserve">
     <value>Name:</value>
+  </data>
+  <data name="Profile_OrderHistoryHeader" xml:space="preserve">
+    <value>Orders history</value>
+  </data>
+  <data name="Profile_Quantity" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="Profile_Price" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="Profile_HeaderDate" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Profile_HeaderEmail" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Profile_HeaderNumber" xml:space="preserve">
+    <value>#</value>
+  </data>
+  <data name="Profile_HeaderOrder" xml:space="preserve">
+    <value>Order</value>
+  </data>
+  <data name="Profile_HeaderTotal" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Profile_Total" xml:space="preserve">
+    <value>total</value>
+  </data>
+  <data name="Basket_MailMessage" xml:space="preserve">
+    <value>&lt;p&gt;Thank You for shopping in &lt;b&gt;"Online Store"&lt;/b&gt;.&lt;br/&gt;Today ({0}) You have bought:&lt;br/&gt;{1}Total price is: &lt;b&gt;{2}&lt;/b&gt;.&lt;br/&gt;Hope to see You soon!&lt;/p&gt;</value>
+  </data>
+  <data name="Basket_MailOrderList" xml:space="preserve">
+    <value>&lt;li&gt;&lt;b&gt;{0}&lt;/b&gt; [quantity: {1}; price: {2}]&lt;/li&gt;</value>
   </data>
 </root>
