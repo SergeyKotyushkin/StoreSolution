@@ -10,6 +10,6 @@ namespace StoreSolution.DatabaseProject.EfContext
         {
         }
 
-        public DbSet<Product> ProductTable { get; set; }
+        public virtual DbSet<Product> ProductTable { get; set; }
     }
 }

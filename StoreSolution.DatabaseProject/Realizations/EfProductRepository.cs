@@ -8,7 +8,12 @@ namespace StoreSolution.DatabaseProject.Realizations
 {
     public class EfProductRepository : IProductRepository
     {
-        private readonly EfProductContext _context = new EfProductContext();
+        private readonly EfProductContext _context;
+
+        public EfProductRepository(EfProductContext context)
+        {
+            _context = context;
+        }
 
         public IQueryable<Product> Products
         {
