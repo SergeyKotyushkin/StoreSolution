@@ -3,7 +3,7 @@ using StoreSolution.DatabaseProject.Model;
 
 namespace StoreSolution.DatabaseProject.EfContext
 {
-    class EfProductContext : DbContext
+    public class EfProductContext : DbContext
     {
         public EfProductContext()
             : base("name=EfProductContext")

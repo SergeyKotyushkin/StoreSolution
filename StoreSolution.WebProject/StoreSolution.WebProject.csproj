@@ -55,10 +55,25 @@
     <Reference Include="EntityFramework.SqlServerCompact">
       <HintPath>..\packages\EntityFramework.SqlServerCompact.6.1.3\lib\net45\EntityFramework.SqlServerCompact.dll</HintPath>
     </Reference>
+    <Reference Include="Guidelines.Core">
+      <HintPath>..\packages\Guidelines.Core.0.1.0.12\lib\net40\Guidelines.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Guidelines.Ioc.StructureMap">
+      <HintPath>..\packages\Guidelines.Ioc.StructureMap.0.1.0.12\lib\net40\Guidelines.Ioc.StructureMap.dll</HintPath>
+    </Reference>
+    <Reference Include="Guidelines.WebUI">
+      <HintPath>..\packages\Guidelines.WebUI.0.1.0.12\lib\net40\Guidelines.WebUI.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Practices.ServiceLocation">
+      <HintPath>..\packages\CommonServiceLocator.1.0\lib\NET35\Microsoft.Practices.ServiceLocation.dll</HintPath>
+    </Reference>
+    <Reference Include="StructureMap">
+      <HintPath>..\packages\structuremap.2.6.4.1\lib\net40\StructureMap.dll</HintPath>
+    </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data.SqlServerCe, Version=4.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <Private>True</Private>
@@ -248,10 +263,6 @@
     <ProjectReference Include="..\StoreSolution.DatabaseProject\StoreSolution.DatabaseProject.csproj">
       <Project>{80f5ad67-5066-4168-abf9-fc128a152d49}</Project>
       <Name>StoreSolution.DatabaseProject</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\StoreSolution.MyIoC\StoreSolution.MyIoC.csproj">
-      <Project>{f4ab5f9d-7d54-4aad-ade7-58d27dd1fa8a}</Project>
-      <Name>StoreSolution.MyIoC</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

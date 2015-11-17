@@ -11,11 +11,11 @@ using System.Web;
 using System.Web.Script.Serialization;
 using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
-using StoreSolution.MyIoC;
 using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 using StoreSolution.WebProject.Model;
+using StructureMap;
 
 namespace StoreSolution.WebProject.Authenticated
 {
@@ -26,7 +26,7 @@ namespace StoreSolution.WebProject.Authenticated
         private readonly IOrderHistoryRepository _iOrderHistoryRepository;
 
         protected Profile()
-            : this(SimpleContainer.Resolve<IPersonRepository>(), SimpleContainer.Resolve<IOrderHistoryRepository>())
+            : this(ObjectFactory.GetInstance<IPersonRepository>(), ObjectFactory.GetInstance<IOrderHistoryRepository>())
         {
         }
 
@@ -190,7 +190,7 @@ namespace StoreSolution.WebProject.Authenticated
             else _master.LabMessageText = LangSetter.Set("Profile_PasswordWasChanged");
         }
 
-        protected void gvOrderHistory_RowDataBound(object sender, System.Web.UI.WebControls.GridViewRowEventArgs e)
+        protected void gvOrderHistory_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
             { 

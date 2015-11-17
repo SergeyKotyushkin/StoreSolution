@@ -1,10 +1,9 @@
 ﻿using System.Data.Entity;
-using System.Linq;
 using StoreSolution.DatabaseProject.Model;
 
 namespace StoreSolution.DatabaseProject.EfContext
 {
-    public class EfPersonContext: DbContext
+    public class EfPersonContext : DbContext
     {
         public EfPersonContext()
             : base("name=EfPersonContext")

@@ -7,27 +7,27 @@ using System.Web;
 using System.Web.Security;
 using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
-using StoreSolution.MyIoC;
 using StoreSolution.WebProject.Currency;
 using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
+using StructureMap;
 
 namespace StoreSolution.WebProject.Admin
 {
     public partial class ProductManagement : System.Web.UI.Page
     {
         private StoreMaster _master;
-        private readonly IProductRepository _productRepository;
+        private readonly IProductRepository _iProductRepository;
 
         protected ProductManagement()
-            : this(SimpleContainer.Resolve<IProductRepository>())
+            : this(ObjectFactory.GetInstance<IProductRepository>())
         {
         }
 
-        protected ProductManagement(IProductRepository iProductRepository)
+        protected ProductManagement(IProductRepository iIProductRepository)
         {
-            _productRepository = iProductRepository;
+            _iProductRepository = iIProductRepository;
         }
 
         protected override void InitializeCulture()
@@ -92,7 +92,7 @@ namespace StoreSolution.WebProject.Admin
                     Price = price
                 };
 
-                if (_productRepository.AddOrUpdateProduct(product))
+                if (_iProductRepository.AddOrUpdateProduct(product))
                 {
                     _master.LabMessageForeColor = Color.DarkGreen;
                     _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasUpdated");
@@ -137,8 +137,8 @@ namespace StoreSolution.WebProject.Admin
         {
             var id = int.Parse(e.Values["Id"].ToString());
 
-            var product = _productRepository.GetProductById(id);
-            if (_productRepository.RemoveProduct(id))
+            var product = _iProductRepository.GetProductById(id);
+            if (_iProductRepository.RemoveProduct(id))
             {
                 _master.LabMessageForeColor = Color.DarkGreen;
                 _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasRemoved");
@@ -192,7 +192,7 @@ namespace StoreSolution.WebProject.Admin
                         Price = culturePrice
                     };
 
-                    if (_productRepository.AddOrUpdateProduct(product))
+                    if (_iProductRepository.AddOrUpdateProduct(product))
                     {
                         _master.LabMessageForeColor = Color.DarkGreen;
                         _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasAdded");
@@ -269,7 +269,7 @@ namespace StoreSolution.WebProject.Admin
 
         private void FillProductsGridView(bool bind)
         {
-            var products = _productRepository.Products.ToList();
+            var products = _iProductRepository.Products.ToList();
             products.Insert(0, new Product {Id = 0, Name = "0", Category = "0", Price = 0});
 
             gvTable.DataSource = products;

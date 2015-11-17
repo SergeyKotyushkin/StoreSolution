@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Globalization;
 using System.Linq;
 using System.Web;
 using System.Web.Security;
 using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.DatabaseProject.Model;
-using StoreSolution.MyIoC;
 using StoreSolution.WebProject.Currency;
 using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 using StoreSolution.WebProject.Model;
+using StructureMap;
 
 namespace StoreSolution.WebProject.User
 {
@@ -21,16 +20,16 @@ namespace StoreSolution.WebProject.User
     {
         private bool _isSearch;
         private StoreMaster _master;
-        private readonly IProductRepository _productRepository;
+        private readonly IProductRepository _iProductRepository;
 
         protected ProductCatalog()
-            : this(SimpleContainer.Resolve<IProductRepository>())
+            : this(ObjectFactory.GetInstance<IProductRepository>())
         {
         }
 
         protected ProductCatalog(IProductRepository iProductRepository)
         {
-            _productRepository = iProductRepository;
+            _iProductRepository = iProductRepository;
         }
 
         protected override void InitializeCulture()
@@ -174,7 +173,7 @@ namespace StoreSolution.WebProject.User
 
         private void FillGridView(bool bind)
         {
-            var products = _productRepository.Products;
+            var products = _iProductRepository.Products;
 
             if (_isSearch)
             {
@@ -245,7 +244,7 @@ namespace StoreSolution.WebProject.User
             int id;
             if (!int.TryParse(gvTable.Rows[index].Cells[3].Text, out id)) return -1;
 
-            var product = _productRepository.GetProductById(id);
+            var product = _iProductRepository.GetProductById(id);
             return product == null ? -1 : product.Id;
         }
 
@@ -257,7 +256,7 @@ namespace StoreSolution.WebProject.User
 
             _master.LabMessageForeColor = Color.DarkGreen;
             var text = LangSetter.Set("ProductCatalog_ProductAdded");
-            if (text != null) _master.LabMessageText = string.Format(text, _productRepository.GetProductById(id).Name);
+            if (text != null) _master.LabMessageText = string.Format(text, _iProductRepository.GetProductById(id).Name);
         }
 
         private void RemoveFromOrders(List<Order> orders, int id)
@@ -269,7 +268,7 @@ namespace StoreSolution.WebProject.User
 
             _master.LabMessageForeColor = Color.DarkBlue;
             var text = LangSetter.Set("ProductCatalog_ProductRemoved");
-            if (text != null) _master.LabMessageText = string.Format(text, _productRepository.GetProductById(id).Name);
+            if (text != null) _master.LabMessageText = string.Format(text, _iProductRepository.GetProductById(id).Name);
         }
     }
 }

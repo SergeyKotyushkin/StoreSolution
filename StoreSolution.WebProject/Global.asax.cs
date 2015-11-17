@@ -1,8 +1,8 @@
 ﻿using System;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.DatabaseProject.Realizations;
-using StoreSolution.MyIoC;
 using StoreSolution.WebProject.Log4net;
+using StructureMap;
 
 namespace StoreSolution.WebProject
 {
@@ -15,11 +15,14 @@ namespace StoreSolution.WebProject
             Logger.Log.Info("Log4Net is ready.");
             #endregion
 
-            #region IoC
-            SimpleContainer.Register<IPersonRepository>(typeof(EfPersonRepository));
-            SimpleContainer.Register<IProductRepository>(typeof(EfProductRepository));
-            SimpleContainer.Register<IOrderHistoryRepository>(typeof(EfOrderHistoryRepository));
-            Logger.Log.Info("IoC is ready.");
+            #region StructureMap DI\IoC
+            ObjectFactory.Initialize(x =>
+            {
+                x.For<IPersonRepository>().Use<EfPersonRepository>();
+                x.For<IProductRepository>().Use<EfProductRepository>();
+                x.For<IOrderHistoryRepository>().Use<EfOrderHistoryRepository>();
+            });
+            Logger.Log.Info("StructureMap DI\\IoC is ready.");
             #endregion
 
             Logger.Log.Info("Application successfully started.");

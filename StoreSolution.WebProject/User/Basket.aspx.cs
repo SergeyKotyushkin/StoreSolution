@@ -9,11 +9,11 @@ using StoreSolution.WebProject.Model;
 using System.Web.Security;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.DatabaseProject.Model;
-using StoreSolution.MyIoC;
 using StoreSolution.WebProject.Currency;
 using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
+using StructureMap;
 
 namespace StoreSolution.WebProject.User
 {
@@ -24,7 +24,7 @@ namespace StoreSolution.WebProject.User
         private readonly IOrderHistoryRepository _iOrderHistoryRepository;
 
         protected Basket()
-            : this(SimpleContainer.Resolve<IProductRepository>(), SimpleContainer.Resolve<IOrderHistoryRepository>())
+            : this(ObjectFactory.GetInstance<IProductRepository>(), ObjectFactory.GetInstance<IOrderHistoryRepository>())
         {
         }
 

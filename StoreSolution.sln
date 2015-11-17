@@ -5,8 +5,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreSolution.DatabaseProje
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreSolution.WebProject", "StoreSolution.WebProject\StoreSolution.WebProject.csproj", "{84102CCA-EE99-4F2B-BD7A-D3ECEB1DF2BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreSolution.MyIoC", "StoreSolution.MyIoC\StoreSolution.MyIoC.csproj", "{F4AB5F9D-7D54-4AAD-ADE7-58D27DD1FA8A}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{86D982EF-D3BC-47E8-8DCC-A9FAD6C40C07}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
@@ -16,7 +14,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{86D982
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{21E09C38-322D-4B8A-BDE9-F0641DAA8BCF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject1StoreSolution.WebProject.UnitTests", "UnitTestProject1StoreSolution.WebProject.UnitTests\UnitTestProject1StoreSolution.WebProject.UnitTests.csproj", "{B40E603A-EBFC-4330-BDD3-760EF6D7F4C0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreSolution.WebProject.UnitTests", "UnitTestProject1StoreSolution.WebProject.UnitTests\StoreSolution.WebProject.UnitTests.csproj", "{B40E603A-EBFC-4330-BDD3-760EF6D7F4C0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{80F5AD67-5066-4168-ABF9-FC128A152D49} = {80F5AD67-5066-4168-ABF9-FC128A152D49}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,10 +33,6 @@ Global
 		{84102CCA-EE99-4F2B-BD7A-D3ECEB1DF2BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84102CCA-EE99-4F2B-BD7A-D3ECEB1DF2BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84102CCA-EE99-4F2B-BD7A-D3ECEB1DF2BD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F4AB5F9D-7D54-4AAD-ADE7-58D27DD1FA8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F4AB5F9D-7D54-4AAD-ADE7-58D27DD1FA8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F4AB5F9D-7D54-4AAD-ADE7-58D27DD1FA8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F4AB5F9D-7D54-4AAD-ADE7-58D27DD1FA8A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B40E603A-EBFC-4330-BDD3-760EF6D7F4C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B40E603A-EBFC-4330-BDD3-760EF6D7F4C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B40E603A-EBFC-4330-BDD3-760EF6D7F4C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
