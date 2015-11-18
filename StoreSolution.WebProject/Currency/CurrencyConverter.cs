@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using StoreSolution.WebProject.Currency.Contracts;
 
 namespace StoreSolution.WebProject.Currency
 {
-    public static class CurrencyConverter
+    
+
+    public class CurrencyConverter : ICurrencyConverter
     {
         private const int Rub = 0;
 
@@ -26,22 +29,7 @@ namespace StoreSolution.WebProject.Currency
                 if (currentRateFrom.LastUpdateTime.Value.AddMinutes(30) > DateTime.Now)
                     return currentRateFrom.CurrencyRate;
 
-            var url = string.Format(@"http://download.finance.yahoo.com/d/quotes.csv?s={0}{1}=X&f=sl1&e=.csv",
-                currentRateFrom.CurrencyName, currentRateTo.CurrencyName);
-            string rate;
-            using (var wc = new WebClient())
-            {
-                try
-                {
-                    var data = wc.DownloadData(url);
-                    rate = System.Text.Encoding.Default.GetString(data);
-                    rate = rate.Substring(0, rate.Length - 1).Substring(rate.IndexOf(',') + 1);
-                }
-                catch
-                {
-                    rate = "1";
-                }
-            }
+            var rate = GetRealTimeRate(currentRateFrom.CurrencyName, currentRateTo.CurrencyName);
 
             decimal result;
             if (!decimal.TryParse(rate, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out result)) return null;
@@ -51,36 +39,50 @@ namespace StoreSolution.WebProject.Currency
             return currentRateFrom.CurrencyRate;
         }
 
-        public static decimal ConvertFromRu(decimal value, string cultureName)
+        private static string GetRealTimeRate(string currencyFromName, string currencyToName)
+        {
+            var url = string.Format(@"http://download.finance.yahoo.com/d/quotes.csv?s={0}{1}=X&f=sl1&e=.csv",
+                currencyFromName, currencyToName);
+            string rate;
+            using (var wc = new WebClient())
+            {
+                var data = wc.DownloadData(url);
+                rate = System.Text.Encoding.Default.GetString(data);
+                rate = rate.Substring(0, rate.Length - 1).Substring(rate.IndexOf(',') + 1);
+            }
+            return rate;
+        }
+
+        public decimal ConvertFromRu(decimal value, string cultureName)
         {
             if (cultureName == Rates[Rub].CultureName) return value;
             var result = RefreshRate(cultureName, Rates[Rub].CultureName);
             return result != null ? decimal.Round(value / result.Value, 2) : decimal.Zero;
         }
 
-        public static decimal ConvertFromRu(decimal value, decimal? rate)
+        public decimal ConvertFromRu(decimal value, decimal? rate)
         {
             return rate != null ? decimal.Round(value / rate.Value, 2) : decimal.Zero;
         }
 
-        public static decimal ConvertToRu(decimal value, string cultureName)
+        public decimal ConvertToRu(decimal value, string cultureName)
         {
             if (cultureName == Rates[Rub].CultureName) return value;
             var result = RefreshRate(cultureName, Rates[Rub].CultureName);
             return result != null ? decimal.Round(value*result.Value, 2) : decimal.Zero;
         }
 
-        public static decimal GetRate(string cultureName)
+        public decimal GetRate(string cultureName)
         {
             return ConvertToRu(1, cultureName);
         }
 
-        public static string GetCurrencyNameForCulture(string cultureName)
+        public string GetCurrencyNameForCulture(string cultureName)
         {
             return Rates.Where(r => r.CultureName == cultureName).Select(r => r.CurrencyName).FirstOrDefault() ?? "usd";
         }
 
-        public static string GetCultureNameForCurrency(string currency)
+        public string GetCultureNameForCurrency(string currency)
         {
             return Rates.Where(r => r.CurrencyName == currency).Select(r => r.CultureName).FirstOrDefault() ?? "en-US";
         }

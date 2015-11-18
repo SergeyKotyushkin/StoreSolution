@@ -7,7 +7,7 @@ using System.Web;
 using System.Web.Security;
 using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
-using StoreSolution.WebProject.Currency;
+using StoreSolution.WebProject.Currency.Contracts;
 using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
@@ -18,16 +18,18 @@ namespace StoreSolution.WebProject.Admin
     public partial class ProductManagement : System.Web.UI.Page
     {
         private StoreMaster _master;
-        private readonly IProductRepository _iProductRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly ICurrencyConverter _currencyConverter;
 
         protected ProductManagement()
-            : this(ObjectFactory.GetInstance<IProductRepository>())
+            : this(ObjectFactory.GetInstance<IProductRepository>(), ObjectFactory.GetInstance<ICurrencyConverter>())
         {
         }
 
-        protected ProductManagement(IProductRepository iIProductRepository)
+        protected ProductManagement(IProductRepository productRepository, ICurrencyConverter currencyConverter)
         {
-            _iProductRepository = iIProductRepository;
+            _productRepository = productRepository;
+            _currencyConverter = currencyConverter;
         }
 
         protected override void InitializeCulture()
@@ -73,26 +75,25 @@ namespace StoreSolution.WebProject.Admin
 
         protected void gvTable_RowUpdating(object sender, GridViewUpdateEventArgs e)
         {
-            var rgx = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z]+[a-zA-Z0-9_ ]*$");
-            var name = e.NewValues["Name"].ToString().Trim();
-            var category = e.NewValues["Category"].ToString().Trim();
+            var id = int.Parse(e.NewValues["Id"].ToString());
+            var name = ((string)e.NewValues["Name"]).Trim();
+            var category = ((string)e.NewValues["Category"]).Trim();
+            var priceString = ((string)e.NewValues["Price"]).Trim();
+
             decimal price;
-
-            var b1 = rgx.IsMatch(name);
-            var b2 = rgx.IsMatch(category);
-            var b3 = decimal.TryParse(e.NewValues["Price"].ToString().Trim(), out price);
-
-            if (b1 && b2 && b3)
+            if (!CheckIsNewProductValid(name, category, priceString, out price))
             {
-                var product = new Product()
-                {
-                    Id = int.Parse(e.NewValues["Id"].ToString()),
-                    Name = name,
-                    Category = category,
-                    Price = price
-                };
+                _master.LabMessageForeColor = Color.Red;
+                _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotUpdated");
+            }
+            else
+            {
+                var cultureInfo = _master.GetCurrencyCultureInfo();
+                price = _currencyConverter.ConvertToRu(price, cultureInfo.Name);
 
-                if (_iProductRepository.AddOrUpdateProduct(product))
+                var product = new Product {Id = id, Name = name, Category = category, Price = price};
+
+                if (_productRepository.AddOrUpdateProduct(product))
                 {
                     _master.LabMessageForeColor = Color.DarkGreen;
                     _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasUpdated");
@@ -104,11 +105,6 @@ namespace StoreSolution.WebProject.Admin
                     _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotUpdated");
                 }
             }
-            else
-            {
-                _master.LabMessageForeColor = Color.Red;
-                _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotUpdated");
-            }
 
             gvTable.EditIndex = -1;
 
@@ -116,7 +112,7 @@ namespace StoreSolution.WebProject.Admin
             FillProductsGridView(true);
             SetButtonsEnabled(true);
         }
-
+        
         protected void gvTable_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
         {
             _master.LabMessageText = "";
@@ -129,16 +125,22 @@ namespace StoreSolution.WebProject.Admin
 
         protected void gvTable_PreRender(object sender, EventArgs e)
         {
-            if (gvTable.EditIndex != -1) 
-                gvTable.Rows[gvTable.EditIndex].Cells[2].Enabled = false;
+            if (gvTable.EditIndex == -1) return;
+
+            gvTable.Rows[gvTable.EditIndex].Cells[2].Enabled = false;
+            var priceString = ((TextBox) gvTable.Rows[gvTable.EditIndex].Cells[5].Controls[0]).Text;
+            var price = decimal.Parse(priceString);
+            var culture = _master.GetCurrencyCultureInfo();
+            var culturePrice = _currencyConverter.ConvertFromRu(price, culture.Name);
+            ((TextBox)gvTable.Rows[gvTable.EditIndex].Cells[5].Controls[0]).Text = string.Format("{0}", culturePrice);
         }
 
         protected void gvTable_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
             var id = int.Parse(e.Values["Id"].ToString());
 
-            var product = _iProductRepository.GetProductById(id);
-            if (_iProductRepository.RemoveProduct(id))
+            var product = _productRepository.GetProductById(id);
+            if (_productRepository.RemoveProduct(id))
             {
                 _master.LabMessageForeColor = Color.DarkGreen;
                 _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasRemoved");
@@ -170,29 +172,23 @@ namespace StoreSolution.WebProject.Admin
             {
                 var name = textBox1.Text.Trim();
                 var category = textBox2.Text.Trim();
-                var priceStr = textBox3.Text.Trim();
+                var priceString = textBox3.Text.Trim();
                 decimal price;
 
-                var rgx = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z]+[a-zA-Z0-9_ ]*$");
 
-                var cultureInfo = _master.GetCurrencyCultureInfo();
-                var b1 = rgx.IsMatch(name);
-                var b2 = rgx.IsMatch(category);
-                var b3 = decimal.TryParse(priceStr, NumberStyles.AllowDecimalPoint, cultureInfo, out price);
-                
-                if (b1 && b2 && b3)
+                if (!CheckIsNewProductValid(name, category, priceString, out price))
                 {
+                    _master.LabMessageForeColor = Color.Red;
+                    _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotAdded");
+                }
+                else
+                {
+                    var cultureInfo = _master.GetCurrencyCultureInfo();
+                    price = _currencyConverter.ConvertToRu(price, cultureInfo.Name);
 
-                    var culturePrice = CurrencyConverter.ConvertToRu(price, cultureInfo.Name);
-                    var product = new Product()
-                    {
-                        Id = -1,
-                        Name = name,
-                        Category = category,
-                        Price = culturePrice
-                    };
+                    var product = new Product {Id = -1, Name = name, Category = category, Price = price};
 
-                    if (_iProductRepository.AddOrUpdateProduct(product))
+                    if (_productRepository.AddOrUpdateProduct(product))
                     {
                         _master.LabMessageForeColor = Color.DarkGreen;
                         _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasAdded");
@@ -204,11 +200,7 @@ namespace StoreSolution.WebProject.Admin
                         _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotAdded");
                     }
                 }
-                else
-                {
-                    _master.LabMessageForeColor = Color.Red;
-                    _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotAdded");
-                }
+
             }
 
             ControlVisibilityOfMessageBox();
@@ -225,11 +217,11 @@ namespace StoreSolution.WebProject.Admin
         {
             var cultureInfo = _master.GetCurrencyCultureInfo();
 
-            var rate = CurrencyConverter.GetRate(cultureInfo.Name);
+            var rate = _currencyConverter.GetRate(cultureInfo.Name);
             foreach (GridViewRow row in gvTable.Rows)
             {
                 if (row.Cells[2].Controls.Count != 0) continue;
-                var price = CurrencyConverter.ConvertFromRu(decimal.Parse(row.Cells[5].Text), rate);
+                var price = _currencyConverter.ConvertFromRu(decimal.Parse(row.Cells[5].Text), rate);
                 row.Cells[5].Text = price.ToString("C", cultureInfo);
             }
         }
@@ -243,6 +235,17 @@ namespace StoreSolution.WebProject.Admin
             e.Row.Cells[5].Text = LangSetter.Set("ProductManagement_HeaderPrice");
         }
 
+
+
+        private bool CheckIsNewProductValid(string name, string category, string price, out decimal priceResult)
+        {
+            var rgx = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z]+[a-zA-Z0-9_ ]*$");
+
+            var cultureInfo = _master.GetCurrencyCultureInfo();
+            var isDeimal = decimal.TryParse(price, NumberStyles.AllowDecimalPoint, cultureInfo, out priceResult); 
+
+            return isDeimal && rgx.IsMatch(name) && rgx.IsMatch(category);
+        }
 
         private void SetButtonsEnabled(bool enabled)
         {
@@ -269,7 +272,7 @@ namespace StoreSolution.WebProject.Admin
 
         private void FillProductsGridView(bool bind)
         {
-            var products = _iProductRepository.Products.ToList();
+            var products = _productRepository.Products.ToList();
             products.Insert(0, new Product {Id = 0, Name = "0", Category = "0", Price = 0});
 
             gvTable.DataSource = products;

@@ -1,6 +1,8 @@
 ﻿using System;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.DatabaseProject.Realizations;
+using StoreSolution.WebProject.Currency;
+using StoreSolution.WebProject.Currency.Contracts;
 using StoreSolution.WebProject.Log4net;
 using StructureMap;
 
@@ -16,11 +18,13 @@ namespace StoreSolution.WebProject
             #endregion
 
             #region StructureMap DI\IoC
+            
             ObjectFactory.Initialize(x =>
             {
                 x.For<IPersonRepository>().Use<EfPersonRepository>();
                 x.For<IProductRepository>().Use<EfProductRepository>();
                 x.For<IOrderHistoryRepository>().Use<EfOrderHistoryRepository>();
+                x.For<ICurrencyConverter>().Use<CurrencyConverter>();
             });
             Logger.Log.Info("StructureMap DI\\IoC is ready.");
             #endregion

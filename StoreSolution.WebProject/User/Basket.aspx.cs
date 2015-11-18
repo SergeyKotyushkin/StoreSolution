@@ -9,7 +9,7 @@ using StoreSolution.WebProject.Model;
 using System.Web.Security;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.DatabaseProject.Model;
-using StoreSolution.WebProject.Currency;
+using StoreSolution.WebProject.Currency.Contracts;
 using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
@@ -20,18 +20,22 @@ namespace StoreSolution.WebProject.User
     public partial class Basket : System.Web.UI.Page
     {
         private StoreMaster _master;
-        private readonly IProductRepository _iProductRepository;
-        private readonly IOrderHistoryRepository _iOrderHistoryRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly IOrderHistoryRepository _orderHistoryRepository;
+        private readonly ICurrencyConverter _currencyConverter;
 
         protected Basket()
-            : this(ObjectFactory.GetInstance<IProductRepository>(), ObjectFactory.GetInstance<IOrderHistoryRepository>())
+            : this(
+                ObjectFactory.GetInstance<IProductRepository>(), ObjectFactory.GetInstance<IOrderHistoryRepository>(),
+                ObjectFactory.GetInstance<ICurrencyConverter>())
         {
         }
 
-        protected Basket(IProductRepository iIProductRepository, IOrderHistoryRepository iIOrderHistoryRepository)
+        protected Basket(IProductRepository productRepository, IOrderHistoryRepository orderHistoryRepository, ICurrencyConverter currencyConverter)
         {
-            _iProductRepository = iIProductRepository;
-            _iOrderHistoryRepository = iIOrderHistoryRepository;
+            _productRepository = productRepository;
+            _orderHistoryRepository = orderHistoryRepository;
+            _currencyConverter = currencyConverter;
         }
 
         protected override void InitializeCulture()
@@ -73,15 +77,15 @@ namespace StoreSolution.WebProject.User
                 return;
             }
 
-            var products = _iProductRepository.Products.ToList();
+            var products = _productRepository.Products.ToList();
             var orders = GetOrdersFromSession();
             var cultureInfo = _master.GetCurrencyCultureInfo();
             var list = products.Join(orders, p => p.Id, q => q.Id, (p, q) => new
             {
                 p.Name, 
-                Price = CurrencyConverter.ConvertFromRu(p.Price, cultureInfo.Name),
+                Price = _currencyConverter.ConvertFromRu(p.Price, cultureInfo.Name),
                 q.Count,
-                Total = (q.Count * CurrencyConverter.ConvertFromRu(p.Price, cultureInfo.Name))
+                Total = (q.Count * _currencyConverter.ConvertFromRu(p.Price, cultureInfo.Name))
             }).ToList();
 
             var total = list.Sum(p => p.Total);
@@ -99,7 +103,7 @@ namespace StoreSolution.WebProject.User
                 Culture = cultureInfo.Name
             };
 
-            _iOrderHistoryRepository.AddOrUpdate(orderToHistory);
+            _orderHistoryRepository.AddOrUpdate(orderToHistory);
 
             var orderList = string.Format("{0}</ul>", list.Aggregate("<ul>",
                             (current, p) =>
@@ -134,10 +138,10 @@ namespace StoreSolution.WebProject.User
 
             var cultureInfo = _master.GetCurrencyCultureInfo();
 
-            var rate = CurrencyConverter.GetRate(cultureInfo.Name);
+            var rate = _currencyConverter.GetRate(cultureInfo.Name);
             for (var i = 0; i < gvTable.Rows.Count; i++)
             {
-                var price = CurrencyConverter.ConvertFromRu(decimal.Parse(gvTable.Rows[i].Cells[1].Text), rate);
+                var price = _currencyConverter.ConvertFromRu(decimal.Parse(gvTable.Rows[i].Cells[1].Text), rate);
                 gvTable.Rows[i].Cells[1].Text = price.ToString("C", cultureInfo);
                 gvTable.Rows[i].Cells[3].Text = decimal.Parse(gvTable.Rows[i].Cells[3].Text).ToString("C", cultureInfo);
             }
@@ -155,7 +159,7 @@ namespace StoreSolution.WebProject.User
 
         private void FillOrdersGridView()
         {
-            var products = _iProductRepository.Products.ToList();
+            var products = _productRepository.Products.ToList();
 
             var orders = GetOrdersFromSession();
 
@@ -168,7 +172,7 @@ namespace StoreSolution.WebProject.User
                             p.Name,
                             p.Price,
                             q.Count,
-                            Total = (q.Count * CurrencyConverter.ConvertFromRu(p.Price, cultureInfo.Name))
+                            Total = (q.Count * _currencyConverter.ConvertFromRu(p.Price, cultureInfo.Name))
                         })
                     .ToList();
             gvTable.DataSource = list;               

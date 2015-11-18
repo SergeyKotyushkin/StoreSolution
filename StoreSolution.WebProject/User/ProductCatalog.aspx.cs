@@ -7,7 +7,7 @@ using System.Web.Security;
 using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.DatabaseProject.Model;
-using StoreSolution.WebProject.Currency;
+using StoreSolution.WebProject.Currency.Contracts;
 using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
@@ -20,16 +20,18 @@ namespace StoreSolution.WebProject.User
     {
         private bool _isSearch;
         private StoreMaster _master;
-        private readonly IProductRepository _iProductRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly ICurrencyConverter _currencyConverter;
 
         protected ProductCatalog()
-            : this(ObjectFactory.GetInstance<IProductRepository>())
+            : this(ObjectFactory.GetInstance<IProductRepository>(), ObjectFactory.GetInstance<ICurrencyConverter>())
         {
         }
 
-        protected ProductCatalog(IProductRepository iProductRepository)
+        protected ProductCatalog(IProductRepository productRepository, ICurrencyConverter currencyConverter)
         {
-            _iProductRepository = iProductRepository;
+            _productRepository = productRepository;
+            _currencyConverter = currencyConverter;
         }
 
         protected override void InitializeCulture()
@@ -106,10 +108,10 @@ namespace StoreSolution.WebProject.User
         {
             var cultureInfo = _master.GetCurrencyCultureInfo();
 
-            var rate = CurrencyConverter.GetRate(cultureInfo.Name);
+            var rate = _currencyConverter.GetRate(cultureInfo.Name);
             foreach (GridViewRow row in gvTable.Rows)
             {
-                var price = CurrencyConverter.ConvertFromRu(decimal.Parse(row.Cells[6].Text), rate);
+                var price = _currencyConverter.ConvertFromRu(decimal.Parse(row.Cells[6].Text), rate);
                 row.Cells[6].Text = price.ToString("C", cultureInfo);
             }
         }
@@ -173,7 +175,7 @@ namespace StoreSolution.WebProject.User
 
         private void FillGridView(bool bind)
         {
-            var products = _iProductRepository.Products;
+            var products = _productRepository.Products;
 
             if (_isSearch)
             {
@@ -244,7 +246,7 @@ namespace StoreSolution.WebProject.User
             int id;
             if (!int.TryParse(gvTable.Rows[index].Cells[3].Text, out id)) return -1;
 
-            var product = _iProductRepository.GetProductById(id);
+            var product = _productRepository.GetProductById(id);
             return product == null ? -1 : product.Id;
         }
 
@@ -256,7 +258,7 @@ namespace StoreSolution.WebProject.User
 
             _master.LabMessageForeColor = Color.DarkGreen;
             var text = LangSetter.Set("ProductCatalog_ProductAdded");
-            if (text != null) _master.LabMessageText = string.Format(text, _iProductRepository.GetProductById(id).Name);
+            if (text != null) _master.LabMessageText = string.Format(text, _productRepository.GetProductById(id).Name);
         }
 
         private void RemoveFromOrders(List<Order> orders, int id)
@@ -268,7 +270,7 @@ namespace StoreSolution.WebProject.User
 
             _master.LabMessageForeColor = Color.DarkBlue;
             var text = LangSetter.Set("ProductCatalog_ProductRemoved");
-            if (text != null) _master.LabMessageText = string.Format(text, _iProductRepository.GetProductById(id).Name);
+            if (text != null) _master.LabMessageText = string.Format(text, _productRepository.GetProductById(id).Name);
         }
     }
 }

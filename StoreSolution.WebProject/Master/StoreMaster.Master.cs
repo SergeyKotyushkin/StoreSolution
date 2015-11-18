@@ -6,14 +6,27 @@ using System.Web;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using StoreSolution.WebProject.Currency;
+using StoreSolution.WebProject.Currency.Contracts;
 using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
+using StructureMap;
 
 namespace StoreSolution.WebProject.Master
 {
     public partial class StoreMaster : MasterPage
     {
+        private readonly ICurrencyConverter _currencyConverter;
+
+        public StoreMaster():this(ObjectFactory.GetInstance<ICurrencyConverter>())
+        {
+            
+        }
+
+        public StoreMaster(ICurrencyConverter currencyConverter)
+        {
+            _currencyConverter = currencyConverter;
+        }
+
         public string HlUserText
         {
             get { return hlUser.Text; }
@@ -64,17 +77,17 @@ namespace StoreSolution.WebProject.Master
             Response.End();
         }
 
-        public CultureInfo GetCurrencyCultureInfo()
+        public virtual CultureInfo GetCurrencyCultureInfo()
         {
             var cookie = Request.Cookies.Get("currency");
             var currency = cookie != null
                 ? cookie.Value
-                : CurrencyConverter.GetCurrencyNameForCulture(CultureInfo.CurrentCulture.Name);
+                : _currencyConverter.GetCurrencyNameForCulture(CultureInfo.CurrentCulture.Name);
 
             if (cookie == null) Response.Cookies.Set(new HttpCookie("currency", currency));
 
             var currentCultureName =
-                CurrencyConverter.GetCultureNameForCurrency(currency);
+                _currencyConverter.GetCultureNameForCurrency(currency);
 
             return
                 CultureInfo.GetCultures(CultureTypes.AllCultures).FirstOrDefault(c => c.Name == currentCultureName) ??
@@ -89,7 +102,7 @@ namespace StoreSolution.WebProject.Master
             var cookie = Request.Cookies.Get("currency");
             var currency = cookie != null
                 ? cookie.Value
-                : CurrencyConverter.GetCurrencyNameForCulture(CultureInfo.CurrentCulture.Name);
+                : _currencyConverter.GetCurrencyNameForCulture(CultureInfo.CurrentCulture.Name);
 
             if(cookie == null) Response.Cookies.Set(new HttpCookie("currency", currency));
 
