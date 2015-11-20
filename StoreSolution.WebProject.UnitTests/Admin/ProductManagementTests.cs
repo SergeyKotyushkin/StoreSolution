@@ -5,11 +5,7 @@ using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StoreSolution.WebProject.Admin;
 using StoreSolution.WebProject.Master;
-using StoreSolution.DatabaseProject.Contracts;
-using StoreSolution.DatabaseProject.Realizations;
-using StoreSolution.WebProject.Currency;
-using StoreSolution.WebProject.Currency.Contracts;
-using StructureMap;
+using StoreSolution.WebProject.StructureMap;
 
 namespace StoreSolution.WebProject.UnitTests.Admin
 {
@@ -31,19 +27,12 @@ namespace StoreSolution.WebProject.UnitTests.Admin
 
         private static ArrayList ArrangeProductManagmentForCheckIsNewProductValidMethod()
         {
-            var bindingFlags = BindingFlags.NonPublic | BindingFlags.Instance;
-            ObjectFactory.Initialize(x =>
-            {
-                x.For<IProductRepository>().Use<EfProductRepository>();
-                x.For<ICurrencyConverter>().Use<CurrencyConverter>();
-            });
+            StructureMapFactory.Init();
+
+            const BindingFlags bindingFlags = BindingFlags.NonPublic | BindingFlags.Instance;
 
             var moq = new Moq.Mock<StoreMaster>();
             moq.Setup(m => m.GetCurrencyCultureInfo()).Returns(new CultureInfo("ru-RU"));
-
-            //var mocks = new MockFactory();
-            //var masterMock = mocks.CreateMock<StoreMaster>();
-            //masterMock.Expects.One.Method(m => m.GetCurrencyCultureInfo()).WillReturn(new CultureInfo("ru-RU"));
 
             var t = typeof (ProductManagement);
             var ctor = t.GetConstructors(bindingFlags).FirstOrDefault(c => !c.GetParameters().Any());
@@ -56,7 +45,6 @@ namespace StoreSolution.WebProject.UnitTests.Admin
 
             if (fieldInfo == null) return null;
 
-            //fieldInfo.SetValue(pm, masterMock.MockObject);
             fieldInfo.SetValue(pm, moq.Object);
 
             var checkIsNewProductValidMethod = t.GetMethod("CheckIsNewProductValid", bindingFlags);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Mail;
 using System.Web;
@@ -13,7 +14,7 @@ using StoreSolution.WebProject.Currency.Contracts;
 using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
-using StructureMap;
+using StoreSolution.WebProject.StructureMap;
 
 namespace StoreSolution.WebProject.User
 {
@@ -22,20 +23,22 @@ namespace StoreSolution.WebProject.User
         private StoreMaster _master;
         private readonly IProductRepository _productRepository;
         private readonly IOrderHistoryRepository _orderHistoryRepository;
-        private readonly ICurrencyConverter _currencyConverter;
+        private readonly ICurrencyConverterBetter _currencyConverterBetter;
 
         protected Basket()
             : this(
-                ObjectFactory.GetInstance<IProductRepository>(), ObjectFactory.GetInstance<IOrderHistoryRepository>(),
-                ObjectFactory.GetInstance<ICurrencyConverter>())
+                StructureMapFactory.Resolve<IProductRepository>(),
+                StructureMapFactory.Resolve<IOrderHistoryRepository>(),
+                StructureMapFactory.Resolve<ICurrencyConverterBetter>())
         {
         }
 
-        protected Basket(IProductRepository productRepository, IOrderHistoryRepository orderHistoryRepository, ICurrencyConverter currencyConverter)
+        protected Basket(IProductRepository productRepository, IOrderHistoryRepository orderHistoryRepository,
+            ICurrencyConverterBetter currencyConverterBetter)
         {
             _productRepository = productRepository;
             _orderHistoryRepository = orderHistoryRepository;
-            _currencyConverter = currencyConverter;
+            _currencyConverterBetter = currencyConverterBetter;
         }
 
         protected override void InitializeCulture()
@@ -79,13 +82,14 @@ namespace StoreSolution.WebProject.User
 
             var products = _productRepository.Products.ToList();
             var orders = GetOrdersFromSession();
-            var cultureInfo = _master.GetCurrencyCultureInfo();
+            var cultureTo = _master.GetCurrencyCultureInfo();
+            var rate = _currencyConverterBetter.GetRate(new CultureInfo("ru-Ru"), cultureTo, DateTime.Now);
             var list = products.Join(orders, p => p.Id, q => q.Id, (p, q) => new
             {
                 p.Name, 
-                Price = _currencyConverter.ConvertFromRu(p.Price, cultureInfo.Name),
+                Price = _currencyConverterBetter.ConvertByRate(p.Price, rate),
                 q.Count,
-                Total = (q.Count * _currencyConverter.ConvertFromRu(p.Price, cultureInfo.Name))
+                Total = (q.Count * _currencyConverterBetter.ConvertByRate(p.Price, rate))
             }).ToList();
 
             var total = list.Sum(p => p.Total);
@@ -100,7 +104,7 @@ namespace StoreSolution.WebProject.User
                 PersonEmail = user.Email,
                 Total = total,
                 Date = DateTime.Now,
-                Culture = cultureInfo.Name
+                Culture = cultureTo.Name
             };
 
             _orderHistoryRepository.AddOrUpdate(orderToHistory);
@@ -109,11 +113,11 @@ namespace StoreSolution.WebProject.User
                             (current, p) =>
                                 current +
                                 string.Format(LangSetter.Set("Basket_MailOrderList"), p.Name, p.Count,
-                                    p.Price.ToString("C", cultureInfo))));
+                                    p.Price.ToString("C", cultureTo))));
 
             var text =
                 string.Format(LangSetter.Set("Basket_MailMessage"), DateTime.Now.Date.ToShortDateString(), orderList,
-                    total.ToString("C", cultureInfo));
+                    total.ToString("C", cultureTo));
             SendEmailToConsumer(user, text);
 
             Logger.Log.Info(string.Format("Products has bought by user - {0}. {1}", user.UserName, labTotal.Text));
@@ -135,15 +139,15 @@ namespace StoreSolution.WebProject.User
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
             if(gvTable.Rows.Count == 0) return;
+            var cultureFrom = new CultureInfo("ru-RU");
+            var cultureTo = _master.GetCurrencyCultureInfo();
 
-            var cultureInfo = _master.GetCurrencyCultureInfo();
-
-            var rate = _currencyConverter.GetRate(cultureInfo.Name);
+            var rate = _currencyConverterBetter.GetRate(cultureFrom, cultureTo, DateTime.Now);
             for (var i = 0; i < gvTable.Rows.Count; i++)
             {
-                var price = _currencyConverter.ConvertFromRu(decimal.Parse(gvTable.Rows[i].Cells[1].Text), rate);
-                gvTable.Rows[i].Cells[1].Text = price.ToString("C", cultureInfo);
-                gvTable.Rows[i].Cells[3].Text = decimal.Parse(gvTable.Rows[i].Cells[3].Text).ToString("C", cultureInfo);
+                var price = _currencyConverterBetter.ConvertByRate(decimal.Parse(gvTable.Rows[i].Cells[1].Text), rate);
+                gvTable.Rows[i].Cells[1].Text = price.ToString("C", cultureTo);
+                gvTable.Rows[i].Cells[3].Text = decimal.Parse(gvTable.Rows[i].Cells[3].Text).ToString("C", cultureTo);
             }
         }
 
@@ -163,7 +167,8 @@ namespace StoreSolution.WebProject.User
 
             var orders = GetOrdersFromSession();
 
-            var cultureInfo = _master.GetCurrencyCultureInfo();
+            var cultureTo = _master.GetCurrencyCultureInfo();
+            var rate = _currencyConverterBetter.GetRate(new CultureInfo("ru-Ru"), cultureTo, DateTime.Now);
             var list =
                 products.Join(orders, p => p.Id, q => q.Id,
                     (p, q) =>
@@ -172,7 +177,7 @@ namespace StoreSolution.WebProject.User
                             p.Name,
                             p.Price,
                             q.Count,
-                            Total = (q.Count * _currencyConverter.ConvertFromRu(p.Price, cultureInfo.Name))
+                            Total = (q.Count * _currencyConverterBetter.ConvertByRate(p.Price, rate))
                         })
                     .ToList();
             gvTable.DataSource = list;               
@@ -181,7 +186,7 @@ namespace StoreSolution.WebProject.User
             var sum = list.Sum(p => p.Total);
 
             var text = LangSetter.Set("Basket_Total");
-            if (text != null) labTotal.Text = string.Format(text, sum.ToString("C", cultureInfo));
+            if (text != null) labTotal.Text = string.Format(text, sum.ToString("C", cultureTo));
             
             btnBuy.Enabled = true;
             if (list.Count != 0) return;

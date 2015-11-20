@@ -15,7 +15,7 @@ using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 using StoreSolution.WebProject.Model;
-using StructureMap;
+using StoreSolution.WebProject.StructureMap;
 
 namespace StoreSolution.WebProject.Authenticated
 {
@@ -26,7 +26,7 @@ namespace StoreSolution.WebProject.Authenticated
         private readonly IOrderHistoryRepository _iOrderHistoryRepository;
 
         protected Profile()
-            : this(ObjectFactory.GetInstance<IPersonRepository>(), ObjectFactory.GetInstance<IOrderHistoryRepository>())
+            : this(StructureMapFactory.Resolve<IPersonRepository>(), StructureMapFactory.Resolve<IOrderHistoryRepository>())
         {
         }
 

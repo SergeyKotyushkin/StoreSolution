@@ -40,12 +40,12 @@
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.2.1510.2205\lib\net40\Moq.dll</HintPath>
     </Reference>
-    <Reference Include="NMock3">
-      <HintPath>..\packages\NMock3.3.5.44\lib\net40\NMock3.dll</HintPath>
-    </Reference>
-    <Reference Include="StructureMap, Version=2.6.4.0, Culture=neutral, PublicKeyToken=e60ad81abae3c223, processorArchitecture=MSIL">
+    <Reference Include="StructureMap, Version=3.1.6.186, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\structuremap.2.6.4.1\lib\net40\StructureMap.dll</HintPath>
+      <HintPath>..\packages\structuremap.3.1.6.186\lib\net40\StructureMap.dll</HintPath>
+    </Reference>
+    <Reference Include="StructureMap.Net4">
+      <HintPath>..\packages\structuremap.3.1.6.186\lib\net40\StructureMap.Net4.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Web" />
@@ -64,10 +64,12 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Admin\ProductManagementTests.cs" />
+    <Compile Include="Currency\CurrencyConverterBetterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Currency\CurrencyConverterTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

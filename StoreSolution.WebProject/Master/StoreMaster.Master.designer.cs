@@ -49,31 +49,31 @@ namespace StoreSolution.WebProject.Master {
         protected global::System.Web.UI.WebControls.ImageButton ru_RU;
         
         /// <summary>
-        /// rub control.
+        /// rub_ru_RU control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ImageButton rub;
+        protected global::System.Web.UI.WebControls.ImageButton rub_ru_RU;
         
         /// <summary>
-        /// usd control.
+        /// usd_en_US control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ImageButton usd;
+        protected global::System.Web.UI.WebControls.ImageButton usd_en_US;
         
         /// <summary>
-        /// gbp control.
+        /// gbp_en_GB control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ImageButton gbp;
+        protected global::System.Web.UI.WebControls.ImageButton gbp_en_GB;
         
         /// <summary>
         /// hlUser control.

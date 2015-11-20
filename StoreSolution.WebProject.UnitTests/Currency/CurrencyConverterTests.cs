@@ -79,19 +79,7 @@ namespace StoreSolution.WebProject.UnitTests.Currency
 
             Assert.AreNotEqual(expected, actual);
         }
-
-        [TestMethod]
-        public void GetCurrencyNameForCulture_GetCurrencyForEnUs_ReturnUsd()
-        {
-            var cultureName = "en-US";
-
-            var actual = new CurrencyConverter().GetCurrencyNameForCulture(cultureName);
-
-            var expected = "USD";
-
-            Assert.AreEqual(expected, actual);
-        }
-
+        
         [TestMethod]
         public void GetCultureNameForCurrency_GetCultureNameForUsd_ReturnEnUs()
         {

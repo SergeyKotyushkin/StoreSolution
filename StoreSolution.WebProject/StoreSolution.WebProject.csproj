@@ -59,9 +59,12 @@
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="StructureMap, Version=2.6.4.0, Culture=neutral, PublicKeyToken=e60ad81abae3c223, processorArchitecture=MSIL">
+    <Reference Include="StructureMap, Version=3.1.6.186, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\structuremap.2.6.4.1\lib\net40\StructureMap.dll</HintPath>
+      <HintPath>..\packages\structuremap.3.1.6.186\lib\net40\StructureMap.dll</HintPath>
+    </Reference>
+    <Reference Include="StructureMap.Net4">
+      <HintPath>..\packages\structuremap.3.1.6.186\lib\net40\StructureMap.Net4.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data.SqlServerCe, Version=4.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -173,7 +176,14 @@
       <DependentUpon>Profile.aspx</DependentUpon>
     </Compile>
     <Compile Include="Currency\Contracts\ICurrencyConverter.cs" />
+    <Compile Include="Currency\Contracts\ICurrencyService.cs" />
+    <Compile Include="Currency\Contracts\IRateService.cs" />
+    <Compile Include="Currency\CurrencyConverterBetter.cs" />
+    <Compile Include="Currency\CurrencyService.cs" />
+    <Compile Include="Currency\Contracts\ICurrencyConverterBetter.cs" />
     <Compile Include="Currency\Rate.cs" />
+    <Compile Include="Currency\RateScheme.cs" />
+    <Compile Include="Currency\YahooRateService.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -203,6 +213,9 @@
     <Compile Include="Master\StoreMaster.Master.designer.cs">
       <DependentUpon>StoreMaster.Master</DependentUpon>
     </Compile>
+    <Compile Include="StructureMap\CurrencyRegistry.cs" />
+    <Compile Include="StructureMap\RepositoryRegistry.cs" />
+    <Compile Include="StructureMap\StructureMapFactory.cs" />
     <Compile Include="User\Basket.aspx.cs">
       <DependentUpon>Basket.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

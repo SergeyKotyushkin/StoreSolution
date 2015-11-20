@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Web;
 using System.Web.Security;
@@ -12,7 +13,7 @@ using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 using StoreSolution.WebProject.Model;
-using StructureMap;
+using StoreSolution.WebProject.StructureMap;
 
 namespace StoreSolution.WebProject.User
 {
@@ -20,18 +21,20 @@ namespace StoreSolution.WebProject.User
     {
         private bool _isSearch;
         private StoreMaster _master;
+
         private readonly IProductRepository _productRepository;
-        private readonly ICurrencyConverter _currencyConverter;
+        private readonly ICurrencyConverterBetter _currencyConverterBetter;
 
         protected ProductCatalog()
-            : this(ObjectFactory.GetInstance<IProductRepository>(), ObjectFactory.GetInstance<ICurrencyConverter>())
+            : this(StructureMapFactory.Resolve<IProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverterBetter>())
         {
+            
         }
 
-        protected ProductCatalog(IProductRepository productRepository, ICurrencyConverter currencyConverter)
+        protected ProductCatalog(IProductRepository productRepository, ICurrencyConverterBetter currencyConverterBetter)
         {
             _productRepository = productRepository;
-            _currencyConverter = currencyConverter;
+            _currencyConverterBetter = currencyConverterBetter;
         }
 
         protected override void InitializeCulture()
@@ -106,13 +109,14 @@ namespace StoreSolution.WebProject.User
 
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
-            var cultureInfo = _master.GetCurrencyCultureInfo();
+            var cultureFrom = new CultureInfo("ru-RU");
+            var cultureTo = _master.GetCurrencyCultureInfo();
 
-            var rate = _currencyConverter.GetRate(cultureInfo.Name);
+            var rate = _currencyConverterBetter.GetRate(cultureFrom, cultureTo, DateTime.Now);
             foreach (GridViewRow row in gvTable.Rows)
             {
-                var price = _currencyConverter.ConvertFromRu(decimal.Parse(row.Cells[6].Text), rate);
-                row.Cells[6].Text = price.ToString("C", cultureInfo);
+                var price = _currencyConverterBetter.ConvertByRate(decimal.Parse(row.Cells[6].Text), rate);
+                row.Cells[6].Text = price.ToString("C", cultureTo);
             }
         }
 

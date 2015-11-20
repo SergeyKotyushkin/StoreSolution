@@ -6,27 +6,13 @@ using System.Web;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using StoreSolution.WebProject.Currency.Contracts;
 using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
-using StructureMap;
 
 namespace StoreSolution.WebProject.Master
 {
     public partial class StoreMaster : MasterPage
     {
-        private readonly ICurrencyConverter _currencyConverter;
-
-        public StoreMaster():this(ObjectFactory.GetInstance<ICurrencyConverter>())
-        {
-            
-        }
-
-        public StoreMaster(ICurrencyConverter currencyConverter)
-        {
-            _currencyConverter = currencyConverter;
-        }
-
         public string HlUserText
         {
             get { return hlUser.Text; }
@@ -59,7 +45,7 @@ namespace StoreSolution.WebProject.Master
 
         public void HiddenMoney()
         {
-            rub.Visible = usd.Visible = gbp.Visible = false;
+            rub_ru_RU.Visible = usd_en_US.Visible = gbp_en_GB.Visible = false;
         }
 
 
@@ -79,32 +65,26 @@ namespace StoreSolution.WebProject.Master
 
         public virtual CultureInfo GetCurrencyCultureInfo()
         {
-            var cookie = Request.Cookies.Get("currency");
-            var currency = cookie != null
-                ? cookie.Value
-                : _currencyConverter.GetCurrencyNameForCulture(CultureInfo.CurrentCulture.Name);
+            var cookie = Request.Cookies.Get("currencyCultureName");
+            var currencyCultureName = CultureInfo.CurrentCulture.Name;
+            if (cookie == null)
+                Response.Cookies.Set(new HttpCookie("currencyCultureName", currencyCultureName));
+            else
+                currencyCultureName = cookie.Value;
 
-            if (cookie == null) Response.Cookies.Set(new HttpCookie("currency", currency));
-
-            var currentCultureName =
-                _currencyConverter.GetCultureNameForCurrency(currency);
-
-            return
-                CultureInfo.GetCultures(CultureTypes.AllCultures).FirstOrDefault(c => c.Name == currentCultureName) ??
-                CultureInfo.CurrentCulture;
+            return new CultureInfo(currencyCultureName);
         }
-
 
         protected void Page_Load(object sender, EventArgs e)
         {
             MarkCurrentCulture(CultureInfo.CurrentCulture);
 
-            var cookie = Request.Cookies.Get("currency");
-            var currency = cookie != null
-                ? cookie.Value
-                : _currencyConverter.GetCurrencyNameForCulture(CultureInfo.CurrentCulture.Name);
-
-            if(cookie == null) Response.Cookies.Set(new HttpCookie("currency", currency));
+            var cookie = Request.Cookies.Get("currencyCultureName");
+            var currency = CultureInfo.CurrentCulture.Name;
+            if (cookie == null)
+                Response.Cookies.Set(new HttpCookie("currencyCultureName", currency));
+            else 
+                currency = cookie.Value;
 
             MarkCurrentCurrency(currency);
         }
@@ -129,8 +109,8 @@ namespace StoreSolution.WebProject.Master
             var button = sender as ImageButton;
             if (button == null) return;
 
-            var id = button.ID.ToUpper();
-            Response.Cookies.Set(new HttpCookie("currency", id));
+            var id = button.ID.Substring(4).Replace('_', '-');
+            Response.Cookies.Set(new HttpCookie("currencyCultureName", id));
             Response.Redirect(Request.RawUrl);
         }
 
@@ -153,10 +133,11 @@ namespace StoreSolution.WebProject.Master
             imageButton.Style.Add("padding", "3px");
         }
 
-        private void MarkCurrentCurrency(string currency)
+        private void MarkCurrentCurrency(string cultureName)
         {
-            var imageButtons = new[] { rub, usd, gbp };
-            var imageButton = imageButtons.FirstOrDefault(b => b.ID.ToUpper() == currency) ?? usd;
+            var imageButtons = new[] { rub_ru_RU, usd_en_US, gbp_en_GB };
+            var imageButton = imageButtons.FirstOrDefault(b => b.ID.Substring(4).Replace('_', '-') == cultureName) ??
+                              usd_en_US;
 
             imageButton.BorderStyle = BorderStyle.Solid;
             imageButton.BorderColor = Color.White;
