@@ -18,6 +18,7 @@ namespace StoreSolution.WebProject.StructureMap
             {
                 c.IncludeRegistry<RepositoryRegistry>();
                 c.IncludeRegistry<CurrencyRegistry>();
+                c.IncludeRegistry<MailRegistry>();
             });
         }
 

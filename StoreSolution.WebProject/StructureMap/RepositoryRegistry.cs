@@ -9,15 +9,15 @@ namespace StoreSolution.WebProject.StructureMap
     {
         public RepositoryRegistry()
         {
-            this.Scan(scan =>
+            Scan(scan =>
             {
                 scan.TheCallingAssembly();
                 scan.WithDefaultConventions();
             });
 
-            this.For<IPersonRepository>().Use<EfPersonRepository>().Singleton();
-            this.For<IProductRepository>().Use<EfProductRepository>().Singleton();
-            this.For<IOrderHistoryRepository>().Use<EfOrderHistoryRepository>().Singleton();
+            For<IPersonRepository>().Use<EfPersonRepository>().Singleton();
+            For<IProductRepository>().Use<EfProductRepository>().Singleton();
+            For<IOrderHistoryRepository>().Use<EfOrderHistoryRepository>().Singleton();
         } 
     }
 }

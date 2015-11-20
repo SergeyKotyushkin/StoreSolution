@@ -9,15 +9,15 @@ namespace StoreSolution.WebProject.StructureMap
     {
         public CurrencyRegistry()
         {
-            this.Scan(scan =>
+            Scan(scan =>
             {
                 scan.TheCallingAssembly();
                 scan.WithDefaultConventions();
             });
 
-            this.For<ICurrencyConverter>().Use<CurrencyConverter>().Singleton();
-            this.For<ICurrencyService>().Use<CurrencyService>().Singleton();
-            this.For<IRateService>().Use<YahooRateService>().Singleton();
+            For<ICurrencyConverter>().Use<CurrencyConverter>().Singleton();
+            For<ICurrencyService>().Use<CurrencyService>().Singleton();
+            For<IRateService>().Use<YahooRateService>().Singleton();
         }
     }
 }

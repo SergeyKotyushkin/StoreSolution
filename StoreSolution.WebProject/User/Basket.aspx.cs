@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Globalization;
 using System.Linq;
+using System.Net.Configuration;
 using System.Net.Mail;
 using System.Web;
 using System.Web.Script.Serialization;
@@ -15,6 +17,7 @@ using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 using StoreSolution.WebProject.StructureMap;
+using StoreSolution.WebProject.User.MailSender.Contracts;
 
 namespace StoreSolution.WebProject.User
 {
@@ -24,21 +27,24 @@ namespace StoreSolution.WebProject.User
         private readonly IProductRepository _productRepository;
         private readonly IOrderHistoryRepository _orderHistoryRepository;
         private readonly ICurrencyConverter _currencyConverter;
+        private readonly IMailSender _mailSender;
 
         protected Basket()
             : this(
                 StructureMapFactory.Resolve<IProductRepository>(),
                 StructureMapFactory.Resolve<IOrderHistoryRepository>(),
-                StructureMapFactory.Resolve<ICurrencyConverter>())
+                StructureMapFactory.Resolve<ICurrencyConverter>(),
+                StructureMapFactory.Resolve<IMailSender>())
         {
         }
 
         protected Basket(IProductRepository productRepository, IOrderHistoryRepository orderHistoryRepository,
-            ICurrencyConverter currencyConverter)
+            ICurrencyConverter currencyConverter, IMailSender mailSender)
         {
             _productRepository = productRepository;
             _orderHistoryRepository = orderHistoryRepository;
             _currencyConverter = currencyConverter;
+            _mailSender = mailSender;
         }
 
         protected override void InitializeCulture()
@@ -118,7 +124,14 @@ namespace StoreSolution.WebProject.User
             var text =
                 string.Format(LangSetter.Set("Basket_MailMessage"), DateTime.Now.Date.ToShortDateString(), orderList,
                     total.ToString("C", cultureTo));
-            SendEmailToConsumer(user, text);
+            //SendEmailToConsumer(user, text);
+
+            var subject = "Online Store Alert!";
+            var section = (SmtpSection)ConfigurationManager.GetSection("system.net/mailSettings/smtp");
+
+            _mailSender.CreateMail(section.From, user.Email, subject, text, true);
+            _mailSender.Send();
+            
 
             Logger.Log.Info(string.Format("Products has bought by user - {0}. {1}", user.UserName, labTotal.Text));
             Session["Bought"] = 1;
