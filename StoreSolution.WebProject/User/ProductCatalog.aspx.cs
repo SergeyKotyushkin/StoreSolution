@@ -23,18 +23,18 @@ namespace StoreSolution.WebProject.User
         private StoreMaster _master;
 
         private readonly IProductRepository _productRepository;
-        private readonly ICurrencyConverterBetter _currencyConverterBetter;
+        private readonly ICurrencyConverter _currencyConverter;
 
         protected ProductCatalog()
-            : this(StructureMapFactory.Resolve<IProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverterBetter>())
+            : this(StructureMapFactory.Resolve<IProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>())
         {
             
         }
 
-        protected ProductCatalog(IProductRepository productRepository, ICurrencyConverterBetter currencyConverterBetter)
+        protected ProductCatalog(IProductRepository productRepository, ICurrencyConverter currencyConverter)
         {
             _productRepository = productRepository;
-            _currencyConverterBetter = currencyConverterBetter;
+            _currencyConverter = currencyConverter;
         }
 
         protected override void InitializeCulture()
@@ -112,10 +112,10 @@ namespace StoreSolution.WebProject.User
             var cultureFrom = new CultureInfo("ru-RU");
             var cultureTo = _master.GetCurrencyCultureInfo();
 
-            var rate = _currencyConverterBetter.GetRate(cultureFrom, cultureTo, DateTime.Now);
+            var rate = _currencyConverter.GetRate(cultureFrom, cultureTo, DateTime.Now);
             foreach (GridViewRow row in gvTable.Rows)
             {
-                var price = _currencyConverterBetter.ConvertByRate(decimal.Parse(row.Cells[6].Text), rate);
+                var price = _currencyConverter.ConvertByRate(decimal.Parse(row.Cells[6].Text), rate);
                 row.Cells[6].Text = price.ToString("C", cultureTo);
             }
         }

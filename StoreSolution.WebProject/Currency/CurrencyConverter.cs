@@ -4,11 +4,11 @@ using StoreSolution.WebProject.Currency.Contracts;
 
 namespace StoreSolution.WebProject.Currency
 {
-    public class CurrencyConverterBetter : ICurrencyConverterBetter
+    public class CurrencyConverter : ICurrencyConverter
     {
         private readonly ICurrencyService _currencyService;
 
-        public CurrencyConverterBetter(ICurrencyService currencyService)
+        public CurrencyConverter(ICurrencyService currencyService)
         {
             _currencyService = currencyService;
         }

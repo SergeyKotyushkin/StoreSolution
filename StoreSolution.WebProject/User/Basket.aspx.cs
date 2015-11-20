@@ -23,22 +23,22 @@ namespace StoreSolution.WebProject.User
         private StoreMaster _master;
         private readonly IProductRepository _productRepository;
         private readonly IOrderHistoryRepository _orderHistoryRepository;
-        private readonly ICurrencyConverterBetter _currencyConverterBetter;
+        private readonly ICurrencyConverter _currencyConverter;
 
         protected Basket()
             : this(
                 StructureMapFactory.Resolve<IProductRepository>(),
                 StructureMapFactory.Resolve<IOrderHistoryRepository>(),
-                StructureMapFactory.Resolve<ICurrencyConverterBetter>())
+                StructureMapFactory.Resolve<ICurrencyConverter>())
         {
         }
 
         protected Basket(IProductRepository productRepository, IOrderHistoryRepository orderHistoryRepository,
-            ICurrencyConverterBetter currencyConverterBetter)
+            ICurrencyConverter currencyConverter)
         {
             _productRepository = productRepository;
             _orderHistoryRepository = orderHistoryRepository;
-            _currencyConverterBetter = currencyConverterBetter;
+            _currencyConverter = currencyConverter;
         }
 
         protected override void InitializeCulture()
@@ -83,13 +83,13 @@ namespace StoreSolution.WebProject.User
             var products = _productRepository.Products.ToList();
             var orders = GetOrdersFromSession();
             var cultureTo = _master.GetCurrencyCultureInfo();
-            var rate = _currencyConverterBetter.GetRate(new CultureInfo("ru-Ru"), cultureTo, DateTime.Now);
+            var rate = _currencyConverter.GetRate(new CultureInfo("ru-Ru"), cultureTo, DateTime.Now);
             var list = products.Join(orders, p => p.Id, q => q.Id, (p, q) => new
             {
                 p.Name, 
-                Price = _currencyConverterBetter.ConvertByRate(p.Price, rate),
+                Price = _currencyConverter.ConvertByRate(p.Price, rate),
                 q.Count,
-                Total = (q.Count * _currencyConverterBetter.ConvertByRate(p.Price, rate))
+                Total = (q.Count * _currencyConverter.ConvertByRate(p.Price, rate))
             }).ToList();
 
             var total = list.Sum(p => p.Total);
@@ -142,10 +142,10 @@ namespace StoreSolution.WebProject.User
             var cultureFrom = new CultureInfo("ru-RU");
             var cultureTo = _master.GetCurrencyCultureInfo();
 
-            var rate = _currencyConverterBetter.GetRate(cultureFrom, cultureTo, DateTime.Now);
+            var rate = _currencyConverter.GetRate(cultureFrom, cultureTo, DateTime.Now);
             for (var i = 0; i < gvTable.Rows.Count; i++)
             {
-                var price = _currencyConverterBetter.ConvertByRate(decimal.Parse(gvTable.Rows[i].Cells[1].Text), rate);
+                var price = _currencyConverter.ConvertByRate(decimal.Parse(gvTable.Rows[i].Cells[1].Text), rate);
                 gvTable.Rows[i].Cells[1].Text = price.ToString("C", cultureTo);
                 gvTable.Rows[i].Cells[3].Text = decimal.Parse(gvTable.Rows[i].Cells[3].Text).ToString("C", cultureTo);
             }
@@ -168,7 +168,7 @@ namespace StoreSolution.WebProject.User
             var orders = GetOrdersFromSession();
 
             var cultureTo = _master.GetCurrencyCultureInfo();
-            var rate = _currencyConverterBetter.GetRate(new CultureInfo("ru-Ru"), cultureTo, DateTime.Now);
+            var rate = _currencyConverter.GetRate(new CultureInfo("ru-Ru"), cultureTo, DateTime.Now);
             var list =
                 products.Join(orders, p => p.Id, q => q.Id,
                     (p, q) =>
@@ -177,7 +177,7 @@ namespace StoreSolution.WebProject.User
                             p.Name,
                             p.Price,
                             q.Count,
-                            Total = (q.Count * _currencyConverterBetter.ConvertByRate(p.Price, rate))
+                            Total = (q.Count * _currencyConverter.ConvertByRate(p.Price, rate))
                         })
                     .ToList();
             gvTable.DataSource = list;               

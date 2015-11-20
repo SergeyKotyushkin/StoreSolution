@@ -9,7 +9,7 @@ using StructureMap.Graph;
 namespace StoreSolution.WebProject.UnitTests.Currency
 {
     [TestClass]
-    public class CurrencyConverterBetterTests
+    public class CurrencyConverterTests
     {
         [TestMethod]
         public void Convert_GbpToUsd_NotZeroResultWithoutExceptions()
@@ -98,7 +98,7 @@ namespace StoreSolution.WebProject.UnitTests.Currency
             Assert.AreNotEqual(expected, actual);
         }
 
-        private static CurrencyConverterBetter ArrangeConverter()
+        private static CurrencyConverter ArrangeConverter()
         {
             var container = new Container(
                 x =>
@@ -113,7 +113,7 @@ namespace StoreSolution.WebProject.UnitTests.Currency
                     x.For<IRateService>().Use<YahooRateService>().Singleton();
                 });
             
-            return new CurrencyConverterBetter(container.GetInstance<ICurrencyService>());
+            return new CurrencyConverter(container.GetInstance<ICurrencyService>());
         }
     }
 }

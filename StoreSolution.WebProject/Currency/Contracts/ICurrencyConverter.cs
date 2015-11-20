@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace StoreSolution.WebProject.Currency.Contracts
 {
-    public interface ICurrencyConverterBetter
+    public interface ICurrencyConverter
     {
         decimal Convert(CultureInfo cultureFrom, CultureInfo cultureTo, decimal value, DateTime dateTimeNow);
 

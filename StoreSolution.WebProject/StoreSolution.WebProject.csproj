@@ -177,9 +177,9 @@
     </Compile>
     <Compile Include="Currency\Contracts\ICurrencyService.cs" />
     <Compile Include="Currency\Contracts\IRateService.cs" />
-    <Compile Include="Currency\CurrencyConverterBetter.cs" />
+    <Compile Include="Currency\CurrencyConverter.cs" />
     <Compile Include="Currency\CurrencyService.cs" />
-    <Compile Include="Currency\Contracts\ICurrencyConverterBetter.cs" />
+    <Compile Include="Currency\Contracts\ICurrencyConverter.cs" />
     <Compile Include="Currency\RateScheme.cs" />
     <Compile Include="Currency\YahooRateService.cs" />
     <Compile Include="Global.asax.cs">

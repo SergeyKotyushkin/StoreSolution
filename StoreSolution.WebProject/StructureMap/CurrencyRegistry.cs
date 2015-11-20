@@ -15,7 +15,7 @@ namespace StoreSolution.WebProject.StructureMap
                 scan.WithDefaultConventions();
             });
 
-            this.For<ICurrencyConverterBetter>().Use<CurrencyConverterBetter>().Singleton();
+            this.For<ICurrencyConverter>().Use<CurrencyConverter>().Singleton();
             this.For<ICurrencyService>().Use<CurrencyService>().Singleton();
             this.For<IRateService>().Use<YahooRateService>().Singleton();
         }

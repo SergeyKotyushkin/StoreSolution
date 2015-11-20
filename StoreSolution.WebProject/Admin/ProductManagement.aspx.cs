@@ -19,17 +19,17 @@ namespace StoreSolution.WebProject.Admin
     {
         private StoreMaster _master;
         private readonly IProductRepository _productRepository;
-        private readonly ICurrencyConverterBetter _currencyConverterBetter;
+        private readonly ICurrencyConverter _currencyConverter;
 
         protected ProductManagement()
-            : this(StructureMapFactory.Resolve<IProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverterBetter>())
+            : this(StructureMapFactory.Resolve<IProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>())
         {
         }
 
-        protected ProductManagement(IProductRepository productRepository, ICurrencyConverterBetter currencyConverterBetter)
+        protected ProductManagement(IProductRepository productRepository, ICurrencyConverter currencyConverter)
         {
             _productRepository = productRepository;
-            _currencyConverterBetter = currencyConverterBetter;
+            _currencyConverter = currencyConverter;
         }
 
         protected override void InitializeCulture()
@@ -91,7 +91,7 @@ namespace StoreSolution.WebProject.Admin
             else
             {
                 var cultureFrom = _master.GetCurrencyCultureInfo();
-                price = _currencyConverterBetter.ConvertToRubles(cultureFrom, price, DateTime.Now);
+                price = _currencyConverter.ConvertToRubles(cultureFrom, price, DateTime.Now);
 
                 var product = new Product {Id = id, Name = name, Category = category, Price = price};
 
@@ -133,7 +133,7 @@ namespace StoreSolution.WebProject.Admin
             var priceString = ((TextBox) gvTable.Rows[gvTable.EditIndex].Cells[5].Controls[0]).Text;
             var price = decimal.Parse(priceString);
             var cultureTo = _master.GetCurrencyCultureInfo();
-            var culturePrice = _currencyConverterBetter.ConvertFromRubles(cultureTo, price, DateTime.Now);
+            var culturePrice = _currencyConverter.ConvertFromRubles(cultureTo, price, DateTime.Now);
             ((TextBox)gvTable.Rows[gvTable.EditIndex].Cells[5].Controls[0]).Text = string.Format("{0}", culturePrice);
         }
 
@@ -186,7 +186,7 @@ namespace StoreSolution.WebProject.Admin
                 else
                 {
                     var cultureFrom = _master.GetCurrencyCultureInfo();
-                    price = _currencyConverterBetter.ConvertToRubles(cultureFrom, price, DateTime.Now);
+                    price = _currencyConverter.ConvertToRubles(cultureFrom, price, DateTime.Now);
 
                     var product = new Product {Id = -1, Name = name, Category = category, Price = price};
 
@@ -220,11 +220,11 @@ namespace StoreSolution.WebProject.Admin
             var cultureFrom = new CultureInfo("ru-RU");
             var cultureTo = _master.GetCurrencyCultureInfo();
 
-            var rate = _currencyConverterBetter.GetRate(cultureFrom, cultureTo, DateTime.Now);
+            var rate = _currencyConverter.GetRate(cultureFrom, cultureTo, DateTime.Now);
             foreach (GridViewRow row in gvTable.Rows)
             {
                 if (row.Cells[2].Controls.Count != 0) continue;
-                var price = _currencyConverterBetter.ConvertByRate(decimal.Parse(row.Cells[5].Text), rate);
+                var price = _currencyConverter.ConvertByRate(decimal.Parse(row.Cells[5].Text), rate);
                 row.Cells[5].Text = price.ToString("C", cultureTo);
             }
         }

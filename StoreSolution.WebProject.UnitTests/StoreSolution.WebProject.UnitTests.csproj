@@ -64,7 +64,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Admin\ProductManagementTests.cs" />
-    <Compile Include="Currency\CurrencyConverterBetterTests.cs" />
+    <Compile Include="Currency\CurrencyConverterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
