@@ -65,6 +65,8 @@
   <ItemGroup>
     <Compile Include="Admin\ProductManagementTests.cs" />
     <Compile Include="Currency\CurrencyConverterTests.cs" />
+    <Compile Include="Currency\CurrencyServiceTests.cs" />
+    <Compile Include="Currency\YahooRateServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

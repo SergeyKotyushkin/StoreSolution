@@ -25,7 +25,7 @@ namespace StoreSolution.WebProject.Currency
             var rateScheme = GetRateScheme(cultureForm, cultureTo);
             if (rateScheme == null) return false; // null if this rate scheme is apsent
 
-            return rateScheme.Updated - dateTimeNow < _updatedPeriod;
+            return dateTimeNow - rateScheme.Updated < _updatedPeriod;
         }
 
         public decimal GetRealTimeRate(CultureInfo cultureForm, CultureInfo cultureTo, DateTime dateTimeNow)
@@ -37,11 +37,13 @@ namespace StoreSolution.WebProject.Currency
             return rate;
         }
 
-        public decimal GetRate(CultureInfo cultureForm, CultureInfo cultureTo)
+        public decimal GetRate(CultureInfo cultureForm, CultureInfo cultureTo, DateTime dateTimeNow)
         {
             var rateScheme = GetRateScheme(cultureForm, cultureTo);
 
-            return Equals(rateScheme.From, cultureForm) ? rateScheme.RateDirect : rateScheme.RateInverse;
+            return rateScheme != null
+                ? (Equals(rateScheme.From, cultureForm) ? rateScheme.RateDirect : rateScheme.RateInverse)
+                : GetRealTimeRate(cultureForm, cultureTo, dateTimeNow);
         }
 
 

@@ -9,6 +9,6 @@ namespace StoreSolution.WebProject.Currency.Contracts
 
         decimal GetRealTimeRate(CultureInfo cultureForm, CultureInfo cultureTo, DateTime dateTimeNow);
 
-        decimal GetRate(CultureInfo cultureForm, CultureInfo cultureTo);
+        decimal GetRate(CultureInfo cultureForm, CultureInfo cultureTo, DateTime dateTimeNow);
     }
 }

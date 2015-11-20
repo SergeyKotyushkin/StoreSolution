@@ -39,7 +39,7 @@ namespace StoreSolution.WebProject.Currency
         {
             return !_currencyService.CheckIsRateActual(cultureFrom, cultureTo, dateTimeNow)
                 ? _currencyService.GetRealTimeRate(cultureFrom, cultureTo, dateTimeNow)
-                : _currencyService.GetRate(cultureFrom, cultureTo);
+                : _currencyService.GetRate(cultureFrom, cultureTo, dateTimeNow);
         }
     }
 }
