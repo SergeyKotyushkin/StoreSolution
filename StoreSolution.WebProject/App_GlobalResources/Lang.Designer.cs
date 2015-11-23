@@ -124,6 +124,15 @@ namespace StoreSolution.WebProject.App_GlobalResources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Online Store Alert!.
+        /// </summary>
+        public static string Basket_MailMessageSubject {
+            get {
+                return ResourceManager.GetString("Basket_MailMessageSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &lt;li&gt;&lt;b&gt;{0}&lt;/b&gt; [quantity: {1}; price: {2}]&lt;/li&gt;.
         /// </summary>
         public static string Basket_MailOrderList {

@@ -4,25 +4,26 @@ using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Net.Configuration;
-using System.Net.Mail;
 using System.Web;
 using System.Web.Script.Serialization;
 using System.Web.UI.WebControls;
-using StoreSolution.WebProject.Model;
 using System.Web.Security;
+using System.Web.UI;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.DatabaseProject.Model;
 using StoreSolution.WebProject.Currency.Contracts;
 using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
+using StoreSolution.WebProject.Model;
 using StoreSolution.WebProject.StructureMap;
 using StoreSolution.WebProject.User.MailSender.Contracts;
 
 namespace StoreSolution.WebProject.User
 {
-    public partial class Basket : System.Web.UI.Page
+    public partial class Basket : Page
     {
+        private const string SmtpSectionPath = "system.net/mailSettings/smtp";
         private StoreMaster _master;
         private readonly IProductRepository _productRepository;
         private readonly IOrderHistoryRepository _orderHistoryRepository;
@@ -86,53 +87,19 @@ namespace StoreSolution.WebProject.User
                 return;
             }
 
-            var products = _productRepository.Products.ToList();
-            var orders = GetOrdersFromSession();
-            var cultureTo = _master.GetCurrencyCultureInfo();
-            var rate = _currencyConverter.GetRate(new CultureInfo("ru-Ru"), cultureTo, DateTime.Now);
-            var list = products.Join(orders, p => p.Id, q => q.Id, (p, q) => new
-            {
-                p.Name, 
-                Price = _currencyConverter.ConvertByRate(p.Price, rate),
-                q.Count,
-                Total = (q.Count * _currencyConverter.ConvertByRate(p.Price, rate))
-            }).ToList();
+            var products = _productRepository.Products.ToArray();
+            var orders = GetOrdersFromSession().ToArray();
+            var currencyCultureInfo = _master.GetCurrencyCultureInfo();
+            var orderItemsList = GetOrderItemsList(products, orders, currencyCultureInfo).ToArray();
 
-            var total = list.Sum(p => p.Total);
+            SaveOrderToDatabase(orderItemsList, user, currencyCultureInfo);
 
-            var jsonSerialiser = new JavaScriptSerializer();
-            var order = jsonSerialiser.Serialize(list);
+            var from = ((SmtpSection)ConfigurationManager.GetSection(SmtpSectionPath)).From;
+            var mailMessageSuject = LangSetter.Set("Basket_MailMessageSubject");
+            var mailMessageBody = GetMailMessageBody(orderItemsList, currencyCultureInfo);
 
-            var orderToHistory = new OrderHistory
-            {
-                Order = order,
-                PersonName = user.UserName,
-                PersonEmail = user.Email,
-                Total = total,
-                Date = DateTime.Now,
-                Culture = cultureTo.Name
-            };
-
-            _orderHistoryRepository.AddOrUpdate(orderToHistory);
-
-            var orderList = string.Format("{0}</ul>", list.Aggregate("<ul>",
-                            (current, p) =>
-                                current +
-                                string.Format(LangSetter.Set("Basket_MailOrderList"), p.Name, p.Count,
-                                    p.Price.ToString("C", cultureTo))));
-
-            var text =
-                string.Format(LangSetter.Set("Basket_MailMessage"), DateTime.Now.Date.ToShortDateString(), orderList,
-                    total.ToString("C", cultureTo));
-            //SendEmailToConsumer(user, text);
-
-            var subject = "Online Store Alert!";
-            var section = (SmtpSection)ConfigurationManager.GetSection("system.net/mailSettings/smtp");
-
-            _mailSender.CreateMail(section.From, user.Email, subject, text, true);
-            _mailSender.Send();
+            _mailSender.Send(from, user.Email, mailMessageSuject, mailMessageBody, true);
             
-
             Logger.Log.Info(string.Format("Products has bought by user - {0}. {1}", user.UserName, labTotal.Text));
             Session["Bought"] = 1;
             Session["CurrentOrder"] = null;
@@ -141,7 +108,8 @@ namespace StoreSolution.WebProject.User
 
         protected void GV_table_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
-            gvTable.PageIndex = e.NewPageIndex;
+            var gv = (GridView) sender;
+            gv.PageIndex = e.NewPageIndex;
         }
 
         protected void GV_table_PageIndexChanged(object sender, EventArgs e)
@@ -152,14 +120,11 @@ namespace StoreSolution.WebProject.User
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
             if(gvTable.Rows.Count == 0) return;
-            var cultureFrom = new CultureInfo("ru-RU");
-            var cultureTo = _master.GetCurrencyCultureInfo();
 
-            var rate = _currencyConverter.GetRate(cultureFrom, cultureTo, DateTime.Now);
+            var cultureTo = _master.GetCurrencyCultureInfo();
             for (var i = 0; i < gvTable.Rows.Count; i++)
             {
-                var price = _currencyConverter.ConvertByRate(decimal.Parse(gvTable.Rows[i].Cells[1].Text), rate);
-                gvTable.Rows[i].Cells[1].Text = price.ToString("C", cultureTo);
+                gvTable.Rows[i].Cells[1].Text = decimal.Parse(gvTable.Rows[i].Cells[1].Text).ToString("C", cultureTo);
                 gvTable.Rows[i].Cells[3].Text = decimal.Parse(gvTable.Rows[i].Cells[3].Text).ToString("C", cultureTo);
             }
         }
@@ -167,6 +132,7 @@ namespace StoreSolution.WebProject.User
         protected void gvTable_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             if (e.Row.RowType != DataControlRowType.Header) return;
+
             e.Row.Cells[0].Text = LangSetter.Set("Basket_HeaderName");
             e.Row.Cells[1].Text = LangSetter.Set("Basket_HeaderPrice");
             e.Row.Cells[2].Text = LangSetter.Set("Basket_HeaderCount");
@@ -176,33 +142,20 @@ namespace StoreSolution.WebProject.User
 
         private void FillOrdersGridView()
         {
-            var products = _productRepository.Products.ToList();
-
+            var products = _productRepository.Products.ToArray();
             var orders = GetOrdersFromSession();
 
             var cultureTo = _master.GetCurrencyCultureInfo();
-            var rate = _currencyConverter.GetRate(new CultureInfo("ru-Ru"), cultureTo, DateTime.Now);
-            var list =
-                products.Join(orders, p => p.Id, q => q.Id,
-                    (p, q) =>
-                        new
-                        {
-                            p.Name,
-                            p.Price,
-                            q.Count,
-                            Total = (q.Count * _currencyConverter.ConvertByRate(p.Price, rate))
-                        })
-                    .ToList();
+            var list = GetOrderItemsList(products, orders, cultureTo).ToArray();
             gvTable.DataSource = list;               
             gvTable.DataBind();
 
-            var sum = list.Sum(p => p.Total);
+            labTotal.Text = string.Format(LangSetter.Set("Basket_Total"),
+                list.Sum(p => p.Total).ToString("C", cultureTo));
 
-            var text = LangSetter.Set("Basket_Total");
-            if (text != null) labTotal.Text = string.Format(text, sum.ToString("C", cultureTo));
-            
             btnBuy.Enabled = true;
-            if (list.Count != 0) return;
+            if (list.Length != 0) return;
+
             btnBuy.Enabled = false;
             labTotal.Text = LangSetter.Set("Basket_EmptyOrder");
         }
@@ -218,24 +171,75 @@ namespace StoreSolution.WebProject.User
             return Session["CurrentOrder"] as List<Order> ?? new List<Order>();
         }
 
-        private static void SendEmailToConsumer(MembershipUser user, string text)
+        private static string GetMailMessageBody(IEnumerable<OrderItem> orderItemsList, IFormatProvider currencyCultureInfo)
         {
-            var admin = Membership.GetUser("Sergey");
-            if (admin == null) return;
+            var mailMessageBody = CreateMailMessageBody(orderItemsList, currencyCultureInfo);
 
-            using (var message = new MailMessage())
+            return mailMessageBody;
+        }
+
+        private IEnumerable<OrderItem> GetOrderItemsList(IEnumerable<Product> products, IEnumerable<Order> orders,
+            CultureInfo currencyCultureInfo)
+        {
+            var rate = _currencyConverter.GetRate(new CultureInfo("ru-Ru"), currencyCultureInfo, DateTime.Now);
+            return products.Join(orders, p => p.Id, q => q.Id, (p, q) => new OrderItem
             {
-                message.From = new MailAddress("OnlineStore@admmin");
-                message.To.Add(new MailAddress(user.Email));
-                message.CC.Add(new MailAddress(user.Email));
-                message.Subject = "Online Store Alert!";
-                message.IsBodyHtml = true;
-                message.Body = text;
-                using (var client = new SmtpClient())
-                {
-                    client.Send(message);
-                }
-            }
+                Name = p.Name,
+                Price = _currencyConverter.ConvertByRate(p.Price, rate),
+                Count = q.Count,
+                Total = (q.Count*_currencyConverter.ConvertByRate(p.Price, rate))
+            });
+        }
+
+        private void SaveOrderToDatabase(IEnumerable<OrderItem> orderItemsList, MembershipUser user,
+            CultureInfo currencyCultureInfo)
+        {
+            var orderToHistory = CreateOrderToHistory(orderItemsList, user, currencyCultureInfo);
+
+            _orderHistoryRepository.AddOrUpdate(orderToHistory);
+        }
+
+        private static OrderHistory CreateOrderToHistory(IEnumerable<OrderItem> orderItemsList, MembershipUser user,
+            CultureInfo currencyCultureInfo)
+        {
+            var jsonSerialiser = new JavaScriptSerializer();
+            var order = jsonSerialiser.Serialize(orderItemsList);
+
+            return new OrderHistory
+            {
+                Order = order,
+                PersonName = user.UserName,
+                PersonEmail = user.Email,
+                Total = orderItemsList.Sum(p => p.Total),
+                Date = DateTime.Now,
+                Culture = currencyCultureInfo.Name
+            };
+        }
+
+        private static string CreateMailMessageBody(IEnumerable<OrderItem> orderItemsList,
+            IFormatProvider currencyCultureInfo)
+        {
+            var orderItems = orderItemsList.ToArray();
+
+            var orderList = string.Format("{0}</ul>", orderItems.Aggregate("<ul>",
+                (current, p) =>
+                    current +
+                    string.Format(
+                        LangSetter.Set("Basket_MailOrderList"), 
+                        p.Name, 
+                        p.Count,
+                        p.Price.ToString("C", currencyCultureInfo))));
+
+            var total = orderItems.Sum(p => p.Total);
+
+            var mailMessageBody =
+                string.Format(
+                    LangSetter.Set("Basket_MailMessage"),
+                    DateTime.Now.Date.ToShortDateString(),
+                    orderList,
+                    total.ToString("C", currencyCultureInfo));
+
+            return mailMessageBody;
         }
     }
 }

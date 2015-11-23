@@ -2,8 +2,6 @@
 {
     public interface IMailSender
     {
-        void CreateMail(string @from, string to, string subject, string body, bool isBodyHtml);
-
-        void Send();
+        void Send(string from, string to, string subject, string body, bool isBodyHtml);
     }
 }

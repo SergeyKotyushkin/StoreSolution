@@ -402,4 +402,7 @@
   <data name="Basket_MailOrderList" xml:space="preserve">
     <value>&lt;li&gt;&lt;b&gt;{0}&lt;/b&gt; [quantity: {1}; price: {2}]&lt;/li&gt;</value>
   </data>
+  <data name="Basket_MailMessageSubject" xml:space="preserve">
+    <value>Online Store Alert!</value>
+  </data>
 </root>

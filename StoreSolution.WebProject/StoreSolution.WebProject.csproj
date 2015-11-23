@@ -195,6 +195,7 @@
     <Compile Include="Lang\LangSetter.cs" />
     <Compile Include="Log4net\Logger.cs" />
     <Compile Include="Model\OrderFromHistory.cs" />
+    <Compile Include="Model\OrderItem.cs" />
     <Compile Include="Model\OrderToGrid.cs" />
     <Compile Include="Model\ProductsOrder.cs" />
     <Compile Include="NotAuthenticated\NewUser.aspx.cs">
