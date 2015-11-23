@@ -16,24 +16,29 @@ using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 using StoreSolution.WebProject.Model;
 using StoreSolution.WebProject.StructureMap;
+using StoreSolution.WebProject.UserGruop.Contracts;
 
 namespace StoreSolution.WebProject.Authenticated
 {
     public partial class Profile : System.Web.UI.Page
     {
         private StoreMaster _master;
-        private readonly IPersonRepository _iPersonRepository;
-        private readonly IOrderHistoryRepository _iOrderHistoryRepository;
+        private readonly IPersonRepository _personRepository;
+        private readonly IOrderHistoryRepository _orderHistoryRepository;
+        private readonly IUserGroup _userGroup;
 
         protected Profile()
-            : this(StructureMapFactory.Resolve<IPersonRepository>(), StructureMapFactory.Resolve<IOrderHistoryRepository>())
+            : this(
+                StructureMapFactory.Resolve<IPersonRepository>(), StructureMapFactory.Resolve<IOrderHistoryRepository>(),
+                StructureMapFactory.Resolve<IUserGroup>())
         {
         }
 
-        protected Profile(IPersonRepository iPersonRepository, IOrderHistoryRepository iIOrderHistoryRepository)
+        protected Profile(IPersonRepository personRepository, IOrderHistoryRepository orderHistoryRepository, IUserGroup userGroup)
         {
-            _iPersonRepository = iPersonRepository;
-            _iOrderHistoryRepository = iIOrderHistoryRepository;
+            _personRepository = personRepository;
+            _orderHistoryRepository = orderHistoryRepository;
+            _userGroup = userGroup;
         }
 
         protected override void InitializeCulture()
@@ -53,7 +58,7 @@ namespace StoreSolution.WebProject.Authenticated
             _master = (StoreMaster)Page.Master;
             if (_master == null) throw new HttpUnhandledException("Wrong master page.");
 
-            _master.HiddenMoney();
+            _master.HideMoney();
 
             if(!Page.IsPostBack)
                 RefereshUser();
@@ -63,9 +68,9 @@ namespace StoreSolution.WebProject.Authenticated
 
         protected void btnBack_Click(object sender, EventArgs e)
         {
-            var user = GetUserOrResponseEnd();
-            Logger.Log.Debug(string.Format("User {0} escaped Profile page.", user.UserName));
+            var user = _userGroup.GetUser();
 
+            Logger.Log.Debug(string.Format("User {0} escaped Profile page.", user.UserName));
             Response.Redirect("~/Index.aspx");
         }
 
@@ -95,8 +100,8 @@ namespace StoreSolution.WebProject.Authenticated
                 return;
             }
 
-            var user = GetUserOrResponseEnd();
-            var person = _iPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName) ?? new Person
+            var user = _userGroup.GetUser();
+            var person = _personRepository.Persons.FirstOrDefault(p => p.Login == user.UserName) ?? new Person
             {
                 Login = user.UserName,
                 Name = "",
@@ -115,7 +120,7 @@ namespace StoreSolution.WebProject.Authenticated
             };
 
             _master.LabMessageText = "";
-            if (_iPersonRepository.AddOrUpdate(updatedPerson))
+            if (_personRepository.AddOrUpdate(updatedPerson))
             {
                 _master.LabMessageForeColor = Color.DarkGreen;
                 _master.LabMessageText = LangSetter.Set("Profile_IconWasChanged");
@@ -128,9 +133,9 @@ namespace StoreSolution.WebProject.Authenticated
 
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
-            var user = GetUserOrResponseEnd();
+            var user = _userGroup.GetUser();
 
-            var person = _iPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName);
+            var person = _personRepository.Persons.FirstOrDefault(p => p.Login == user.UserName);
             if(person == null) return;
 
             var updatedPerson = new Person
@@ -141,7 +146,7 @@ namespace StoreSolution.WebProject.Authenticated
                 Icon = person.Icon
             };
 
-            var result = _iPersonRepository.AddOrUpdate(updatedPerson);
+            var result = _personRepository.AddOrUpdate(updatedPerson);
 
             string message;
             if (!result)
@@ -180,7 +185,7 @@ namespace StoreSolution.WebProject.Authenticated
                 return;
             }
 
-            var user = GetUserOrResponseEnd();
+            var user = _userGroup.GetUser();
             if (user.ChangePassword(tbOldPassword.Text, tbNewPassword.Text))
             {
                 _master.LabMessageForeColor = Color.DarkGreen;
@@ -234,26 +239,17 @@ namespace StoreSolution.WebProject.Authenticated
         {
             _master.LabMessageText = "";
 
-            var user = GetUserOrResponseEnd();
+            var user = _userGroup.GetUser();
 
             labTitle.Text = user.UserName;
 
-            var person = _iPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName);
+            var person = _personRepository.Persons.FirstOrDefault(p => p.Login == user.UserName);
 
             if (person == null) return;
             tbName.Text = person.Name;
             tbSecondName.Text = person.SecondName;
 
             if (person.Icon != null)  RefreshIcon(person.Icon);
-        }
-
-        private MembershipUser GetUserOrResponseEnd()
-        {
-            var user = Membership.GetUser();
-            if (user != null) return user;
-
-            _master.SignOut(true);
-            return null;
         }
 
         private static DrawingImage.Image ByteArrayToImage(byte[] byteArrayIn)
@@ -291,8 +287,8 @@ namespace StoreSolution.WebProject.Authenticated
 
         private void FillOrdersHistoryTable(bool bind)
         {
-            var user = GetUserOrResponseEnd();
-            var history = _iOrderHistoryRepository.OrdersHistory.Where(u => u.PersonEmail == user.Email).OrderBy(u => u.Date).ToList();
+            var user = _userGroup.GetUser();
+            var history = _orderHistoryRepository.OrdersHistory.Where(u => u.PersonEmail == user.Email).OrderBy(u => u.Date).ToList();
 
             if (history.Count == 0)
             {

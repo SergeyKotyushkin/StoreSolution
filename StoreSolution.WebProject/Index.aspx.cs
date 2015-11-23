@@ -3,15 +3,28 @@ using System.Drawing;
 using System.Web;
 using System.Web.Security;
 using System.Web.UI;
-using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
+using StoreSolution.WebProject.StructureMap;
+using StoreSolution.WebProject.UserGruop.Contracts;
 
 namespace StoreSolution.WebProject
 {
     public partial class Index : Page
     {
         private StoreMaster _master;
+        private readonly Color _successColor = Color.ForestGreen;
+        private readonly Color _errorColor = Color.Red;
+        private readonly IUserGroup _userGroup;
+
+        public Index() : this(StructureMapFactory.Resolve<IUserGroup>())
+        {
+        }
+
+        public Index(IUserGroup userGroup)
+        {
+            _userGroup = userGroup;
+        }
 
         protected override void InitializeCulture()
         {
@@ -29,20 +42,11 @@ namespace StoreSolution.WebProject
             _master = (StoreMaster)Page.Master;
             if (_master == null) throw new HttpUnhandledException("Wrong master page.");
 
-            _master.HiddenMoney();
-            _master.BtnBackVisibility = false;
-            _master.BtnSignOutVisibility = false;
+            SetUiProperties();
 
-            if (Session["NewUser"] != null)
-            {
-                _master.LabMessageForeColor = Color.ForestGreen;
-                _master.LabMessageText = LangSetter.Set("Index_SuccessfullyUserCreation");
-                Logger.Log.Info("Successfully user creation.");
-                Session["NewUser"] = null;
-            }
+            ShowMessageIfNewUserWasCreated();
 
-            var user = Membership.GetUser();
-            if (user == null) return;
+            var user = _userGroup.GetUser();
 
             RedirectFromIndexByRole(user.UserName);
         }
@@ -59,10 +63,17 @@ namespace StoreSolution.WebProject
             else
             {
                 Logger.Log.Error(string.Format("User {0} didn't log in.", tbLogin.Text));
-                _master.LabMessageText = LangSetter.Set("Index_ValidateError");
+                _master.SetLabMessage(_errorColor, "Index_ValidateError");
             }
         }
 
+
+        private void SetUiProperties()
+        {
+            _master.HideMoney();
+            _master.BtnBackVisibility = false;
+            _master.BtnSignOutVisibility = false;
+        }
 
         private void RedirectFromIndexByRole(string userName)
         {
@@ -76,6 +87,15 @@ namespace StoreSolution.WebProject
                 Logger.Log.Debug(string.Format("User {0} redirected to ProductCatalog page.", userName));
                 Response.Redirect("~/User/ProductCatalog.aspx");
             }
+        }
+
+        private void ShowMessageIfNewUserWasCreated()
+        {
+            if (Session["NewUser"] == null) return;
+
+            _master.SetLabMessage(_successColor, "Index_SuccessfullyUserCreation");
+            Logger.Log.Info("Successfully user creation.");
+            Session["NewUser"] = null;
         }
     }
 }

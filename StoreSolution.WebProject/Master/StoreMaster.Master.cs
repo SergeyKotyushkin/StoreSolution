@@ -3,16 +3,29 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Web;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using StoreSolution.WebProject.Lang;
-using StoreSolution.WebProject.Log4net;
+using StoreSolution.WebProject.StructureMap;
+using StoreSolution.WebProject.UserGruop.Contracts;
 
 namespace StoreSolution.WebProject.Master
 {
     public partial class StoreMaster : MasterPage
     {
+        private IUserGroup _userGroup;
+
+        public StoreMaster()
+            : this(StructureMapFactory.Resolve<IUserGroup>())
+        {
+            
+        }
+
+        public StoreMaster(IUserGroup userGroup)
+        {
+            _userGroup = userGroup;
+        }
+
         public string HlUserText
         {
             get { return hlUser.Text; }
@@ -43,24 +56,15 @@ namespace StoreSolution.WebProject.Master
             set { btnSignOut.Visible = value; }
         }
 
-        public void HiddenMoney()
+        public void HideMoney()
         {
             rub_ru_RU.Visible = usd_en_US.Visible = gbp_en_GB.Visible = false;
         }
 
-
-        public void SignOut(bool saveSession)
+        public void SetLabMessage(Color color, string nameFromLang, params object[] parameters)
         {
-            var user = Membership.GetUser();
-            if (user != null) Logger.Log.Error(string.Format("User {0} sing out.", user.UserName));
-
-            Response.Cache.SetCacheability(HttpCacheability.NoCache);
-            Response.Cache.SetExpires(DateTime.Now);
-
-            FormsAuthentication.SignOut();
-            if(!saveSession) Session.Abandon();
-            Response.Redirect("~/Index.aspx");
-            Response.End();
+            labMessage.ForeColor = color;
+            labMessage.Text = string.Format(LangSetter.Set(nameFromLang), parameters);
         }
 
         public virtual CultureInfo GetCurrencyCultureInfo()
@@ -91,7 +95,7 @@ namespace StoreSolution.WebProject.Master
 
         protected void btnSignOut_Click(object sender, EventArgs e)
         {
-            SignOut(false);
+            _userGroup.SignOut(Response, Session);
         }
 
         protected void lang_Click(object sender, ImageClickEventArgs e)
@@ -119,7 +123,7 @@ namespace StoreSolution.WebProject.Master
             if (Page.Title == LangSetter.Set("Basket_Title")) Response.Redirect("~/User/ProductCatalog.aspx");
             else if (Page.Title == LangSetter.Set("NewUser_Title")) Response.Redirect("~/Index.aspx");
             else if (Page.Title == LangSetter.Set("Profile_Title")) Response.Redirect("~/Index.aspx");
-            else if (Page.Title == LangSetter.Set("ProductManagement_Title")) SignOut(false);
+            else if (Page.Title == LangSetter.Set("ProductManagement_Title")) _userGroup.SignOut(Response, Session);
         }
 
         private void MarkCurrentCulture(CultureInfo ci)

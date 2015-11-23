@@ -216,6 +216,8 @@
     <Compile Include="StructureMap\MailRegistry.cs" />
     <Compile Include="StructureMap\RepositoryRegistry.cs" />
     <Compile Include="StructureMap\StructureMapFactory.cs" />
+    <Compile Include="UserGruop\Contracts\IUserGroup.cs" />
+    <Compile Include="UserGruop\UserGroup.cs" />
     <Compile Include="User\Basket.aspx.cs">
       <DependentUpon>Basket.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -227,6 +229,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="User\MailSender\Contracts\IMailSender.cs" />
     <Compile Include="User\MailSender\MailSender.cs" />
+    <Compile Include="User\OrderRepository\Contracts\IOrderRepository.cs" />
+    <Compile Include="User\OrderRepository\OrderRepository.cs" />
     <Compile Include="User\ProductCatalog.aspx.cs">
       <DependentUpon>ProductCatalog.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

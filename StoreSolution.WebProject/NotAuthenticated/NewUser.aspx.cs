@@ -29,7 +29,7 @@ namespace StoreSolution.WebProject.NotAuthenticated
             _master = (StoreMaster)Page.Master;
             if (_master == null) throw new HttpUnhandledException("Wrong master page.");
 
-            _master.HiddenMoney();
+            _master.HideMoney();
             _master.BtnSignOutVisibility = false;
         }
 

@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Web;
-using System.Web.Security;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 using StoreSolution.DatabaseProject.Contracts;
 using StoreSolution.DatabaseProject.Model;
@@ -12,29 +11,38 @@ using StoreSolution.WebProject.Currency.Contracts;
 using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
-using StoreSolution.WebProject.Model;
 using StoreSolution.WebProject.StructureMap;
+using StoreSolution.WebProject.User.OrderRepository.Contracts;
+using StoreSolution.WebProject.UserGruop.Contracts;
 
 namespace StoreSolution.WebProject.User
 {
-    public partial class ProductCatalog : System.Web.UI.Page
+    public partial class ProductCatalog : Page
     {
         private bool _isSearch;
         private StoreMaster _master;
+        private readonly Color _productRemovedColor = Color.DarkBlue;
+        private readonly Color _successColor = Color.DarkGreen;
 
         private readonly IProductRepository _productRepository;
         private readonly ICurrencyConverter _currencyConverter;
+        private readonly IOrderRepository _orderRepository;
+        private readonly IUserGroup _userGroup;
 
         protected ProductCatalog()
-            : this(StructureMapFactory.Resolve<IProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>())
+            : this(
+                StructureMapFactory.Resolve<IProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>(),
+                StructureMapFactory.Resolve<IOrderRepository>(), StructureMapFactory.Resolve<IUserGroup>())
         {
-            
         }
 
-        protected ProductCatalog(IProductRepository productRepository, ICurrencyConverter currencyConverter)
+        protected ProductCatalog(IProductRepository productRepository, ICurrencyConverter currencyConverter,
+            IOrderRepository orderRepository, IUserGroup userGroup)
         {
             _productRepository = productRepository;
             _currencyConverter = currencyConverter;
+            _orderRepository = orderRepository;
+            _userGroup = userGroup;
         }
 
         protected override void InitializeCulture()
@@ -53,40 +61,31 @@ namespace StoreSolution.WebProject.User
         {
             _master = (StoreMaster)Page.Master;
             if (_master == null) throw new HttpUnhandledException("Wrong master page.");
-                
-            _master.BtnBackVisibility = false;
 
-            var user = Membership.GetUser();
-            if (user == null)
-            {
-                _master.SignOut(false);
-                return;
-            }
-
-            pSearchingBoard.Visible = cbSearchHeader.Checked;
-            _isSearch = cbSearchHeader.Checked;
+            var user = _userGroup.GetUser();
             
-            SetTitles(user);
+            SetUiProperties(user.UserName);
 
-            FillGridView(false);
-            FillCountColumn();
+            if (!Page.IsPostBack)
+                FillGridView();
         }
 
         protected void gvTable_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var id = GetIdFromRow(gvTable.SelectedIndex);
+            var gv = (GridView) sender;
+            var id = GetIdFromRow(gv.SelectedIndex);
 
-            var orders = GetOrdersFromSession();
+            _orderRepository.Add(Page.Session, id);
 
-            AddToOrders(orders, id);
-            LoadOrdersToSession(orders);
+            _master.SetLabMessage(_successColor, "ProductCatalog_ProductAdded",
+                _productRepository.GetProductById(id).Name);
+
             FillCountColumn();
         }
 
         protected void btnBasket_Click(object sender, EventArgs e)
         {
-            var user = Membership.GetUser();
-            if (user == null) return;
+            var user = _userGroup.GetUser();
 
             Logger.Log.Debug(string.Format("User {0} redirected to Basket page.", user.UserName));
             Response.Redirect("~/User/Basket.aspx");
@@ -96,15 +95,18 @@ namespace StoreSolution.WebProject.User
         {
             var id = GetIdFromRow(e.RowIndex);
 
-            var orders = GetOrdersFromSession();
-            RemoveFromOrders(orders, id);
-            LoadOrdersToSession(orders);
+            _orderRepository.Remove(Page.Session, id);
+
+            _master.SetLabMessage(_productRemovedColor, "ProductCatalog_ProductRemoved",
+                _productRepository.GetProductById(id).Name);
+
             FillCountColumn();
         }
 
         protected void gvTable_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
-            gvTable.PageIndex = e.NewPageIndex;
+            var gv = (GridView)sender;
+            gv.PageIndex = e.NewPageIndex;
         }
 
         protected void gvTable_DataBound(object sender, EventArgs e)
@@ -135,13 +137,13 @@ namespace StoreSolution.WebProject.User
 
         protected void gvTable_PageIndexChanged(object sender, EventArgs e)
         {
-            FillGridView(true);
-            FillCountColumn();
+            FillGridView();
         }
 
         protected void gvTable_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             if (e.Row.RowType != DataControlRowType.Header) return;
+
             e.Row.Cells[1].Text = LangSetter.Set("ProductCatalog_HeaderCount");
             e.Row.Cells[4].Text = LangSetter.Set("ProductCatalog_HeaderName");
             e.Row.Cells[5].Text = LangSetter.Set("ProductCatalog_HeaderCategory");
@@ -150,8 +152,7 @@ namespace StoreSolution.WebProject.User
 
         protected void btnSearch_Click(object sender, EventArgs e)
         {
-            FillGridView(true);
-            FillCountColumn();
+            FillGridView();
         }
 
         protected void cbSearchHeader_CheckedChanged(object sender, EventArgs e)
@@ -159,65 +160,70 @@ namespace StoreSolution.WebProject.User
             _isSearch = cbSearchHeader.Checked;
 
             if(cbSearchHeader.Checked) return;
+
             ddlSearchCategory.SelectedIndex = 0;
             tbSearchName.Text = string.Empty;
-            FillGridView(true);
-            FillCountColumn();
+            FillGridView();
         }
 
-        
-        private void SetTitles(MembershipUser user)
+        protected void ddlSearchCategory_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var hlUserText = LangSetter.Set("Master_ToProfile");
-            if (hlUserText != null) _master.HlUserText = string.Format(hlUserText, user.UserName);
+            FillGridView();
+        }
+
+
+        private void SetUiProperties(string userName)
+        {
+            pSearchingBoard.Visible = _isSearch = cbSearchHeader.Checked;
+
+            _master.BtnBackVisibility = false;
+
+            _master.HlUserText = string.Format(LangSetter.Set("Master_ToProfile"), userName);
 
             if (Session["Bought"] == null) return;
-            _master.LabMessageForeColor = Color.DarkGreen;
-            _master.LabMessageText = LangSetter.Set("ProductCatalog_ProductsBought");
+
+            _master.SetLabMessage(_successColor, "ProductCatalog_ProductsBought");
+
             Session["Bought"] = null;
         }
 
-        private void FillGridView(bool bind)
+        private IQueryable<Product> SearchProducts(IQueryable<Product> products, string searchName, int searchCategory)
+        {
+            if (!string.IsNullOrWhiteSpace(searchName))
+                products = products.Where(p => p.Name.ToLower().Contains(tbSearchName.Text.Trim().ToLower())).Select(p => p);
+
+            if (searchCategory == 0) return products;
+
+            var category = ddlSearchCategory.Items[ddlSearchCategory.SelectedIndex].Text;
+            products = products.Where(p => p.Category == category).Select(p => p);
+
+            return products;
+        }
+
+        private void FillGridView()
         {
             var products = _productRepository.Products;
 
             if (_isSearch)
-            {
-                if (tbSearchName.Text.Trim() != string.Empty)
-                    products = products.Where(p => p.Name.ToLower().Contains(tbSearchName.Text.Trim().ToLower())).Select(p => p);
-                if (ddlSearchCategory.SelectedIndex != 0)
-                {
-                    var category = ddlSearchCategory.Items[ddlSearchCategory.SelectedIndex].Text;
-                    products =
-                        products.Where(p => p.Category == category).Select(p => p);
-                }
-                
-                FillCategories(products);
-            }
+                products = SearchProducts(products, tbSearchName.Text, ddlSearchCategory.SelectedIndex);
 
-            if (!Page.IsPostBack)
-            {
-                FillCategories(products);
-            }
+            gvTable.DataSource = products.ToList();
+            gvTable.DataBind();
 
-            gvTable.DataSource = products.Select(p => new
-            {
-                p.Id, 
-                p.Name, 
-                p.Category, 
-                p.Price
-            }).ToList();
-            if (!Page.IsPostBack || bind)
-                gvTable.DataBind();
+            FillCategories(products);
+            FillCountColumn();
         }
 
         private void FillCategories(IQueryable<Product> products)
         {
-            var categories = products.Select(p => p.Category).Distinct().ToList();
+            var categories = products.Select(p => p.Category).Distinct().ToArray();
+
             var ddlSearchCategorySelectedIndex = ddlSearchCategory.SelectedIndex;
             ddlSearchCategory.Items.Clear();
             ddlSearchCategory.Items.Add(LangSetter.Set("ProductCatalog_AllCategories"));
-            foreach (var category in categories) ddlSearchCategory.Items.Add(category);
+            foreach (var category in categories) 
+                ddlSearchCategory.Items.Add(category);
+
             ddlSearchCategory.SelectedIndex = ddlSearchCategorySelectedIndex < ddlSearchCategory.Items.Count
                 ? ddlSearchCategorySelectedIndex
                 : ddlSearchCategory.Items.Count - 1;
@@ -225,24 +231,14 @@ namespace StoreSolution.WebProject.User
 
         private void FillCountColumn()
         {
-            var orders = GetOrdersFromSession();
+            var orders = _orderRepository.GetAll(Page.Session);
 
             for (var i = 0; i < gvTable.Rows.Count; i++)
             {
                 var id = GetIdFromRow(i);
                 var foo = orders.Find(order => order.Id == id);
-                gvTable.Rows[i].Cells[1].Text = foo == null ? (0).ToString() : (foo.Count).ToString();
+                gvTable.Rows[i].Cells[1].Text = (foo == null ? 0 : foo.Count).ToString();
             }
-        }
-
-        private void LoadOrdersToSession(List<Order> orders)
-        {
-            Session["CurrentOrder"] = orders;
-        }
-
-        private List<Order> GetOrdersFromSession()
-        {
-            return Session["CurrentOrder"] as List<Order> ?? new List<Order>();
         }
 
         private int GetIdFromRow(int index)
@@ -252,29 +248,6 @@ namespace StoreSolution.WebProject.User
 
             var product = _productRepository.GetProductById(id);
             return product == null ? -1 : product.Id;
-        }
-
-        private void AddToOrders(List<Order> orders, int id)
-        {
-            var order = orders.Find(o => o.Id == id);
-            if (order == null) orders.Add(new Order {Id = id, Count = 1});
-            else order.Count++;
-
-            _master.LabMessageForeColor = Color.DarkGreen;
-            var text = LangSetter.Set("ProductCatalog_ProductAdded");
-            if (text != null) _master.LabMessageText = string.Format(text, _productRepository.GetProductById(id).Name);
-        }
-
-        private void RemoveFromOrders(List<Order> orders, int id)
-        {
-            var order = orders.Find(o => o.Id == id);
-            if (order == null || order.Count == 0) return;
-            if (order.Count == 1) orders.Remove(order);
-            else order.Count--;
-
-            _master.LabMessageForeColor = Color.DarkBlue;
-            var text = LangSetter.Set("ProductCatalog_ProductRemoved");
-            if (text != null) _master.LabMessageText = string.Format(text, _productRepository.GetProductById(id).Name);
-        }
+        }   
     }
 }

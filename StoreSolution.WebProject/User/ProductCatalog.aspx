@@ -44,7 +44,7 @@
                         <asp:Label ID="labSearchName" runat="server" Text="<%$ Resources: Lang, ProductCatalog_SearchName %>"/>
                         <asp:TextBox ID="tbSearchName" runat="server"/>
                         <asp:Label ID="labSearchCategory" runat="server" Text="<%$ Resources: Lang, ProductCatalog_SearchCategory %>"/>
-                        <asp:DropDownList ID="ddlSearchCategory" runat="server"/>
+                        <asp:DropDownList ID="ddlSearchCategory" runat="server" AutoPostBack="True" OnSelectedIndexChanged="ddlSearchCategory_SelectedIndexChanged"/>
                         <asp:Button ID="btnSearch" runat="server" Text="<%$ Resources: Lang, ProductCatalog_SearchButton %>" OnClick="btnSearch_Click"/>
                     </asp:Panel>
                 </div>

@@ -12,6 +12,7 @@ using StoreSolution.WebProject.Lang;
 using StoreSolution.WebProject.Log4net;
 using StoreSolution.WebProject.Master;
 using StoreSolution.WebProject.StructureMap;
+using StoreSolution.WebProject.UserGruop.Contracts;
 
 namespace StoreSolution.WebProject.Admin
 {
@@ -20,16 +21,20 @@ namespace StoreSolution.WebProject.Admin
         private StoreMaster _master;
         private readonly IProductRepository _productRepository;
         private readonly ICurrencyConverter _currencyConverter;
+        private readonly IUserGroup _userGroup;
 
         protected ProductManagement()
-            : this(StructureMapFactory.Resolve<IProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>())
+            : this(
+                StructureMapFactory.Resolve<IProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>(),
+                StructureMapFactory.Resolve<IUserGroup>())
         {
         }
 
-        protected ProductManagement(IProductRepository productRepository, ICurrencyConverter currencyConverter)
+        protected ProductManagement(IProductRepository productRepository, ICurrencyConverter currencyConverter, IUserGroup userGroup)
         {
             _productRepository = productRepository;
             _currencyConverter = currencyConverter;
+            _userGroup = userGroup;
         }
 
         protected override void InitializeCulture()
@@ -51,12 +56,7 @@ namespace StoreSolution.WebProject.Admin
             
             _master.BtnBackVisibility = false;
 
-            var user = Membership.GetUser();
-            if (user == null)
-            {
-                _master.SignOut(false);
-                return;
-            }
+            var user = _userGroup.GetUser();
 
             SetTitles(user);
 

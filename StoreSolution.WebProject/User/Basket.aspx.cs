@@ -18,6 +18,8 @@ using StoreSolution.WebProject.Master;
 using StoreSolution.WebProject.Model;
 using StoreSolution.WebProject.StructureMap;
 using StoreSolution.WebProject.User.MailSender.Contracts;
+using StoreSolution.WebProject.User.OrderRepository.Contracts;
+using StoreSolution.WebProject.UserGruop.Contracts;
 
 namespace StoreSolution.WebProject.User
 {
@@ -28,24 +30,27 @@ namespace StoreSolution.WebProject.User
         private readonly IProductRepository _productRepository;
         private readonly IOrderHistoryRepository _orderHistoryRepository;
         private readonly ICurrencyConverter _currencyConverter;
+        private readonly IOrderRepository _orderRepository;
         private readonly IMailSender _mailSender;
+        private readonly IUserGroup _userGroup;
 
         protected Basket()
             : this(
-                StructureMapFactory.Resolve<IProductRepository>(),
-                StructureMapFactory.Resolve<IOrderHistoryRepository>(),
-                StructureMapFactory.Resolve<ICurrencyConverter>(),
-                StructureMapFactory.Resolve<IMailSender>())
+                StructureMapFactory.Resolve<IProductRepository>(), StructureMapFactory.Resolve<IOrderHistoryRepository>(),
+                StructureMapFactory.Resolve<ICurrencyConverter>(), StructureMapFactory.Resolve<IMailSender>(),
+                StructureMapFactory.Resolve<IUserGroup>(), StructureMapFactory.Resolve<IOrderRepository>())
         {
         }
 
         protected Basket(IProductRepository productRepository, IOrderHistoryRepository orderHistoryRepository,
-            ICurrencyConverter currencyConverter, IMailSender mailSender)
+            ICurrencyConverter currencyConverter, IMailSender mailSender, IUserGroup userGroup, IOrderRepository orderRepository)
         {
             _productRepository = productRepository;
             _orderHistoryRepository = orderHistoryRepository;
             _currencyConverter = currencyConverter;
             _mailSender = mailSender;
+            _userGroup = userGroup;
+            _orderRepository = orderRepository;
         }
 
         protected override void InitializeCulture()
@@ -65,14 +70,9 @@ namespace StoreSolution.WebProject.User
             _master = (StoreMaster)Page.Master;
             if (_master == null) throw new HttpUnhandledException("Wrong master page.");
             
-            var user = Membership.GetUser();
-            if (user == null)
-            {
-                _master.SignOut(false);
-                return;
-            }
+            var user = _userGroup.GetUser();
 
-            SetTitles(user);
+            SetTitles(user.UserName);
 
             if (!Page.IsPostBack)
                 FillOrdersGridView();
@@ -80,15 +80,10 @@ namespace StoreSolution.WebProject.User
 
         protected void btnBuy_Click(object sender, EventArgs e)
         {
-            var user = Membership.GetUser();
-            if (user == null)
-            {
-                _master.SignOut(false);
-                return;
-            }
+            var user = _userGroup.GetUser();
 
             var products = _productRepository.Products.ToArray();
-            var orders = GetOrdersFromSession().ToArray();
+            var orders = _orderRepository.GetAll(Session).ToArray();
             var currencyCultureInfo = _master.GetCurrencyCultureInfo();
             var orderItemsList = GetOrderItemsList(products, orders, currencyCultureInfo).ToArray();
 
@@ -143,7 +138,7 @@ namespace StoreSolution.WebProject.User
         private void FillOrdersGridView()
         {
             var products = _productRepository.Products.ToArray();
-            var orders = GetOrdersFromSession();
+            var orders = _orderRepository.GetAll(Session);
 
             var cultureTo = _master.GetCurrencyCultureInfo();
             var list = GetOrderItemsList(products, orders, cultureTo).ToArray();
@@ -160,15 +155,9 @@ namespace StoreSolution.WebProject.User
             labTotal.Text = LangSetter.Set("Basket_EmptyOrder");
         }
 
-        private void SetTitles(MembershipUser user)
+        private void SetTitles(string userName)
         {
-            var hlUserText = LangSetter.Set("Master_ToProfile");
-            if (hlUserText != null) _master.HlUserText = string.Format(hlUserText, user.UserName);
-        }
-        
-        private IEnumerable<Order> GetOrdersFromSession()
-        {
-            return Session["CurrentOrder"] as List<Order> ?? new List<Order>();
+            _master.HlUserText = string.Format(LangSetter.Set("Master_ToProfile"), userName);
         }
 
         private static string GetMailMessageBody(IEnumerable<OrderItem> orderItemsList, IFormatProvider currencyCultureInfo)
