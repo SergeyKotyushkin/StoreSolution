@@ -3,10 +3,10 @@ using System.Drawing;
 using System.Web;
 using System.Web.Security;
 using System.Web.UI;
-using StoreSolution.WebProject.Log4net;
+using StoreSolution.BusinessLogic.Log4net;
+using StoreSolution.BusinessLogic.StructureMap;
+using StoreSolution.BusinessLogic.UserGruop.Contracts;
 using StoreSolution.WebProject.Master;
-using StoreSolution.WebProject.StructureMap;
-using StoreSolution.WebProject.UserGruop.Contracts;
 
 namespace StoreSolution.WebProject
 {
@@ -46,9 +46,10 @@ namespace StoreSolution.WebProject
 
             ShowMessageIfNewUserWasCreated();
 
-            var user = _userGroup.GetUser();
+            var user = _userGroup.GetUser(true);
 
-            RedirectFromIndexByRole(user.UserName);
+            if (user != null)
+                RedirectFromIndexByRole(user.UserName);
         }
 
         protected void btnSubmit_Click(object sender, EventArgs e)

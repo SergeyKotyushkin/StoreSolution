@@ -1,40 +1,43 @@
-﻿using StoreSolution.DatabaseProject.Model;
-using System;
+﻿using System;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Web;
 using System.Web.Security;
 using System.Web.UI.WebControls;
-using StoreSolution.DatabaseProject.Contracts;
-using StoreSolution.WebProject.Currency.Contracts;
-using StoreSolution.WebProject.Lang;
-using StoreSolution.WebProject.Log4net;
+using StoreSolution.BusinessLogic.Currency.Contracts;
+using StoreSolution.BusinessLogic.Database.Contracts;
+using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.Lang.Contracts;
+using StoreSolution.BusinessLogic.Log4net;
+using StoreSolution.BusinessLogic.StructureMap;
+using StoreSolution.BusinessLogic.UserGruop.Contracts;
 using StoreSolution.WebProject.Master;
-using StoreSolution.WebProject.StructureMap;
-using StoreSolution.WebProject.UserGruop.Contracts;
 
 namespace StoreSolution.WebProject.Admin
 {
     public partial class ProductManagement : System.Web.UI.Page
     {
         private StoreMaster _master;
-        private readonly IProductRepository _productRepository;
+        private readonly IEfProductRepository _efProductRepository;
         private readonly ICurrencyConverter _currencyConverter;
         private readonly IUserGroup _userGroup;
+        private readonly ILangSetter _langSetter;
 
         protected ProductManagement()
             : this(
-                StructureMapFactory.Resolve<IProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>(),
-                StructureMapFactory.Resolve<IUserGroup>())
+                StructureMapFactory.Resolve<IEfProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>(),
+                StructureMapFactory.Resolve<IUserGroup>(), StructureMapFactory.Resolve<ILangSetter>())
         {
         }
 
-        protected ProductManagement(IProductRepository productRepository, ICurrencyConverter currencyConverter, IUserGroup userGroup)
+        protected ProductManagement(IEfProductRepository efProductRepository, ICurrencyConverter currencyConverter,
+            IUserGroup userGroup, ILangSetter langSetter)
         {
-            _productRepository = productRepository;
+            _efProductRepository = efProductRepository;
             _currencyConverter = currencyConverter;
             _userGroup = userGroup;
+            _langSetter = langSetter;
         }
 
         protected override void InitializeCulture()
@@ -56,7 +59,7 @@ namespace StoreSolution.WebProject.Admin
             
             _master.BtnBackVisibility = false;
 
-            var user = _userGroup.GetUser();
+            var user = _userGroup.GetUser(false);
 
             SetTitles(user);
 
@@ -86,7 +89,7 @@ namespace StoreSolution.WebProject.Admin
             if (!CheckIsNewProductValid(name, category, priceString, out price))
             {
                 _master.LabMessageForeColor = Color.Red;
-                _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotUpdated");
+                _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasNotUpdated");
             }
             else
             {
@@ -95,15 +98,15 @@ namespace StoreSolution.WebProject.Admin
 
                 var product = new Product {Id = id, Name = name, Category = category, Price = price};
 
-                if (!_productRepository.AddOrUpdateProduct(product))
+                if (!_efProductRepository.AddOrUpdateProduct(product))
                 {
                     _master.LabMessageForeColor = Color.Red;
-                    _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotUpdated");
+                    _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasNotUpdated");
                 }
                 else
                 {
                     _master.LabMessageForeColor = Color.DarkGreen;
-                    _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasUpdated");
+                    _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasUpdated");
                     Logger.Log.Info(string.Format("Product {0} successfully updated.", product.Name));
                 }
             }
@@ -141,17 +144,17 @@ namespace StoreSolution.WebProject.Admin
         {
             var id = int.Parse(e.Values["Id"].ToString());
 
-            var product = _productRepository.GetProductById(id);
-            if (_productRepository.RemoveProduct(id))
+            var product = _efProductRepository.GetProductById(id);
+            if (_efProductRepository.RemoveProduct(id))
             {
                 _master.LabMessageForeColor = Color.DarkGreen;
-                _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasRemoved");
+                _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasRemoved");
                 Logger.Log.Info(string.Format("Product {0} successfully added.", product.Name));
             }
             else
             {
                 _master.LabMessageForeColor = Color.Red;
-                _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotRemoved");
+                _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasNotRemoved");
             }
 
             FillProductsGridView(true);
@@ -181,7 +184,7 @@ namespace StoreSolution.WebProject.Admin
                 if (!CheckIsNewProductValid(name, category, priceString, out price))
                 {
                     _master.LabMessageForeColor = Color.Red;
-                    _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotAdded");
+                    _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasNotAdded");
                 }
                 else
                 {
@@ -190,16 +193,16 @@ namespace StoreSolution.WebProject.Admin
 
                     var product = new Product {Id = -1, Name = name, Category = category, Price = price};
 
-                    if (_productRepository.AddOrUpdateProduct(product))
+                    if (_efProductRepository.AddOrUpdateProduct(product))
                     {
                         _master.LabMessageForeColor = Color.DarkGreen;
-                        _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasAdded");
+                        _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasAdded");
                         Logger.Log.Info(string.Format("Product {0} successfully added.", product.Name));
                     }
                     else
                     {
                         _master.LabMessageForeColor = Color.Red;
-                        _master.LabMessageText = LangSetter.Set("ProductManagement_ProductWasNotAdded");
+                        _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasNotAdded");
                     }
                 }
 
@@ -232,10 +235,10 @@ namespace StoreSolution.WebProject.Admin
         protected void gvTable_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             if (e.Row.RowType != DataControlRowType.Header) return;
-            e.Row.Cells[2].Text = LangSetter.Set("ProductManagement_HeaderId");
-            e.Row.Cells[3].Text = LangSetter.Set("ProductManagement_HeaderName");
-            e.Row.Cells[4].Text = LangSetter.Set("ProductManagement_HeaderCategory");
-            e.Row.Cells[5].Text = LangSetter.Set("ProductManagement_HeaderPrice");
+            e.Row.Cells[2].Text = _langSetter.Set("ProductManagement_HeaderId");
+            e.Row.Cells[3].Text = _langSetter.Set("ProductManagement_HeaderName");
+            e.Row.Cells[4].Text = _langSetter.Set("ProductManagement_HeaderCategory");
+            e.Row.Cells[5].Text = _langSetter.Set("ProductManagement_HeaderPrice");
         }
 
 
@@ -269,13 +272,13 @@ namespace StoreSolution.WebProject.Admin
 
         private void SetTitles(MembershipUser user)
         {
-            var hlUserText = LangSetter.Set("Master_ToProfile");
+            var hlUserText = _langSetter.Set("Master_ToProfile");
             if (hlUserText != null) _master.HlUserText = string.Format(hlUserText, user.UserName);
         }
 
         private void FillProductsGridView(bool bind)
         {
-            var products = _productRepository.Products.ToList();
+            var products = _efProductRepository.Products.ToList();
             products.Insert(0, new Product {Id = 0, Name = "0", Category = "0", Price = 0});
 
             gvTable.DataSource = products;
@@ -295,7 +298,7 @@ namespace StoreSolution.WebProject.Admin
 
         private void ShowFooter()
         {
-            var bInsert = new Button { Text = LangSetter.Set("ProductManagement_InsertButton") };
+            var bInsert = new Button { Text = _langSetter.Set("ProductManagement_InsertButton") };
             var tbName = new TextBox();
             var tbCategory = new TextBox();
             var tbPrice = new TextBox();

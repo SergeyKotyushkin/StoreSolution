@@ -2,8 +2,9 @@
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Security;
-using StoreSolution.WebProject.Lang;
-using StoreSolution.WebProject.Log4net;
+using StoreSolution.BusinessLogic.Lang.Contracts;
+using StoreSolution.BusinessLogic.Log4net;
+using StoreSolution.BusinessLogic.StructureMap;
 using StoreSolution.WebProject.Master;
 
 namespace StoreSolution.WebProject.NotAuthenticated
@@ -11,6 +12,17 @@ namespace StoreSolution.WebProject.NotAuthenticated
     public partial class NewUser : System.Web.UI.Page
     {
         private StoreMaster _master;
+        private readonly ILangSetter _langSetter;
+
+        public NewUser() : this(StructureMapFactory.Resolve<ILangSetter>())
+        {
+            
+        }
+
+        public NewUser(ILangSetter langSetter)
+        {
+            _langSetter = langSetter;
+        }
 
         protected override void InitializeCulture()
         {
@@ -41,7 +53,7 @@ namespace StoreSolution.WebProject.NotAuthenticated
             var rgxLogin = new Regex("^[a-zA-Z]+[a-zA-Z0-9_]{5,}$");
             if (!rgxLogin.IsMatch(tbLogin.Text))
             {
-                _master.LabMessageText = LangSetter.Set("NewUser_LoginError");
+                _master.LabMessageText = _langSetter.Set("NewUser_LoginError");
                 rfvLogin.IsValid = false;
                 return;
             }
@@ -49,12 +61,12 @@ namespace StoreSolution.WebProject.NotAuthenticated
             var rgxPassword = new Regex("^[a-zA-Z0-9_!@#$%^&*]{5,}$");
             if (!rgxPassword.IsMatch(tbPassword.Text))
             {
-                _master.LabMessageText = LangSetter.Set("NewUser_PasswordError");
+                _master.LabMessageText = _langSetter.Set("NewUser_PasswordError");
                 rfvPassword.IsValid = false;
                 return;
             }
 
-            if (!Page.IsValid) _master.LabMessageText = LangSetter.Set("NewUser_EmptyFieldsError");
+            if (!Page.IsValid) _master.LabMessageText = _langSetter.Set("NewUser_EmptyFieldsError");
             else
             {
                 MembershipCreateStatus status;
@@ -70,7 +82,7 @@ namespace StoreSolution.WebProject.NotAuthenticated
                 }
                 else
                 {
-                    _master.LabMessageText = LangSetter.Set("NewUser_CreateUserError");
+                    _master.LabMessageText = _langSetter.Set("NewUser_CreateUserError");
                     Logger.Log.Debug(string.Format("User {0} didn't create.", tbLogin.Text));
                 }
             }

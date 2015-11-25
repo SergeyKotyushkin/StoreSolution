@@ -5,15 +5,15 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using StoreSolution.DatabaseProject.Contracts;
-using StoreSolution.DatabaseProject.Model;
-using StoreSolution.WebProject.Currency.Contracts;
-using StoreSolution.WebProject.Lang;
-using StoreSolution.WebProject.Log4net;
+using StoreSolution.BusinessLogic.Currency.Contracts;
+using StoreSolution.BusinessLogic.Database.Contracts;
+using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.Lang.Contracts;
+using StoreSolution.BusinessLogic.Log4net;
+using StoreSolution.BusinessLogic.OrderRepository.Contracts;
+using StoreSolution.BusinessLogic.StructureMap;
+using StoreSolution.BusinessLogic.UserGruop.Contracts;
 using StoreSolution.WebProject.Master;
-using StoreSolution.WebProject.StructureMap;
-using StoreSolution.WebProject.User.OrderRepository.Contracts;
-using StoreSolution.WebProject.UserGruop.Contracts;
 
 namespace StoreSolution.WebProject.User
 {
@@ -24,25 +24,28 @@ namespace StoreSolution.WebProject.User
         private readonly Color _productRemovedColor = Color.DarkBlue;
         private readonly Color _successColor = Color.DarkGreen;
 
-        private readonly IProductRepository _productRepository;
+        private readonly IEfProductRepository _efProductRepository;
         private readonly ICurrencyConverter _currencyConverter;
         private readonly IOrderRepository _orderRepository;
         private readonly IUserGroup _userGroup;
+        private readonly ILangSetter _langSetter;
 
         protected ProductCatalog()
             : this(
-                StructureMapFactory.Resolve<IProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>(),
-                StructureMapFactory.Resolve<IOrderRepository>(), StructureMapFactory.Resolve<IUserGroup>())
+                StructureMapFactory.Resolve<IEfProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>(),
+                StructureMapFactory.Resolve<IOrderRepository>(), StructureMapFactory.Resolve<IUserGroup>(),
+                StructureMapFactory.Resolve<ILangSetter>())
         {
         }
 
-        protected ProductCatalog(IProductRepository productRepository, ICurrencyConverter currencyConverter,
-            IOrderRepository orderRepository, IUserGroup userGroup)
+        protected ProductCatalog(IEfProductRepository efProductRepository, ICurrencyConverter currencyConverter,
+            IOrderRepository orderRepository, IUserGroup userGroup, ILangSetter langSetter)
         {
-            _productRepository = productRepository;
+            _efProductRepository = efProductRepository;
             _currencyConverter = currencyConverter;
             _orderRepository = orderRepository;
             _userGroup = userGroup;
+            _langSetter = langSetter;
         }
 
         protected override void InitializeCulture()
@@ -62,7 +65,7 @@ namespace StoreSolution.WebProject.User
             _master = (StoreMaster)Page.Master;
             if (_master == null) throw new HttpUnhandledException("Wrong master page.");
 
-            var user = _userGroup.GetUser();
+            var user = _userGroup.GetUser(false);
             
             SetUiProperties(user.UserName);
 
@@ -78,14 +81,14 @@ namespace StoreSolution.WebProject.User
             _orderRepository.Add(Page.Session, id);
 
             _master.SetLabMessage(_successColor, "ProductCatalog_ProductAdded",
-                _productRepository.GetProductById(id).Name);
+                _efProductRepository.GetProductById(id).Name);
 
             FillCountColumn();
         }
 
         protected void btnBasket_Click(object sender, EventArgs e)
         {
-            var user = _userGroup.GetUser();
+            var user = _userGroup.GetUser(false);
 
             Logger.Log.Debug(string.Format("User {0} redirected to Basket page.", user.UserName));
             Response.Redirect("~/User/Basket.aspx");
@@ -98,7 +101,7 @@ namespace StoreSolution.WebProject.User
             _orderRepository.Remove(Page.Session, id);
 
             _master.SetLabMessage(_productRemovedColor, "ProductCatalog_ProductRemoved",
-                _productRepository.GetProductById(id).Name);
+                _efProductRepository.GetProductById(id).Name);
 
             FillCountColumn();
         }
@@ -144,10 +147,10 @@ namespace StoreSolution.WebProject.User
         {
             if (e.Row.RowType != DataControlRowType.Header) return;
 
-            e.Row.Cells[1].Text = LangSetter.Set("ProductCatalog_HeaderCount");
-            e.Row.Cells[4].Text = LangSetter.Set("ProductCatalog_HeaderName");
-            e.Row.Cells[5].Text = LangSetter.Set("ProductCatalog_HeaderCategory");
-            e.Row.Cells[6].Text = LangSetter.Set("ProductCatalog_HeaderPrice");
+            e.Row.Cells[1].Text = _langSetter.Set("ProductCatalog_HeaderCount");
+            e.Row.Cells[4].Text = _langSetter.Set("ProductCatalog_HeaderName");
+            e.Row.Cells[5].Text = _langSetter.Set("ProductCatalog_HeaderCategory");
+            e.Row.Cells[6].Text = _langSetter.Set("ProductCatalog_HeaderPrice");
         }
 
         protected void btnSearch_Click(object sender, EventArgs e)
@@ -178,7 +181,7 @@ namespace StoreSolution.WebProject.User
 
             _master.BtnBackVisibility = false;
 
-            _master.HlUserText = string.Format(LangSetter.Set("Master_ToProfile"), userName);
+            _master.HlUserText = string.Format(_langSetter.Set("Master_ToProfile"), userName);
 
             if (Session["Bought"] == null) return;
 
@@ -202,7 +205,7 @@ namespace StoreSolution.WebProject.User
 
         private void FillGridView()
         {
-            var products = _productRepository.Products;
+            var products = _efProductRepository.Products;
 
             if (_isSearch)
                 products = SearchProducts(products, tbSearchName.Text, ddlSearchCategory.SelectedIndex);
@@ -220,7 +223,7 @@ namespace StoreSolution.WebProject.User
 
             var ddlSearchCategorySelectedIndex = ddlSearchCategory.SelectedIndex;
             ddlSearchCategory.Items.Clear();
-            ddlSearchCategory.Items.Add(LangSetter.Set("ProductCatalog_AllCategories"));
+            ddlSearchCategory.Items.Add(_langSetter.Set("ProductCatalog_AllCategories"));
             foreach (var category in categories) 
                 ddlSearchCategory.Items.Add(category);
 
@@ -246,7 +249,7 @@ namespace StoreSolution.WebProject.User
             int id;
             if (!int.TryParse(gvTable.Rows[index].Cells[3].Text, out id)) return -1;
 
-            var product = _productRepository.GetProductById(id);
+            var product = _efProductRepository.GetProductById(id);
             return product == null ? -1 : product.Id;
         }   
     }

@@ -1,6 +1,6 @@
 ﻿using System;
-using StoreSolution.WebProject.Log4net;
-using StoreSolution.WebProject.StructureMap;
+using StoreSolution.BusinessLogic.Log4net;
+using StoreSolution.BusinessLogic.StructureMap;
 
 namespace StoreSolution.WebProject
 {
@@ -10,6 +10,7 @@ namespace StoreSolution.WebProject
         protected void Application_Start(object sender, EventArgs e)
         {
             #region Log4Net
+            Logger.Init();
             Logger.Log.Info("Log4Net is ready.");
             #endregion
 

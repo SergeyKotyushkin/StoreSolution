@@ -1,44 +1,46 @@
 ﻿using System;
 using System.IO;
-using System.Web.Security;
 using DrawingImage = System.Drawing;
 using System.Linq;
-using StoreSolution.DatabaseProject.Model;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Script.Serialization;
 using System.Web.UI.WebControls;
-using StoreSolution.DatabaseProject.Contracts;
-using StoreSolution.WebProject.Lang;
-using StoreSolution.WebProject.Log4net;
+using StoreSolution.BusinessLogic.Database.Contracts;
+using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.Lang.Contracts;
+using StoreSolution.BusinessLogic.Log4net;
+using StoreSolution.BusinessLogic.Models;
+using StoreSolution.BusinessLogic.StructureMap;
+using StoreSolution.BusinessLogic.UserGruop.Contracts;
 using StoreSolution.WebProject.Master;
-using StoreSolution.WebProject.Model;
-using StoreSolution.WebProject.StructureMap;
-using StoreSolution.WebProject.UserGruop.Contracts;
 
 namespace StoreSolution.WebProject.Authenticated
 {
     public partial class Profile : System.Web.UI.Page
     {
         private StoreMaster _master;
-        private readonly IPersonRepository _personRepository;
-        private readonly IOrderHistoryRepository _orderHistoryRepository;
+        private readonly IEfPersonRepository _efPersonRepository;
+        private readonly IEfOrderHistoryRepository _efOrderHistoryRepository;
         private readonly IUserGroup _userGroup;
+        private readonly ILangSetter _langSetter;
 
         protected Profile()
             : this(
-                StructureMapFactory.Resolve<IPersonRepository>(), StructureMapFactory.Resolve<IOrderHistoryRepository>(),
-                StructureMapFactory.Resolve<IUserGroup>())
+                StructureMapFactory.Resolve<IEfPersonRepository>(), StructureMapFactory.Resolve<IEfOrderHistoryRepository>(),
+                StructureMapFactory.Resolve<IUserGroup>(), StructureMapFactory.Resolve<ILangSetter>())
         {
         }
 
-        protected Profile(IPersonRepository personRepository, IOrderHistoryRepository orderHistoryRepository, IUserGroup userGroup)
+        protected Profile(IEfPersonRepository efPersonRepository, IEfOrderHistoryRepository efOrderHistoryRepository,
+            IUserGroup userGroup, ILangSetter langSetter)
         {
-            _personRepository = personRepository;
-            _orderHistoryRepository = orderHistoryRepository;
+            _efPersonRepository = efPersonRepository;
+            _efOrderHistoryRepository = efOrderHistoryRepository;
             _userGroup = userGroup;
+            _langSetter = langSetter;
         }
 
         protected override void InitializeCulture()
@@ -68,7 +70,7 @@ namespace StoreSolution.WebProject.Authenticated
 
         protected void btnBack_Click(object sender, EventArgs e)
         {
-            var user = _userGroup.GetUser();
+            var user = _userGroup.GetUser(false);
 
             Logger.Log.Debug(string.Format("User {0} escaped Profile page.", user.UserName));
             Response.Redirect("~/Index.aspx");
@@ -82,26 +84,26 @@ namespace StoreSolution.WebProject.Authenticated
             var extension = Path.GetExtension(btnChooseIcon.FileName);
             if (extension == null)
             {
-                _master.LabMessageText = LangSetter.Set("Profile_NotImage");
+                _master.LabMessageText = _langSetter.Set("Profile_NotImage");
                 return;
             }
 
             if (!btnChooseIcon.HasFile || (extension.ToLower() != ".jpg" && extension.ToLower() != ".jpeg"))
             {
                 _master.LabMessageText = !btnChooseIcon.HasFile
-                    ? LangSetter.Set("Profile_NotImage")
-                    : LangSetter.Set("Profile_NotJpg");
+                    ? _langSetter.Set("Profile_NotImage")
+                    : _langSetter.Set("Profile_NotJpg");
                 return;
             }
 
             if (btnChooseIcon.FileBytes.Length == 0)
             {
-                _master.LabMessageText = LangSetter.Set("Profile_NotImage");
+                _master.LabMessageText = _langSetter.Set("Profile_NotImage");
                 return;
             }
 
-            var user = _userGroup.GetUser();
-            var person = _personRepository.Persons.FirstOrDefault(p => p.Login == user.UserName) ?? new Person
+            var user = _userGroup.GetUser(false);
+            var person = _efPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName) ?? new Person
             {
                 Login = user.UserName,
                 Name = "",
@@ -120,22 +122,22 @@ namespace StoreSolution.WebProject.Authenticated
             };
 
             _master.LabMessageText = "";
-            if (_personRepository.AddOrUpdate(updatedPerson))
+            if (_efPersonRepository.AddOrUpdate(updatedPerson))
             {
                 _master.LabMessageForeColor = Color.DarkGreen;
-                _master.LabMessageText = LangSetter.Set("Profile_IconWasChanged");
+                _master.LabMessageText = _langSetter.Set("Profile_IconWasChanged");
                 Logger.Log.Info(string.Format("Icon successfully changed for user - {0}.", user.UserName));
             }
-            else _master.LabMessageText = LangSetter.Set("Profile_IconWasNotChanged");
+            else _master.LabMessageText = _langSetter.Set("Profile_IconWasNotChanged");
 
             RefreshIcon(updatedPerson.Icon);
         }
 
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
-            var user = _userGroup.GetUser();
+            var user = _userGroup.GetUser(false);
 
-            var person = _personRepository.Persons.FirstOrDefault(p => p.Login == user.UserName);
+            var person = _efPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName);
             if(person == null) return;
 
             var updatedPerson = new Person
@@ -146,18 +148,18 @@ namespace StoreSolution.WebProject.Authenticated
                 Icon = person.Icon
             };
 
-            var result = _personRepository.AddOrUpdate(updatedPerson);
+            var result = _efPersonRepository.AddOrUpdate(updatedPerson);
 
             string message;
             if (!result)
             {
                 _master.LabMessageForeColor = Color.Red;
-                message = LangSetter.Set("Profile_NothingChanged");
+                message = _langSetter.Set("Profile_NothingChanged");
             }
             else
             {
                 _master.LabMessageForeColor = Color.DarkGreen;
-                message = LangSetter.Set("Profile_PersonalDataChanged");
+                message = _langSetter.Set("Profile_PersonalDataChanged");
                 Logger.Log.Info(string.Format("Personal data successfully commited for user - {0}.", user.UserName));
             }
 
@@ -172,27 +174,27 @@ namespace StoreSolution.WebProject.Authenticated
             Page.Validate();
             if (!Page.IsValid)
             {
-                _master.LabMessageText = LangSetter.Set("Profile_BothPasswordsError");
+                _master.LabMessageText = _langSetter.Set("Profile_BothPasswordsError");
                 return;
             }
 
             var rgxPassword = new Regex("^[a-zA-Z0-9_!@#$%^&*]{5,}$");
             if (!rgxPassword.IsMatch(tbNewPassword.Text) || !rgxPassword.IsMatch(tbOldPassword.Text))
             {
-                _master.LabMessageText = LangSetter.Set("Profile_PasswordError");
+                _master.LabMessageText = _langSetter.Set("Profile_PasswordError");
                 rfvNewPassword.IsValid = false;
                 rfvOldPassword.IsValid = false;
                 return;
             }
 
-            var user = _userGroup.GetUser();
+            var user = _userGroup.GetUser(false);
             if (user.ChangePassword(tbOldPassword.Text, tbNewPassword.Text))
             {
                 _master.LabMessageForeColor = Color.DarkGreen;
-                _master.LabMessageText = LangSetter.Set("Profile_PasswordWasChanged");
+                _master.LabMessageText = _langSetter.Set("Profile_PasswordWasChanged");
                 Logger.Log.Info(string.Format("Password successfully changed for user - {0}.", user.UserName));
             }
-            else _master.LabMessageText = LangSetter.Set("Profile_PasswordWasChanged");
+            else _master.LabMessageText = _langSetter.Set("Profile_PasswordWasChanged");
         }
 
         protected void gvOrderHistory_RowDataBound(object sender, GridViewRowEventArgs e)
@@ -210,11 +212,11 @@ namespace StoreSolution.WebProject.Authenticated
             }
             else if (e.Row.RowType == DataControlRowType.Header)
             {
-                e.Row.Cells[0].Text = LangSetter.Set("Profile_HeaderNumber");
-                e.Row.Cells[1].Text = LangSetter.Set("Profile_HeaderDate");
-                e.Row.Cells[2].Text = LangSetter.Set("Profile_HeaderEmail");
-                e.Row.Cells[3].Text = LangSetter.Set("Profile_HeaderOrder");
-                e.Row.Cells[4].Text = LangSetter.Set("Profile_HeaderTotal");
+                e.Row.Cells[0].Text = _langSetter.Set("Profile_HeaderNumber");
+                e.Row.Cells[1].Text = _langSetter.Set("Profile_HeaderDate");
+                e.Row.Cells[2].Text = _langSetter.Set("Profile_HeaderEmail");
+                e.Row.Cells[3].Text = _langSetter.Set("Profile_HeaderOrder");
+                e.Row.Cells[4].Text = _langSetter.Set("Profile_HeaderTotal");
             }
         }
 
@@ -239,11 +241,11 @@ namespace StoreSolution.WebProject.Authenticated
         {
             _master.LabMessageText = "";
 
-            var user = _userGroup.GetUser();
+            var user = _userGroup.GetUser(false);
 
             labTitle.Text = user.UserName;
 
-            var person = _personRepository.Persons.FirstOrDefault(p => p.Login == user.UserName);
+            var person = _efPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName);
 
             if (person == null) return;
             tbName.Text = person.Name;
@@ -287,8 +289,8 @@ namespace StoreSolution.WebProject.Authenticated
 
         private void FillOrdersHistoryTable(bool bind)
         {
-            var user = _userGroup.GetUser();
-            var history = _orderHistoryRepository.OrdersHistory.Where(u => u.PersonEmail == user.Email).OrderBy(u => u.Date).ToList();
+            var user = _userGroup.GetUser(false);
+            var history = _efOrderHistoryRepository.GetAll.Where(u => u.PersonEmail == user.Email).OrderBy(u => u.Date).ToList();
 
             if (history.Count == 0)
             {
@@ -307,7 +309,7 @@ namespace StoreSolution.WebProject.Authenticated
                 }).ToList();
 
             var orderToGrid =
-                ordersFromHistory.Select(o => new OrderToGrid(o))
+                ordersFromHistory.Select(o => new OrderToGrid(o, _langSetter))
                     .Select(o => new { o.Number, o.Date, o.Email, Order = HttpContext.Current.Server.HtmlDecode(o.Order), o.Total })
                     .ToList();
 

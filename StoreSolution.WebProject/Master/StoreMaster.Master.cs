@@ -5,25 +5,27 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using StoreSolution.WebProject.Lang;
-using StoreSolution.WebProject.StructureMap;
-using StoreSolution.WebProject.UserGruop.Contracts;
+using StoreSolution.BusinessLogic.Lang.Contracts;
+using StoreSolution.BusinessLogic.StructureMap;
+using StoreSolution.BusinessLogic.UserGruop.Contracts;
 
 namespace StoreSolution.WebProject.Master
 {
     public partial class StoreMaster : MasterPage
     {
-        private IUserGroup _userGroup;
+        private readonly IUserGroup _userGroup;
+        private readonly ILangSetter _langSetter;
 
         public StoreMaster()
-            : this(StructureMapFactory.Resolve<IUserGroup>())
+            : this(StructureMapFactory.Resolve<IUserGroup>(), StructureMapFactory.Resolve<ILangSetter>())
         {
             
         }
 
-        public StoreMaster(IUserGroup userGroup)
+        public StoreMaster(IUserGroup userGroup, ILangSetter langSetter)
         {
             _userGroup = userGroup;
+            _langSetter = langSetter;
         }
 
         public string HlUserText
@@ -64,7 +66,7 @@ namespace StoreSolution.WebProject.Master
         public void SetLabMessage(Color color, string nameFromLang, params object[] parameters)
         {
             labMessage.ForeColor = color;
-            labMessage.Text = string.Format(LangSetter.Set(nameFromLang), parameters);
+            labMessage.Text = string.Format(_langSetter.Set(nameFromLang), parameters);
         }
 
         public virtual CultureInfo GetCurrencyCultureInfo()
@@ -120,10 +122,10 @@ namespace StoreSolution.WebProject.Master
 
         protected void btnBack_Click(object sender, EventArgs e)
         {
-            if (Page.Title == LangSetter.Set("Basket_Title")) Response.Redirect("~/User/ProductCatalog.aspx");
-            else if (Page.Title == LangSetter.Set("NewUser_Title")) Response.Redirect("~/Index.aspx");
-            else if (Page.Title == LangSetter.Set("Profile_Title")) Response.Redirect("~/Index.aspx");
-            else if (Page.Title == LangSetter.Set("ProductManagement_Title")) _userGroup.SignOut(Response, Session);
+            if (Page.Title == _langSetter.Set("Basket_Title")) Response.Redirect("~/User/ProductCatalog.aspx");
+            else if (Page.Title == _langSetter.Set("NewUser_Title")) Response.Redirect("~/Index.aspx");
+            else if (Page.Title == _langSetter.Set("Profile_Title")) Response.Redirect("~/Index.aspx");
+            else if (Page.Title == _langSetter.Set("ProductManagement_Title")) _userGroup.SignOut(Response, Session);
         }
 
         private void MarkCurrentCulture(CultureInfo ci)
