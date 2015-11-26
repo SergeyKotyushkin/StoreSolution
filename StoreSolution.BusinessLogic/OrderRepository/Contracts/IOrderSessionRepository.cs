@@ -4,7 +4,7 @@ using StoreSolution.BusinessLogic.Models;
 
 namespace StoreSolution.BusinessLogic.OrderRepository.Contracts
 {
-    public interface IOrderRepository
+    public interface IOrderSessionRepository
     {
         void Add(HttpSessionState sessionState, int id);
 

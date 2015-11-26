@@ -5,7 +5,7 @@ using StoreSolution.BusinessLogic.OrderRepository.Contracts;
 
 namespace StoreSolution.BusinessLogic.OrderRepository
 {
-    public class OrderRepository : IOrderRepository
+    public class OrderSessionRepository : IOrderSessionRepository
     {
         public void Add(HttpSessionState sessionState, int id)
         {

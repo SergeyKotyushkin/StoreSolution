@@ -18,26 +18,33 @@ namespace StoreSolution.WebProject.Admin
 {
     public partial class ProductManagement : System.Web.UI.Page
     {
+        private static readonly Color ErrorColor = Color.Red;
+        private static readonly Color SuccessColor = Color.DarkGreen;
+        private const string CurrencyCultureName = "currencyCultureName";
+
         private StoreMaster _master;
         private readonly IEfProductRepository _efProductRepository;
         private readonly ICurrencyConverter _currencyConverter;
         private readonly IUserGroup _userGroup;
         private readonly ILangSetter _langSetter;
+        private readonly ICurrencyCultureInfoService _currencyCultureInfoService;
 
         protected ProductManagement()
             : this(
                 StructureMapFactory.Resolve<IEfProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>(),
-                StructureMapFactory.Resolve<IUserGroup>(), StructureMapFactory.Resolve<ILangSetter>())
+                StructureMapFactory.Resolve<IUserGroup>(), StructureMapFactory.Resolve<ILangSetter>(),
+                StructureMapFactory.Resolve<ICurrencyCultureInfoService>())
         {
         }
 
         protected ProductManagement(IEfProductRepository efProductRepository, ICurrencyConverter currencyConverter,
-            IUserGroup userGroup, ILangSetter langSetter)
+            IUserGroup userGroup, ILangSetter langSetter, ICurrencyCultureInfoService currencyCultureInfoService)
         {
             _efProductRepository = efProductRepository;
             _currencyConverter = currencyConverter;
             _userGroup = userGroup;
             _langSetter = langSetter;
+            _currencyCultureInfoService = currencyCultureInfoService;
         }
 
         protected override void InitializeCulture()
@@ -59,7 +66,7 @@ namespace StoreSolution.WebProject.Admin
             
             _master.BtnBackVisibility = false;
 
-            var user = _userGroup.GetUser(false);
+            var user = _userGroup.GetUser();
 
             SetTitles(user);
 
@@ -70,7 +77,7 @@ namespace StoreSolution.WebProject.Admin
         {
             var gv = (GridView) sender;
 
-            _master.LabMessageText = "";
+            _master.SetLabMessage(Color.Empty, string.Empty);
             gv.EditIndex = e.NewEditIndex;
 
             gv.PagerSettings.Visible = false;
@@ -88,25 +95,23 @@ namespace StoreSolution.WebProject.Admin
             decimal price;
             if (!CheckIsNewProductValid(name, category, priceString, out price))
             {
-                _master.LabMessageForeColor = Color.Red;
-                _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasNotUpdated");
+                _master.SetLabMessage(ErrorColor, "ProductManagement_ProductWasNotUpdated");
             }
             else
             {
-                var cultureFrom = _master.GetCurrencyCultureInfo();
+                var cultureFrom = _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies,
+                CurrencyCultureName);
                 price = _currencyConverter.ConvertToRubles(cultureFrom, price, DateTime.Now);
 
                 var product = new Product {Id = id, Name = name, Category = category, Price = price};
 
                 if (!_efProductRepository.AddOrUpdateProduct(product))
                 {
-                    _master.LabMessageForeColor = Color.Red;
-                    _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasNotUpdated");
+                    _master.SetLabMessage(ErrorColor, "ProductManagement_ProductWasNotUpdated");
                 }
                 else
                 {
-                    _master.LabMessageForeColor = Color.DarkGreen;
-                    _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasUpdated");
+                    _master.SetLabMessage(SuccessColor, "ProductManagement_ProductWasUpdated");
                     Logger.Log.Info(string.Format("Product {0} successfully updated.", product.Name));
                 }
             }
@@ -120,7 +125,8 @@ namespace StoreSolution.WebProject.Admin
         
         protected void gvTable_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
         {
-            _master.LabMessageText = "";
+            _master.SetLabMessage(Color.Empty, string.Empty);
+
             gvTable.EditIndex = -1;
 
             gvTable.PagerSettings.Visible = true;
@@ -135,7 +141,8 @@ namespace StoreSolution.WebProject.Admin
             gvTable.Rows[gvTable.EditIndex].Cells[2].Enabled = false;
             var priceString = ((TextBox) gvTable.Rows[gvTable.EditIndex].Cells[5].Controls[0]).Text;
             var price = decimal.Parse(priceString);
-            var cultureTo = _master.GetCurrencyCultureInfo();
+            var cultureTo = _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies,
+                CurrencyCultureName);
             var culturePrice = _currencyConverter.ConvertFromRubles(cultureTo, price, DateTime.Now);
             ((TextBox)gvTable.Rows[gvTable.EditIndex].Cells[5].Controls[0]).Text = string.Format("{0}", culturePrice);
         }
@@ -147,14 +154,12 @@ namespace StoreSolution.WebProject.Admin
             var product = _efProductRepository.GetProductById(id);
             if (_efProductRepository.RemoveProduct(id))
             {
-                _master.LabMessageForeColor = Color.DarkGreen;
-                _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasRemoved");
+                _master.SetLabMessage(SuccessColor, "ProductManagement_ProductWasRemoved");
                 Logger.Log.Info(string.Format("Product {0} successfully added.", product.Name));
             }
             else
             {
-                _master.LabMessageForeColor = Color.Red;
-                _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasNotRemoved");
+                _master.SetLabMessage(ErrorColor, "ProductManagement_ProductWasNotRemoved");
             }
 
             FillProductsGridView(true);
@@ -162,7 +167,7 @@ namespace StoreSolution.WebProject.Admin
 
         protected void gvTable_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
-            _master.LabMessageText = "";
+            _master.SetLabMessage(Color.Empty, string.Empty);
             gvTable.PageIndex = e.NewPageIndex;
             FillProductsGridView(true);
         }
@@ -183,26 +188,24 @@ namespace StoreSolution.WebProject.Admin
 
                 if (!CheckIsNewProductValid(name, category, priceString, out price))
                 {
-                    _master.LabMessageForeColor = Color.Red;
-                    _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasNotAdded");
+                    _master.SetLabMessage(ErrorColor, "ProductManagement_ProductWasNotAdded");
                 }
                 else
                 {
-                    var cultureFrom = _master.GetCurrencyCultureInfo();
+                    var cultureFrom = _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies,
+                        CurrencyCultureName);
                     price = _currencyConverter.ConvertToRubles(cultureFrom, price, DateTime.Now);
 
                     var product = new Product {Id = -1, Name = name, Category = category, Price = price};
 
                     if (_efProductRepository.AddOrUpdateProduct(product))
                     {
-                        _master.LabMessageForeColor = Color.DarkGreen;
-                        _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasAdded");
+                        _master.SetLabMessage(SuccessColor, "ProductManagement_ProductWasAdded");
                         Logger.Log.Info(string.Format("Product {0} successfully added.", product.Name));
                     }
                     else
                     {
-                        _master.LabMessageForeColor = Color.Red;
-                        _master.LabMessageText = _langSetter.Set("ProductManagement_ProductWasNotAdded");
+                        _master.SetLabMessage(ErrorColor, "ProductManagement_ProductWasNotAdded");
                     }
                 }
 
@@ -215,13 +218,14 @@ namespace StoreSolution.WebProject.Admin
         protected void btnNo_Click(object sender, EventArgs e)
         {
             ControlVisibilityOfMessageBox();
-            _master.LabMessageText = "";
+            _master.SetLabMessage(Color.Empty, string.Empty);
         }
 
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
             var cultureFrom = new CultureInfo("ru-RU");
-            var cultureTo = _master.GetCurrencyCultureInfo();
+            var cultureTo = _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies,
+                CurrencyCultureName);
 
             var rate = _currencyConverter.GetRate(cultureFrom, cultureTo, DateTime.Now);
             foreach (GridViewRow row in gvTable.Rows)
@@ -247,7 +251,8 @@ namespace StoreSolution.WebProject.Admin
         {
             var rgx = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z]+[a-zA-Z0-9_ ]*$");
 
-            var cultureInfo = _master.GetCurrencyCultureInfo();
+            var cultureInfo = _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies,
+                CurrencyCultureName);
             var isDeimal = decimal.TryParse(price, NumberStyles.AllowDecimalPoint, cultureInfo, out priceResult); 
 
             return isDeimal && rgx.IsMatch(name) && rgx.IsMatch(category);
@@ -272,8 +277,7 @@ namespace StoreSolution.WebProject.Admin
 
         private void SetTitles(MembershipUser user)
         {
-            var hlUserText = _langSetter.Set("Master_ToProfile");
-            if (hlUserText != null) _master.HlUserText = string.Format(hlUserText, user.UserName);
+            _master.HlUserText = user.UserName;
         }
 
         private void FillProductsGridView(bool bind)

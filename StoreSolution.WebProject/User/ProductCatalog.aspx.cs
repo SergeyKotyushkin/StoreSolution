@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Globalization;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -8,6 +7,7 @@ using System.Web.UI.WebControls;
 using StoreSolution.BusinessLogic.Currency.Contracts;
 using StoreSolution.BusinessLogic.Database.Contracts;
 using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.GridViewManager.Contracts;
 using StoreSolution.BusinessLogic.Lang.Contracts;
 using StoreSolution.BusinessLogic.Log4net;
 using StoreSolution.BusinessLogic.OrderRepository.Contracts;
@@ -19,33 +19,44 @@ namespace StoreSolution.WebProject.User
 {
     public partial class ProductCatalog : Page
     {
+        private const string PageIndexNameInRepository = "pageIndexNameProductCatalog";
+        private const string CurrencyCultureName = "currencyCultureName";
+        private const int OrderColumnIndex = 1;
+        private const int IndexIdColumn = 3;
+        private static readonly int[] ColumnsIndexes = {6};
+
         private bool _isSearch;
         private StoreMaster _master;
         private readonly Color _productRemovedColor = Color.DarkBlue;
         private readonly Color _successColor = Color.DarkGreen;
 
         private readonly IEfProductRepository _efProductRepository;
-        private readonly ICurrencyConverter _currencyConverter;
-        private readonly IOrderRepository _orderRepository;
+        private readonly IOrderSessionRepository _orderSessionRepository;
         private readonly IUserGroup _userGroup;
         private readonly ILangSetter _langSetter;
+        private readonly IGridViewProductCatalogManager _gridViewProductCatalogManager;
+        private readonly ICurrencyCultureInfoService _currencyCultureInfoService;
 
         protected ProductCatalog()
             : this(
-                StructureMapFactory.Resolve<IEfProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>(),
-                StructureMapFactory.Resolve<IOrderRepository>(), StructureMapFactory.Resolve<IUserGroup>(),
-                StructureMapFactory.Resolve<ILangSetter>())
+                StructureMapFactory.Resolve<IEfProductRepository>(),
+                StructureMapFactory.Resolve<IOrderSessionRepository>(), StructureMapFactory.Resolve<IUserGroup>(),
+                StructureMapFactory.Resolve<ILangSetter>(),
+                StructureMapFactory.Resolve<IGridViewProductCatalogManager>(),
+                StructureMapFactory.Resolve<ICurrencyCultureInfoService>())
         {
         }
 
-        protected ProductCatalog(IEfProductRepository efProductRepository, ICurrencyConverter currencyConverter,
-            IOrderRepository orderRepository, IUserGroup userGroup, ILangSetter langSetter)
+        protected ProductCatalog(IEfProductRepository efProductRepository, IOrderSessionRepository orderSessionRepository,
+            IUserGroup userGroup, ILangSetter langSetter, IGridViewProductCatalogManager gridViewProductCatalogManager,
+            ICurrencyCultureInfoService currencyCultureInfoService)
         {
             _efProductRepository = efProductRepository;
-            _currencyConverter = currencyConverter;
-            _orderRepository = orderRepository;
+            _orderSessionRepository = orderSessionRepository;
             _userGroup = userGroup;
             _langSetter = langSetter;
+            _gridViewProductCatalogManager = gridViewProductCatalogManager;
+            _currencyCultureInfoService = currencyCultureInfoService;
         }
 
         protected override void InitializeCulture()
@@ -65,7 +76,7 @@ namespace StoreSolution.WebProject.User
             _master = (StoreMaster)Page.Master;
             if (_master == null) throw new HttpUnhandledException("Wrong master page.");
 
-            var user = _userGroup.GetUser(false);
+            var user = _userGroup.GetUser();
             
             SetUiProperties(user.UserName);
 
@@ -76,81 +87,71 @@ namespace StoreSolution.WebProject.User
         protected void gvTable_SelectedIndexChanged(object sender, EventArgs e)
         {
             var gv = (GridView) sender;
-            var id = GetIdFromRow(gv.SelectedIndex);
+            var id = _gridViewProductCatalogManager.GetIdFromRow(gv, gv.SelectedIndex, IndexIdColumn);
 
-            _orderRepository.Add(Page.Session, id);
+            _orderSessionRepository.Add(Session, id);
 
             _master.SetLabMessage(_successColor, "ProductCatalog_ProductAdded",
                 _efProductRepository.GetProductById(id).Name);
 
-            FillCountColumn();
+            _gridViewProductCatalogManager.FillOrderColumn(gv, OrderColumnIndex, IndexIdColumn, Session);
         }
 
         protected void btnBasket_Click(object sender, EventArgs e)
         {
-            var user = _userGroup.GetUser(false);
+            var user = _userGroup.GetUser();
 
             Logger.Log.Debug(string.Format("User {0} redirected to Basket page.", user.UserName));
-            Response.Redirect("~/User/Basket.aspx");
+
+            Response.Redirect(@"~/User/Basket.aspx");
         }
         
         protected void gvTable_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
-            var id = GetIdFromRow(e.RowIndex);
+            var gv = (GridView) sender;
+            var id = _gridViewProductCatalogManager.GetIdFromRow(gv, e.RowIndex, IndexIdColumn);
 
-            _orderRepository.Remove(Page.Session, id);
+            _orderSessionRepository.Remove(Session, id);
 
             _master.SetLabMessage(_productRemovedColor, "ProductCatalog_ProductRemoved",
                 _efProductRepository.GetProductById(id).Name);
 
-            FillCountColumn();
+            _gridViewProductCatalogManager.FillOrderColumn(gv, OrderColumnIndex, IndexIdColumn, Session);
         }
 
         protected void gvTable_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
             var gv = (GridView)sender;
             gv.PageIndex = e.NewPageIndex;
+
+            _gridViewProductCatalogManager.SavePageIndex(Session, PageIndexNameInRepository, e.NewPageIndex);
+
+            FillGridView();
         }
 
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
-            var cultureFrom = new CultureInfo("ru-RU");
-            var cultureTo = _master.GetCurrencyCultureInfo();
+            var gv = (GridView)sender;
+            _gridViewProductCatalogManager.SetCultureForPriceColumns(gv,
+                _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies, CurrencyCultureName), ColumnsIndexes);
 
-            var rate = _currencyConverter.GetRate(cultureFrom, cultureTo, DateTime.Now);
-            foreach (GridViewRow row in gvTable.Rows)
-            {
-                var price = _currencyConverter.ConvertByRate(decimal.Parse(row.Cells[6].Text), rate);
-                row.Cells[6].Text = price.ToString("C", cultureTo);
-            }
+            _gridViewProductCatalogManager.FillOrderColumn(gvTable, OrderColumnIndex, IndexIdColumn, Session);
         }
 
         protected void gvTable_RowCreated(object sender, GridViewRowEventArgs e)
         {
-            switch (e.Row.RowType)
+            if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                case DataControlRowType.DataRow:
-                    e.Row.Cells[3].CssClass = "hiddenСolumn";
-                    break;
-                case DataControlRowType.Header:
-                    e.Row.Cells[3].CssClass = "hiddenСolumn";
-                    break;
+                e.Row.Cells[IndexIdColumn].CssClass = "hiddenСolumn";
             }
-        }
-
-        protected void gvTable_PageIndexChanged(object sender, EventArgs e)
-        {
-            FillGridView();
-        }
-
-        protected void gvTable_RowDataBound(object sender, GridViewRowEventArgs e)
-        {
-            if (e.Row.RowType != DataControlRowType.Header) return;
-
-            e.Row.Cells[1].Text = _langSetter.Set("ProductCatalog_HeaderCount");
-            e.Row.Cells[4].Text = _langSetter.Set("ProductCatalog_HeaderName");
-            e.Row.Cells[5].Text = _langSetter.Set("ProductCatalog_HeaderCategory");
-            e.Row.Cells[6].Text = _langSetter.Set("ProductCatalog_HeaderPrice");
+            else if (e.Row.RowType == DataControlRowType.Header)
+            {
+                e.Row.Cells[IndexIdColumn].CssClass = "hiddenСolumn";
+                e.Row.Cells[1].Text = _langSetter.Set("ProductCatalog_HeaderCount");
+                e.Row.Cells[4].Text = _langSetter.Set("ProductCatalog_HeaderName");
+                e.Row.Cells[5].Text = _langSetter.Set("ProductCatalog_HeaderCategory");
+                e.Row.Cells[6].Text = _langSetter.Set("ProductCatalog_HeaderPrice");
+            }
         }
 
         protected void btnSearch_Click(object sender, EventArgs e)
@@ -160,15 +161,15 @@ namespace StoreSolution.WebProject.User
 
         protected void cbSearchHeader_CheckedChanged(object sender, EventArgs e)
         {
-            _isSearch = cbSearchHeader.Checked;
+            var cb = (CheckBox) sender;
+            _isSearch = cb.Checked;
 
-            if(cbSearchHeader.Checked) return;
+            if (cb.Checked) return;
 
-            ddlSearchCategory.SelectedIndex = 0;
-            tbSearchName.Text = string.Empty;
+            ClearSearchValues();
             FillGridView();
         }
-
+        
         protected void ddlSearchCategory_SelectedIndexChanged(object sender, EventArgs e)
         {
             FillGridView();
@@ -178,79 +179,46 @@ namespace StoreSolution.WebProject.User
         private void SetUiProperties(string userName)
         {
             pSearchingBoard.Visible = _isSearch = cbSearchHeader.Checked;
-
             _master.BtnBackVisibility = false;
 
-            _master.HlUserText = string.Format(_langSetter.Set("Master_ToProfile"), userName);
+            _master.HlUserText = userName;
 
             if (Session["Bought"] == null) return;
 
             _master.SetLabMessage(_successColor, "ProductCatalog_ProductsBought");
-
             Session["Bought"] = null;
         }
 
-        private IQueryable<Product> SearchProducts(IQueryable<Product> products, string searchName, int searchCategory)
+        private IQueryable<Product> SearchProducts(IQueryable<Product> products, string searchName, int indexCategory)
         {
             if (!string.IsNullOrWhiteSpace(searchName))
-                products = products.Where(p => p.Name.ToLower().Contains(tbSearchName.Text.Trim().ToLower())).Select(p => p);
+                products = _efProductRepository.SearchByName(products, searchName);
 
-            if (searchCategory == 0) return products;
+            if (indexCategory == 0)
+                return products;
 
-            var category = ddlSearchCategory.Items[ddlSearchCategory.SelectedIndex].Text;
-            products = products.Where(p => p.Category == category).Select(p => p);
-
-            return products;
+            var searchCategory = ddlSearchCategory.Items[ddlSearchCategory.SelectedIndex].Text;
+            return _efProductRepository.SearchByCategory(products, searchCategory);
         }
 
         private void FillGridView()
         {
+            _gridViewProductCatalogManager.RefreshPageIndex(Session, ViewStateUserKey, gvTable);
+
             var products = _efProductRepository.Products;
 
             if (_isSearch)
-                products = SearchProducts(products, tbSearchName.Text, ddlSearchCategory.SelectedIndex);
+                products = SearchProducts(products, tbSearchName.Text.Trim(), ddlSearchCategory.SelectedIndex);
 
-            gvTable.DataSource = products.ToList();
-            gvTable.DataBind();
+            _gridViewProductCatalogManager.Fill(gvTable, products);
 
-            FillCategories(products);
-            FillCountColumn();
+            _gridViewProductCatalogManager.FillCategories(ddlSearchCategory, products);
         }
 
-        private void FillCategories(IQueryable<Product> products)
+        private void ClearSearchValues()
         {
-            var categories = products.Select(p => p.Category).Distinct().ToArray();
-
-            var ddlSearchCategorySelectedIndex = ddlSearchCategory.SelectedIndex;
-            ddlSearchCategory.Items.Clear();
-            ddlSearchCategory.Items.Add(_langSetter.Set("ProductCatalog_AllCategories"));
-            foreach (var category in categories) 
-                ddlSearchCategory.Items.Add(category);
-
-            ddlSearchCategory.SelectedIndex = ddlSearchCategorySelectedIndex < ddlSearchCategory.Items.Count
-                ? ddlSearchCategorySelectedIndex
-                : ddlSearchCategory.Items.Count - 1;
+            ddlSearchCategory.SelectedIndex = 0;
+            tbSearchName.Text = string.Empty;
         }
-
-        private void FillCountColumn()
-        {
-            var orders = _orderRepository.GetAll(Page.Session);
-
-            for (var i = 0; i < gvTable.Rows.Count; i++)
-            {
-                var id = GetIdFromRow(i);
-                var foo = orders.Find(order => order.Id == id);
-                gvTable.Rows[i].Cells[1].Text = (foo == null ? 0 : foo.Count).ToString();
-            }
-        }
-
-        private int GetIdFromRow(int index)
-        {
-            int id;
-            if (!int.TryParse(gvTable.Rows[index].Cells[3].Text, out id)) return -1;
-
-            var product = _efProductRepository.GetProductById(id);
-            return product == null ? -1 : product.Id;
-        }   
     }
 }

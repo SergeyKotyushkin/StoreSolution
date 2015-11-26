@@ -6,7 +6,7 @@ namespace StoreSolution.BusinessLogic.UserGruop.Contracts
 {
     public interface IUserGroup
     {
-        MembershipUser GetUser(bool canBeAnonymous);
+        MembershipUser GetUser(bool canBeAnonymous = false);
 
         void SignOut(HttpResponse response, HttpSessionState sessionState);
     }

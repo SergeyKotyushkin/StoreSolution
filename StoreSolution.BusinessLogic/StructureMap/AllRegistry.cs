@@ -2,6 +2,8 @@
 using StoreSolution.BusinessLogic.Currency.Contracts;
 using StoreSolution.BusinessLogic.Database.Contracts;
 using StoreSolution.BusinessLogic.Database.Realizations;
+using StoreSolution.BusinessLogic.GridViewManager;
+using StoreSolution.BusinessLogic.GridViewManager.Contracts;
 using StoreSolution.BusinessLogic.Lang;
 using StoreSolution.BusinessLogic.Lang.Contracts;
 using StoreSolution.BusinessLogic.Mail;
@@ -37,6 +39,10 @@ namespace StoreSolution.BusinessLogic.StructureMap
 
             // Other
             For<ILangSetter>().Use<LangSetter>().Singleton();
+            For<IGridViewProductCatalogManager>().Use<GridViewProductCatalogAgent>();
+            For<IGridViewPageIndexService>().Use<GridViewPageIndexSessionService>();
+            For<ICurrencyCultureInfoService>().Use<CurrencyCultureInfoCookieService>();
+            For<IGridViewBasketManager>().Use<GridViewBasketAgent>();
         }
     }
 }

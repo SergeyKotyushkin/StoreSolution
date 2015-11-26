@@ -13,8 +13,8 @@
             <br/>
             <br/>
             <asp:GridView AllowPaging="True" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="3"
-                          HorizontalAlign="Center" ID="gvTable" OnDataBound="gvTable_DataBound" OnPageIndexChanged="gvTable_PageIndexChanged"
-                          OnPageIndexChanging="gvTable_PageIndexChanging" OnRowCreated="gvTable_RowCreated" OnRowDataBound="gvTable_RowDataBound"
+                          HorizontalAlign="Center" ID="gvTable" OnDataBound="gvTable_DataBound"
+                          OnPageIndexChanging="gvTable_PageIndexChanging" OnRowCreated="gvTable_RowCreated"
                           OnRowDeleting="gvTable_RowDeleting" OnSelectedIndexChanged="gvTable_SelectedIndexChanged" runat="server" Width="50%">
                 <Columns>
                     <asp:CommandField ButtonType="Button" SelectText="+" ShowSelectButton="True">

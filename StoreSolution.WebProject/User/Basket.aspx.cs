@@ -1,21 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Net.Configuration;
 using System.Web;
 using System.Web.UI.WebControls;
-using System.Web.Security;
 using System.Web.UI;
 using StoreSolution.BusinessLogic.Currency.Contracts;
 using StoreSolution.BusinessLogic.Database.Contracts;
-using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.GridViewManager.Contracts;
 using StoreSolution.BusinessLogic.Lang.Contracts;
 using StoreSolution.BusinessLogic.Log4net;
 using StoreSolution.BusinessLogic.Mail.Contracts;
 using StoreSolution.BusinessLogic.Models;
-using StoreSolution.BusinessLogic.OrderRepository.Contracts;
 using StoreSolution.BusinessLogic.StructureMap;
 using StoreSolution.BusinessLogic.UserGruop.Contracts;
 using StoreSolution.WebProject.Master;
@@ -24,37 +21,36 @@ namespace StoreSolution.WebProject.User
 {
     public partial class Basket : Page
     {
+        private const string PageIndexNameInRepository = "pageIndexNameBasket";
+        private const string CurrencyCultureName = "currencyCultureName";
         private const string SmtpSectionPath = "system.net/mailSettings/smtp";
+
         private StoreMaster _master;
-        private readonly IEfProductRepository _efProductRepository;
         private readonly IEfOrderHistoryRepository _efOrderHistoryRepository;
-        private readonly ICurrencyConverter _currencyConverter;
-        private readonly IOrderRepository _orderRepository;
         private readonly IMailSender _mailSender;
         private readonly IUserGroup _userGroup;
         private readonly ILangSetter _langSetter;
+        private readonly ICurrencyCultureInfoService _currencyCultureInfoService;
+        private readonly IGridViewBasketManager _gridViewBasketManager;
 
         protected Basket()
-            : this(
-                StructureMapFactory.Resolve<IEfProductRepository>(),
-                StructureMapFactory.Resolve<IEfOrderHistoryRepository>(),
-                StructureMapFactory.Resolve<ICurrencyConverter>(), StructureMapFactory.Resolve<IMailSender>(),
-                StructureMapFactory.Resolve<IUserGroup>(), StructureMapFactory.Resolve<IOrderRepository>(),
-                StructureMapFactory.Resolve<ILangSetter>())
+            : this(StructureMapFactory.Resolve<IEfOrderHistoryRepository>(), StructureMapFactory.Resolve<IMailSender>(),
+                StructureMapFactory.Resolve<IUserGroup>(), StructureMapFactory.Resolve<ILangSetter>(),
+                StructureMapFactory.Resolve<ICurrencyCultureInfoService>(),
+                StructureMapFactory.Resolve<IGridViewBasketManager>())
         {
         }
 
-        protected Basket(IEfProductRepository efProductRepository, IEfOrderHistoryRepository efOrderHistoryRepository,
-            ICurrencyConverter currencyConverter, IMailSender mailSender, IUserGroup userGroup,
-            IOrderRepository orderRepository, ILangSetter langSetter)
+        protected Basket(IEfOrderHistoryRepository efOrderHistoryRepository, IMailSender mailSender,
+            IUserGroup userGroup, ILangSetter langSetter, ICurrencyCultureInfoService currencyCultureInfoService,
+            IGridViewBasketManager gridViewBasketManager)
         {
-            _efProductRepository = efProductRepository;
             _efOrderHistoryRepository = efOrderHistoryRepository;
-            _currencyConverter = currencyConverter;
             _mailSender = mailSender;
             _userGroup = userGroup;
-            _orderRepository = orderRepository;
             _langSetter = langSetter;
+            _currencyCultureInfoService = currencyCultureInfoService;
+            _gridViewBasketManager = gridViewBasketManager;
         }
 
         protected override void InitializeCulture()
@@ -74,24 +70,24 @@ namespace StoreSolution.WebProject.User
             _master = (StoreMaster) Page.Master;
             if (_master == null) throw new HttpUnhandledException("Wrong master page.");
 
-            var user = _userGroup.GetUser(false);
+            var user = _userGroup.GetUser();
 
             SetTitles(user.UserName);
 
             if (!Page.IsPostBack)
-                FillOrdersGridView();
+                FillGridView();
         }
 
         protected void btnBuy_Click(object sender, EventArgs e)
         {
-            var user = _userGroup.GetUser(false);
+            var user = _userGroup.GetUser();
 
-            var products = _efProductRepository.Products.ToArray();
-            var orders = _orderRepository.GetAll(Session).ToArray();
-            var currencyCultureInfo = _master.GetCurrencyCultureInfo();
-            var orderItemsList = GetOrderItemsList(products, orders, currencyCultureInfo).ToArray();
+            var currencyCultureInfo = _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies,
+                CurrencyCultureName);
 
-            SaveOrderToDatabase(orderItemsList, user, currencyCultureInfo);
+            var orderItemsList = _gridViewBasketManager.GetOrderItemsList(Session, currencyCultureInfo).ToArray();
+
+            _efOrderHistoryRepository.Add(orderItemsList, user, currencyCultureInfo);
 
             var @from = ((SmtpSection) ConfigurationManager.GetSection(SmtpSectionPath)).From;
             var mailMessageSuject = _langSetter.Set("Basket_MailMessageSubject");
@@ -113,14 +109,15 @@ namespace StoreSolution.WebProject.User
 
         protected void GV_table_PageIndexChanged(object sender, EventArgs e)
         {
-            FillOrdersGridView();
+            FillGridView();
         }
 
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
             if (gvTable.Rows.Count == 0) return;
 
-            var cultureTo = _master.GetCurrencyCultureInfo();
+            var cultureTo = _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies,
+                CurrencyCultureName);
             for (var i = 0; i < gvTable.Rows.Count; i++)
             {
                 gvTable.Rows[i].Cells[1].Text = decimal.Parse(gvTable.Rows[i].Cells[1].Text).ToString("C", cultureTo);
@@ -139,21 +136,25 @@ namespace StoreSolution.WebProject.User
         }
 
 
-        private void FillOrdersGridView()
+        private void FillGridView()
         {
-            var products = _efProductRepository.Products.ToArray();
-            var orders = _orderRepository.GetAll(Session);
+            var cultureTo = _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies,
+                CurrencyCultureName);
 
-            var cultureTo = _master.GetCurrencyCultureInfo();
-            var list = GetOrderItemsList(products, orders, cultureTo).ToArray();
-            gvTable.DataSource = list;
-            gvTable.DataBind();
+            var data = _gridViewBasketManager.GetOrderItemsList(Session, cultureTo);
 
+            _gridViewBasketManager.Fill(gvTable, data);
+
+            SetUiProperties(data, cultureTo);
+        }
+
+        private void SetUiProperties(IQueryable<OrderItem> data, IFormatProvider cultureTo)
+        {
             labTotal.Text = string.Format(_langSetter.Set("Basket_Total"),
-                list.Sum(p => p.Total).ToString("C", cultureTo));
+                data.Sum(p => p.Total).ToString("C", cultureTo));
 
             btnBuy.Enabled = true;
-            if (list.Length != 0) return;
+            if (data.Count() != 0) return;
 
             btnBuy.Enabled = false;
             labTotal.Text = _langSetter.Set("Basket_EmptyOrder");
@@ -161,25 +162,7 @@ namespace StoreSolution.WebProject.User
 
         private void SetTitles(string userName)
         {
-            _master.HlUserText = string.Format(_langSetter.Set("Master_ToProfile"), userName);
-        }
-
-        private IEnumerable<OrderItem> GetOrderItemsList(IEnumerable<Product> products, IEnumerable<Order> orders,
-            CultureInfo culture)
-        {
-            var rate = _currencyConverter.GetRate(new CultureInfo("ru-Ru"), culture, DateTime.Now);
-            return products.Join(orders, p => p.Id, q => q.Id, (p, q) => new OrderItem
-            {
-                Name = p.Name,
-                Price = _currencyConverter.ConvertByRate(p.Price, rate),
-                Count = q.Count,
-                Total = (q.Count*_currencyConverter.ConvertByRate(p.Price, rate))
-            });
-        }
-
-        private void SaveOrderToDatabase(IEnumerable<OrderItem> orderItems, MembershipUser user, CultureInfo culture)
-        {
-            _efOrderHistoryRepository.Add(orderItems, user, culture);
+            _master.HlUserText = userName;
         }
     }
 }

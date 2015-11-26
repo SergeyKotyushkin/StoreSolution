@@ -40,5 +40,14 @@ namespace StoreSolution.BusinessLogic.Database.Realizations
             return _context.ProductTable.Find(id);
         }
 
+        public IQueryable<Product> SearchByName(IQueryable<Product> products, string searchName)
+        {
+            return products.Where(p => p.Name.ToLower().Contains(searchName.ToLower())).Select(p => p);
+        }
+
+        public IQueryable<Product> SearchByCategory(IQueryable<Product> products, string searchCategory)
+        {
+            return products.Where(p => p.Category.ToLower().Contains(searchCategory.ToLower())).Select(p => p);
+        }
     }
 }

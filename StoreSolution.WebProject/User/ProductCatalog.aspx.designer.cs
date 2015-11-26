@@ -7,6 +7,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Web.UI.WebControls;
+
 namespace StoreSolution.WebProject.User {
     
     
@@ -19,7 +21,7 @@ namespace StoreSolution.WebProject.User {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label labTitle;
+        protected Label labTitle;
         
         /// <summary>
         /// gvTable control.
@@ -28,7 +30,7 @@ namespace StoreSolution.WebProject.User {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvTable;
+        protected GridView gvTable;
         
         /// <summary>
         /// cbSearchHeader control.
@@ -37,7 +39,7 @@ namespace StoreSolution.WebProject.User {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox cbSearchHeader;
+        protected CheckBox cbSearchHeader;
         
         /// <summary>
         /// pSearchingBoard control.
@@ -46,7 +48,7 @@ namespace StoreSolution.WebProject.User {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pSearchingBoard;
+        protected Panel pSearchingBoard;
         
         /// <summary>
         /// labSearchName control.
@@ -55,7 +57,7 @@ namespace StoreSolution.WebProject.User {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label labSearchName;
+        protected Label labSearchName;
         
         /// <summary>
         /// tbSearchName control.
@@ -64,7 +66,7 @@ namespace StoreSolution.WebProject.User {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox tbSearchName;
+        protected TextBox tbSearchName;
         
         /// <summary>
         /// labSearchCategory control.
@@ -73,7 +75,7 @@ namespace StoreSolution.WebProject.User {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label labSearchCategory;
+        protected Label labSearchCategory;
         
         /// <summary>
         /// ddlSearchCategory control.
@@ -82,7 +84,7 @@ namespace StoreSolution.WebProject.User {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlSearchCategory;
+        protected DropDownList ddlSearchCategory;
         
         /// <summary>
         /// btnSearch control.
@@ -91,7 +93,7 @@ namespace StoreSolution.WebProject.User {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSearch;
+        protected Button btnSearch;
         
         /// <summary>
         /// btnBasket control.
@@ -100,6 +102,6 @@ namespace StoreSolution.WebProject.User {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnBasket;
+        protected Button btnBasket;
     }
 }

@@ -31,19 +31,7 @@ namespace StoreSolution.WebProject.Master
         public string HlUserText
         {
             get { return hlUser.Text; }
-            set { hlUser.Text = value; }
-        }
-
-        public string LabMessageText
-        {
-            get { return labMessage.Text; }
-            set { labMessage.Text = value; }
-        }
-
-        public Color LabMessageForeColor
-        {
-            get { return labMessage.ForeColor; }
-            set { labMessage.ForeColor = value; }
+            set { hlUser.Text = string.Format(_langSetter.Set("Master_ToProfile"), value); }
         }
 
         public bool BtnBackVisibility
@@ -65,20 +53,14 @@ namespace StoreSolution.WebProject.Master
 
         public void SetLabMessage(Color color, string nameFromLang, params object[] parameters)
         {
+            if (color == Color.Empty)
+            {
+                labMessage.Text = string.Empty;
+                return;
+            }
+
             labMessage.ForeColor = color;
             labMessage.Text = string.Format(_langSetter.Set(nameFromLang), parameters);
-        }
-
-        public virtual CultureInfo GetCurrencyCultureInfo()
-        {
-            var cookie = Request.Cookies.Get("currencyCultureName");
-            var currencyCultureName = CultureInfo.CurrentCulture.Name;
-            if (cookie == null)
-                Response.Cookies.Set(new HttpCookie("currencyCultureName", currencyCultureName));
-            else
-                currencyCultureName = cookie.Value;
-
-            return new CultureInfo(currencyCultureName);
         }
 
         protected void Page_Load(object sender, EventArgs e)
