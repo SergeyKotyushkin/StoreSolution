@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Web.SessionState;
 using System.Web.UI.WebControls;
 using StoreSolution.BusinessLogic.Currency.Contracts;
 using StoreSolution.BusinessLogic.GridViewManager.Contracts;
@@ -24,7 +25,8 @@ namespace StoreSolution.BusinessLogic.GridViewManager
             table.DataBind();
         }
 
-        public void SetCultureForPriceColumns(GridView table, CultureInfo cultureTo, params int[] columnsIndexes)
+        public void SetCultureForPriceColumns(GridView table, CultureInfo cultureTo, bool performConvert,
+            params int[] columnsIndexes)
         {
             var cultureFrom = new CultureInfo("ru-RU");
             var rate = _currencyConverter.GetRate(cultureFrom, cultureTo, DateTime.Now);
@@ -32,7 +34,8 @@ namespace StoreSolution.BusinessLogic.GridViewManager
             {
                 foreach (GridViewRow row in table.Rows)
                 {
-                    var price = _currencyConverter.ConvertByRate(decimal.Parse(row.Cells[columnIndex].Text), rate);
+                    var price = decimal.Parse(row.Cells[columnIndex].Text);
+                    if(performConvert) price = _currencyConverter.ConvertByRate(price, rate);
                     row.Cells[columnIndex].Text = price.ToString("C", cultureTo);
                 }
             }
@@ -48,11 +51,20 @@ namespace StoreSolution.BusinessLogic.GridViewManager
             return _gridViewPageIndexService.GetPageIndexByName(repository, name);
         }
 
-        public void RefreshPageIndex(object repository, string name, GridView table)
+        public void FillGridViewAndRefreshPageIndex(GridView table, IQueryable<T> data, object repository, string name)
+        {
+            Fill(table, data);
+
+            if (RefreshPageIndex((HttpSessionState)repository, name, table))
+                Fill(table, data);
+        }
+
+
+        private bool RefreshPageIndex(object repository, string name, GridView table)
         {
             var pageIndex = RestorePageIndex(repository, name);
 
-            if (table.PageIndex == pageIndex) return;
+            if (table.PageIndex == pageIndex) return false;
 
             var tablePageCount = table.PageCount;
             if (pageIndex < tablePageCount)
@@ -62,6 +74,8 @@ namespace StoreSolution.BusinessLogic.GridViewManager
                 _gridViewPageIndexService.SetPageIndexByName(repository, name, tablePageCount);
                 table.PageIndex = tablePageCount;
             }
+
+            return true;
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Web.SessionState;
 using System.Web.UI.WebControls;
 using StoreSolution.BusinessLogic.Currency.Contracts;
 using StoreSolution.BusinessLogic.Database.Contracts;
@@ -28,7 +27,7 @@ namespace StoreSolution.BusinessLogic.GridViewManager
 
         public void FillOrderColumn(GridView table, int columnIndex, int indexIdColumn, object repository)
         {
-            var orders = _orderSessionRepository.GetAll((HttpSessionState)repository);
+            var orders = _orderSessionRepository.GetAll(repository);
 
             for (var i = 0; i < table.Rows.Count; i++)
             {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
-using System.Web.SessionState;
 using StoreSolution.BusinessLogic.Currency.Contracts;
 using StoreSolution.BusinessLogic.Database.Contracts;
 using StoreSolution.BusinessLogic.GridViewManager.Contracts;
@@ -29,7 +28,7 @@ namespace StoreSolution.BusinessLogic.GridViewManager
         public IQueryable<OrderItem> GetOrderItemsList(object repository, CultureInfo culture)
         {
             var products = _efProductRepository.Products.ToArray();
-            var orders = _orderSessionRepository.GetAll((HttpSessionState)repository);
+            var orders = _orderSessionRepository.GetAll(repository);
 
             var rate = _currencyConverter.GetRate(new CultureInfo("ru-Ru"), culture, DateTime.Now);
             return products.Join(orders, p => p.Id, q => q.Id, (p, q) => new OrderItem

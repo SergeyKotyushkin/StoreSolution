@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
-using System.Web.SessionState;
 using StoreSolution.BusinessLogic.Models;
 
 namespace StoreSolution.BusinessLogic.OrderRepository.Contracts
 {
     public interface IOrderSessionRepository
     {
-        void Add(HttpSessionState sessionState, int id);
+        void Add(object httpSessionState, int id);
 
-        void Remove(HttpSessionState sessionState, int id);
+        void Remove(object httpSessionState, int id);
 
-        List<Order> GetAll(HttpSessionState sessionState);
+        List<Order> GetAll(object httpSessionState);
     }
 }

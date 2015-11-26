@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Net.Configuration;
 using System.Web;
+using System.Web.Security;
 using System.Web.UI.WebControls;
 using System.Web.UI;
 using StoreSolution.BusinessLogic.Currency.Contracts;
@@ -24,6 +26,9 @@ namespace StoreSolution.WebProject.User
         private const string PageIndexNameInRepository = "pageIndexNameBasket";
         private const string CurrencyCultureName = "currencyCultureName";
         private const string SmtpSectionPath = "system.net/mailSettings/smtp";
+
+        private static readonly int[] ColumnsIndexes = {1, 3};
+
 
         private StoreMaster _master;
         private readonly IEfOrderHistoryRepository _efOrderHistoryRepository;
@@ -61,8 +66,7 @@ namespace StoreSolution.WebProject.User
                 cookie = new HttpCookie("language", "en-US");
                 Response.Cookies.Add(cookie);
             }
-            Page.Culture = cookie.Value;
-            Page.UICulture = cookie.Value;
+            Page.Culture = Page.UICulture = cookie.Value;
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -87,42 +91,30 @@ namespace StoreSolution.WebProject.User
 
             var orderItemsList = _gridViewBasketManager.GetOrderItemsList(Session, currencyCultureInfo).ToArray();
 
-            _efOrderHistoryRepository.Add(orderItemsList, user, currencyCultureInfo);
+            SaveOrderHistoryInDatabase(orderItemsList, user, currencyCultureInfo);
 
-            var @from = ((SmtpSection) ConfigurationManager.GetSection(SmtpSectionPath)).From;
-            var mailMessageSuject = _langSetter.Set("Basket_MailMessageSubject");
+            SendMailMessage(user.Email, orderItemsList);
 
-            _mailSender.Create(@from, user.Email, mailMessageSuject, orderItemsList, true, CultureInfo.CurrentCulture);
-            _mailSender.Send();
+            MakePurchase(user.UserName);
 
-            Logger.Log.Info(string.Format("Products has bought by user - {0}. {1}", user.UserName, labTotal.Text));
-            Session["Bought"] = 1;
-            Session["CurrentOrder"] = null;
             Response.Redirect("~/User/ProductCatalog.aspx");
         }
-
+        
         protected void GV_table_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
             var gv = (GridView) sender;
             gv.PageIndex = e.NewPageIndex;
-        }
 
-        protected void GV_table_PageIndexChanged(object sender, EventArgs e)
-        {
+            _gridViewBasketManager.SavePageIndex(Session, PageIndexNameInRepository, e.NewPageIndex);
+
             FillGridView();
         }
-
+        
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
-            if (gvTable.Rows.Count == 0) return;
-
-            var cultureTo = _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies,
-                CurrencyCultureName);
-            for (var i = 0; i < gvTable.Rows.Count; i++)
-            {
-                gvTable.Rows[i].Cells[1].Text = decimal.Parse(gvTable.Rows[i].Cells[1].Text).ToString("C", cultureTo);
-                gvTable.Rows[i].Cells[3].Text = decimal.Parse(gvTable.Rows[i].Cells[3].Text).ToString("C", cultureTo);
-            }
+            var gv = (GridView)sender;
+            _gridViewBasketManager.SetCultureForPriceColumns(gv,
+                _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies, CurrencyCultureName), false, ColumnsIndexes);
         }
 
         protected void gvTable_RowDataBound(object sender, GridViewRowEventArgs e)
@@ -138,14 +130,35 @@ namespace StoreSolution.WebProject.User
 
         private void FillGridView()
         {
-            var cultureTo = _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies,
-                CurrencyCultureName);
+            var cultureTo =
+                _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies, CurrencyCultureName);
 
             var data = _gridViewBasketManager.GetOrderItemsList(Session, cultureTo);
 
-            _gridViewBasketManager.Fill(gvTable, data);
+            _gridViewBasketManager.FillGridViewAndRefreshPageIndex(gvTable, data, Session, PageIndexNameInRepository);
 
             SetUiProperties(data, cultureTo);
+        }
+
+        private void SaveOrderHistoryInDatabase(IEnumerable<OrderItem> orderItemsList, MembershipUser user, CultureInfo currencyCultureInfo)
+        {
+            _efOrderHistoryRepository.Add(orderItemsList, user, currencyCultureInfo);
+        }
+
+        private void SendMailMessage(string userEmail, IEnumerable<OrderItem> orderItemsList)
+        {
+            var @from = ((SmtpSection)ConfigurationManager.GetSection(SmtpSectionPath)).From;
+            var mailMessageSubject = _langSetter.Set("Basket_MailMessageSubject");
+
+            _mailSender.Create(@from, userEmail, mailMessageSubject, orderItemsList, true, CultureInfo.CurrentCulture);
+            _mailSender.Send();
+        }
+
+        private void MakePurchase(string userName)
+        {
+            Logger.Log.Info(string.Format("Products has bought by user - {0}. {1}", userName, labTotal.Text));
+            Session["Bought"] = 1;
+            Session["CurrentOrder"] = null;
         }
 
         private void SetUiProperties(IQueryable<OrderItem> data, IFormatProvider cultureTo)

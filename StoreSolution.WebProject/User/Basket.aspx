@@ -1,6 +1,6 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Basket.aspx.cs" 
-         Inherits="StoreSolution.WebProject.User.Basket" 
-         MasterPageFile="~/Master/StoreMaster.Master" Title="<%$ Resources: Lang, Basket_Title %>"%>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Basket.aspx.cs"
+Inherits="StoreSolution.WebProject.User.Basket"
+MasterPageFile="~/Master/StoreMaster.Master" Title="<%$ Resources: Lang, Basket_Title %>"%>
 
 <asp:Content ID="Head" ContentPlaceHolderID="head" runat="server">
     <link href="<%= ResolveUrl("~/Content/Basket.css") %>" rel="stylesheet"/>
@@ -9,23 +9,20 @@
     <br/>
     <asp:Label ID="labTitle" runat="server" Text="<%$ Resources: Lang, Basket_Title %>"/>
     <br/>
-    <br />
-    <asp:GridView AllowPaging="True"
-                  CellPadding="3"
-                  HorizontalAlign="Center"
-                  ID="gvTable"
-                  OnPageIndexChanged="GV_table_PageIndexChanged"
-                  OnPageIndexChanging="GV_table_PageIndexChanging"
-                  runat="server"
-                  Width="50%" OnDataBound="gvTable_DataBound" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" OnRowDataBound="gvTable_RowDataBound">
-        <FooterStyle BackColor="White" ForeColor="#000066" />
-        <HeaderStyle BackColor="#006699" Font-Bold="True" ForeColor="White" />
+    <br/>
+    <asp:GridView AllowPaging="True" CellPadding="3" HorizontalAlign="Center"
+                  ID="gvTable" OnPageIndexChanging="GV_table_PageIndexChanging"
+                  runat="server" Width="50%" OnDataBound="gvTable_DataBound"
+                  BackColor="White" BorderColor="#CCCCCC" BorderStyle="None"
+                  BorderWidth="1px" OnRowDataBound="gvTable_RowDataBound">
+        <FooterStyle BackColor="White" ForeColor="#000066"/>
+        <HeaderStyle BackColor="#006699" Font-Bold="True" ForeColor="White"/>
         <PagerStyle HorizontalAlign="Left" VerticalAlign="Middle" BackColor="White" ForeColor="#000066"/>
-        <RowStyle ForeColor="#000066" />
-        <SortedAscendingCellStyle BackColor="#F1F1F1" />
-        <SortedAscendingHeaderStyle BackColor="#007DBB" />
-        <SortedDescendingCellStyle BackColor="#CAC9C9" />
-        <SortedDescendingHeaderStyle BackColor="#00547E" />
+        <RowStyle ForeColor="#000066"/>
+        <SortedAscendingCellStyle BackColor="#F1F1F1"/>
+        <SortedAscendingHeaderStyle BackColor="#007DBB"/>
+        <SortedDescendingCellStyle BackColor="#CAC9C9"/>
+        <SortedDescendingHeaderStyle BackColor="#00547E"/>
         <PagerStyle HorizontalAlign="Center"/>
     </asp:GridView>
     <br/>

@@ -67,8 +67,7 @@ namespace StoreSolution.WebProject.User
                 cookie = new HttpCookie("language", "en-US");
                 Response.Cookies.Add(cookie);
             }
-            Page.Culture = cookie.Value;
-            Page.UICulture = cookie.Value;
+            Page.Culture = Page.UICulture = cookie.Value;
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -133,7 +132,7 @@ namespace StoreSolution.WebProject.User
         {
             var gv = (GridView)sender;
             _gridViewProductCatalogManager.SetCultureForPriceColumns(gv,
-                _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies, CurrencyCultureName), ColumnsIndexes);
+                _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies, CurrencyCultureName), true, ColumnsIndexes);
 
             _gridViewProductCatalogManager.FillOrderColumn(gvTable, OrderColumnIndex, IndexIdColumn, Session);
         }
@@ -176,17 +175,17 @@ namespace StoreSolution.WebProject.User
         }
 
 
-        private void SetUiProperties(string userName)
+        private void FillGridView()
         {
-            pSearchingBoard.Visible = _isSearch = cbSearchHeader.Checked;
-            _master.BtnBackVisibility = false;
+            var data = _efProductRepository.Products;
 
-            _master.HlUserText = userName;
+            if (_isSearch)
+                data = SearchProducts(data, tbSearchName.Text.Trim(), ddlSearchCategory.SelectedIndex);
 
-            if (Session["Bought"] == null) return;
+            _gridViewProductCatalogManager.FillGridViewAndRefreshPageIndex(gvTable, data, Session,
+                PageIndexNameInRepository);
 
-            _master.SetLabMessage(_successColor, "ProductCatalog_ProductsBought");
-            Session["Bought"] = null;
+            _gridViewProductCatalogManager.FillCategories(ddlSearchCategory, data);
         }
 
         private IQueryable<Product> SearchProducts(IQueryable<Product> products, string searchName, int indexCategory)
@@ -200,25 +199,25 @@ namespace StoreSolution.WebProject.User
             var searchCategory = ddlSearchCategory.Items[ddlSearchCategory.SelectedIndex].Text;
             return _efProductRepository.SearchByCategory(products, searchCategory);
         }
-
-        private void FillGridView()
-        {
-            _gridViewProductCatalogManager.RefreshPageIndex(Session, ViewStateUserKey, gvTable);
-
-            var products = _efProductRepository.Products;
-
-            if (_isSearch)
-                products = SearchProducts(products, tbSearchName.Text.Trim(), ddlSearchCategory.SelectedIndex);
-
-            _gridViewProductCatalogManager.Fill(gvTable, products);
-
-            _gridViewProductCatalogManager.FillCategories(ddlSearchCategory, products);
-        }
-
+        
         private void ClearSearchValues()
         {
             ddlSearchCategory.SelectedIndex = 0;
             tbSearchName.Text = string.Empty;
         }
+
+        private void SetUiProperties(string userName)
+        {
+            pSearchingBoard.Visible = _isSearch = cbSearchHeader.Checked;
+            _master.BtnBackVisibility = false;
+
+            _master.HlUserText = userName;
+
+            if (Session["Bought"] == null) return;
+
+            _master.SetLabMessage(_successColor, "ProductCatalog_ProductsBought");
+            Session["Bought"] = null;
+        }
+
     }
 }

@@ -7,8 +7,9 @@ namespace StoreSolution.BusinessLogic.OrderRepository
 {
     public class OrderSessionRepository : IOrderSessionRepository
     {
-        public void Add(HttpSessionState sessionState, int id)
+        public void Add(object httpSessionState, int id)
         {
+            var sessionState = (HttpSessionState) httpSessionState;
             var orders = GetAll(sessionState);
 
             var order = orders.Find(o => o.Id == id);
@@ -18,8 +19,9 @@ namespace StoreSolution.BusinessLogic.OrderRepository
             SetAll(sessionState, orders);
         }
 
-        public void Remove(HttpSessionState sessionState, int id)
+        public void Remove(object httpSessionState, int id)
         {
+            var sessionState = (HttpSessionState)httpSessionState;
             var orders = GetAll(sessionState);
 
             var order = orders.Find(o => o.Id == id);
@@ -30,8 +32,9 @@ namespace StoreSolution.BusinessLogic.OrderRepository
             SetAll(sessionState, orders);
         }
 
-        public List<Order> GetAll(HttpSessionState sessionState)
+        public List<Order> GetAll(object httpSessionState)
         {
+            var sessionState = (HttpSessionState)httpSessionState;
             return sessionState["CurrentOrder"] as List<Order> ?? new List<Order>();
         }
 

@@ -8,12 +8,12 @@ namespace StoreSolution.BusinessLogic.GridViewManager.Contracts
     {
         void Fill(GridView table, IQueryable<T> data);
 
-        void SetCultureForPriceColumns(GridView table, CultureInfo cultureTo, params int[] columnsIndexes);
+        void SetCultureForPriceColumns(GridView table, CultureInfo cultureTo, bool performConvert, params int[] columnsIndexes);
 
         void SavePageIndex(object repository, string name, int index);
 
         int RestorePageIndex(object repository, string name);
 
-        void RefreshPageIndex(object repository, string name, GridView table);
+        void FillGridViewAndRefreshPageIndex(GridView table, IQueryable<T> data, object repository, string name);
     }
 }
