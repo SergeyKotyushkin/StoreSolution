@@ -3,8 +3,8 @@ using System.Data.Entity;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using StoreSolution.BusinessLogic.Database.EfContext;
-using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.Database.EfContexts;
+using StoreSolution.BusinessLogic.Database.Models;
 using StoreSolution.BusinessLogic.Database.Realizations;
 
 namespace StoreSolution.BuisnessLogic.UnitTests.DatabaseTests.Realizations

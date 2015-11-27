@@ -1,33 +1,34 @@
 ﻿using System.Linq;
+using System.Web.SessionState;
 using System.Web.UI.WebControls;
 using StoreSolution.BusinessLogic.Currency.Contracts;
 using StoreSolution.BusinessLogic.Database.Contracts;
-using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.Database.Models;
 using StoreSolution.BusinessLogic.GridViewManager.Contracts;
 using StoreSolution.BusinessLogic.Lang.Contracts;
 using StoreSolution.BusinessLogic.OrderRepository.Contracts;
 
 namespace StoreSolution.BusinessLogic.GridViewManager
 {
-    public class GridViewProductCatalogAgent : GridViewAgent<Product>, IGridViewProductCatalogManager
+    public class GridViewProductCatalogAgent : GridViewAgent<Product, HttpSessionState>, IGridViewProductCatalogManager<HttpSessionState>
     {
         private readonly IEfProductRepository _efProductRepository;
-        private readonly IOrderSessionRepository _orderSessionRepository;
+        private readonly IOrderRepository<HttpSessionState> _orderRepository;
         private readonly ILangSetter _langSetter;
 
         public GridViewProductCatalogAgent(IEfProductRepository efProductRepository,
-            IOrderSessionRepository orderSessionRepository, ILangSetter langSetter,
-            IGridViewPageIndexService gridViewPageIndexService, ICurrencyConverter currencyConverter)
-            : base(gridViewPageIndexService, currencyConverter)
+            IOrderRepository<HttpSessionState> orderRepository, ILangSetter langSetter,
+            IStorageService<HttpSessionState> storageService, ICurrencyConverter currencyConverter)
+            : base(storageService, currencyConverter)
         {
             _efProductRepository = efProductRepository;
-            _orderSessionRepository = orderSessionRepository;
+            _orderRepository = orderRepository;
             _langSetter = langSetter;
         }
 
-        public void FillOrderColumn(GridView table, int columnIndex, int indexIdColumn, object repository)
+        public void FillOrderColumn(GridView table, int columnIndex, int indexIdColumn, HttpSessionState sessionState)
         {
-            var orders = _orderSessionRepository.GetAll(repository);
+            var orders = _orderRepository.GetAll(sessionState);
 
             for (var i = 0; i < table.Rows.Count; i++)
             {

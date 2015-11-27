@@ -5,37 +5,34 @@ using StoreSolution.BusinessLogic.OrderRepository.Contracts;
 
 namespace StoreSolution.BusinessLogic.OrderRepository
 {
-    public class OrderSessionRepository : IOrderSessionRepository
+    public class OrderSessionRepository : IOrderRepository<HttpSessionState>
     {
-        public void Add(object httpSessionState, int id)
+        public void Add(HttpSessionState repository, int id)
         {
-            var sessionState = (HttpSessionState) httpSessionState;
-            var orders = GetAll(sessionState);
+            var orders = GetAll(repository);
 
             var order = orders.Find(o => o.Id == id);
             if (order == null) orders.Add(new Order { Id = id, Count = 1 });
             else order.Count++;
 
-            SetAll(sessionState, orders);
+            SetAll(repository, orders);
         }
 
-        public void Remove(object httpSessionState, int id)
+        public void Remove(HttpSessionState repository, int id)
         {
-            var sessionState = (HttpSessionState)httpSessionState;
-            var orders = GetAll(sessionState);
+            var orders = GetAll(repository);
 
             var order = orders.Find(o => o.Id == id);
             if (order == null || order.Count == 0) return;
             if (order.Count == 1) orders.Remove(order);
             else order.Count--;
 
-            SetAll(sessionState, orders);
+            SetAll(repository, orders);
         }
 
-        public List<Order> GetAll(object httpSessionState)
+        public List<Order> GetAll(HttpSessionState repository)
         {
-            var sessionState = (HttpSessionState)httpSessionState;
-            return sessionState["CurrentOrder"] as List<Order> ?? new List<Order>();
+            return repository["CurrentOrder"] as List<Order> ?? new List<Order>();
         }
 
         private static void SetAll(HttpSessionState sessionState, IEnumerable<Order> orders)

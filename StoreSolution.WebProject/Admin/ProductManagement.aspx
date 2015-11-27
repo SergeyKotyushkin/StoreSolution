@@ -24,22 +24,18 @@
         <hr/>
     </asp:Panel>
     <br/>
-    <asp:GridView AllowPaging="True"
-                  CellPadding="3"
-                  HorizontalAlign="Center"
-                  ID="gvTable"
-                  OnPageIndexChanging="gvTable_PageIndexChanging"
-                  OnPreRender="gvTable_PreRender"
-                  OnRowCancelingEdit="gvTable_RowCancelingEdit"
-                  OnRowDeleting="gvTable_RowDeleting"
-                  OnRowEditing="gvTable_RowEditing"
-                  OnRowUpdating="gvTable_RowUpdating"
-                  PageSize="7"
-                  runat="server"
-                  ShowFooter="True"
-                  Width="50%" OnDataBound="gvTable_DataBound" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" OnRowDataBound="gvTable_RowDataBound">
+    <asp:GridView AllowPaging="True" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" 
+                  BorderWidth="1px" CellPadding="3" HorizontalAlign="Center" ID="gvTable" 
+                  OnDataBound="gvTable_DataBound" OnPageIndexChanging="gvTable_PageIndexChanging" 
+                  OnPreRender="gvTable_PreRender" OnRowCancelingEdit="gvTable_RowCancelingEdit" 
+                  OnRowDataBound="gvTable_RowDataBound" OnRowDeleting="gvTable_RowDeleting" 
+                  OnRowEditing="gvTable_RowEditing" OnRowUpdating="gvTable_RowUpdating" 
+                  PageSize="7" runat="server" ShowFooter="True" Width="50%" OnRowCreated="gvTable_RowCreated">
         <Columns>
-            <asp:CommandField ButtonType="Button" ShowEditButton="True" CausesValidation="False" EditText="<%$ Resources: Lang, ProductManagement_EditButton %>">
+            <asp:CommandField ButtonType="Button" ShowEditButton="True" CausesValidation="False" 
+                EditText="<%$ Resources: Lang, ProductManagement_EditButton %>"
+                UpdateText="<%$ Resources: Lang, ProductManagement_UpdateButton %>"
+                CancelText="<%$ Resources: Lang, ProductManagement_CancelButton %>">
             <ControlStyle CssClass="btnInGvTable" />
             </asp:CommandField>
             <asp:CommandField ButtonType="Button" ShowDeleteButton="True" DeleteText="<%$ Resources: Lang, ProductManagement_DeleteButton %>">

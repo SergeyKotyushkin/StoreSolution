@@ -405,4 +405,10 @@
   <data name="Basket_MailMessageSubject" xml:space="preserve">
     <value>Online Store оповещение!</value>
   </data>
+  <data name="ProductManagement_CancelButton" xml:space="preserve">
+    <value>Отменить</value>
+  </data>
+  <data name="ProductManagement_UpdateButton" xml:space="preserve">
+    <value>Обновить</value>
+  </data>
 </root>

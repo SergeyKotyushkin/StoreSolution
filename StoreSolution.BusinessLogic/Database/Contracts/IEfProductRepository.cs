@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.Database.Models;
 
 namespace StoreSolution.BusinessLogic.Database.Contracts
 {

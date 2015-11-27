@@ -4,16 +4,14 @@ using StoreSolution.BusinessLogic.Currency.Contracts;
 
 namespace StoreSolution.BusinessLogic.Currency
 {
-    public class CurrencyCultureInfoCookieService : ICurrencyCultureInfoService
+    public class CurrencyCultureCookieService : ICurrencyCultureService<HttpCookieCollection>
     {
-        public CultureInfo GetCurrencyCultureInfo(object repository, string cultureNameInRepository)
+        public CultureInfo GetCurrencyCultureInfo(HttpCookieCollection repository, string cultureNameInRepository)
         {
-            var cookies = (HttpCookieCollection) repository;
-
-            var cookie = cookies.Get(cultureNameInRepository);
+            var cookie = repository.Get(cultureNameInRepository);
             var currencyCultureName = CultureInfo.CurrentCulture.Name;
             if (cookie == null)
-                cookies.Set(new HttpCookie(cultureNameInRepository, currencyCultureName));
+                repository.Set(new HttpCookie(cultureNameInRepository, currencyCultureName));
             else
                 currencyCultureName = cookie.Value;
 

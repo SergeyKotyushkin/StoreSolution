@@ -4,8 +4,8 @@ using StoreSolution.BusinessLogic.Models;
 
 namespace StoreSolution.BusinessLogic.GridViewManager.Contracts
 {
-    public interface IGridViewBasketManager : IGridViewManager<OrderItem>
+    public interface IGridViewBasketManager<in T> : IGridViewManager<OrderItem, T>
     {
-        IQueryable<OrderItem> GetOrderItemsList(object repository, CultureInfo culture);
+        IQueryable<OrderItem> GetOrderItemsList(T repository, CultureInfo culture);
     }
 }

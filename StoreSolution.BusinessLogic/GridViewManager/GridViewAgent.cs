@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
-using System.Web.SessionState;
 using System.Web.UI.WebControls;
 using StoreSolution.BusinessLogic.Currency.Contracts;
 using StoreSolution.BusinessLogic.GridViewManager.Contracts;
 
 namespace StoreSolution.BusinessLogic.GridViewManager
 {
-    public class GridViewAgent<T> : IGridViewManager<T>
+    public class GridViewAgent<T, TV> : IGridViewManager<T, TV>
     {
-        private readonly IGridViewPageIndexService _gridViewPageIndexService;
+        private readonly IStorageService<TV> _storageService;
         private readonly ICurrencyConverter _currencyConverter;
 
-        public GridViewAgent(IGridViewPageIndexService gridViewPageIndexService, ICurrencyConverter currencyConverter)
+        public GridViewAgent(IStorageService<TV> storageService, ICurrencyConverter currencyConverter)
         {
-            _gridViewPageIndexService = gridViewPageIndexService;
+            _storageService = storageService;
             _currencyConverter = currencyConverter;
         }
 
@@ -34,33 +33,37 @@ namespace StoreSolution.BusinessLogic.GridViewManager
             {
                 foreach (GridViewRow row in table.Rows)
                 {
+                    if (row.Cells[columnIndex].Controls.Count != 0) continue;
+
                     var price = decimal.Parse(row.Cells[columnIndex].Text);
-                    if(performConvert) price = _currencyConverter.ConvertByRate(price, rate);
+                    if (performConvert)
+                        price = _currencyConverter.ConvertByRate(price, rate);
+
                     row.Cells[columnIndex].Text = price.ToString("C", cultureTo);
                 }
             }
         }
 
-        public void SavePageIndex(object repository, string name, int index)
+        public void SavePageIndex(TV repository, string name, int index)
         {
-            _gridViewPageIndexService.SetPageIndexByName(repository, name, index);
+            _storageService.SetPageIndexByName(repository, name, index);
         }
 
-        public int RestorePageIndex(object repository, string name)
+        public int RestorePageIndex(TV repository, string name)
         {
-            return _gridViewPageIndexService.GetPageIndexByName(repository, name);
+            return _storageService.GetPageIndexByName(repository, name);
         }
 
-        public void FillGridViewAndRefreshPageIndex(GridView table, IQueryable<T> data, object repository, string name)
+        public void FillGridViewAndRefreshPageIndex(GridView table, IQueryable<T> data, TV repository, string name)
         {
             Fill(table, data);
 
-            if (RefreshPageIndex((HttpSessionState)repository, name, table))
+            if (RefreshPageIndex(repository, name, table))
                 Fill(table, data);
         }
 
 
-        private bool RefreshPageIndex(object repository, string name, GridView table)
+        private bool RefreshPageIndex(TV repository, string name, GridView table)
         {
             var pageIndex = RestorePageIndex(repository, name);
 
@@ -71,7 +74,7 @@ namespace StoreSolution.BusinessLogic.GridViewManager
                 table.PageIndex = pageIndex;
             else
             {
-                _gridViewPageIndexService.SetPageIndexByName(repository, name, tablePageCount);
+                _storageService.SetPageIndexByName(repository, name, tablePageCount);
                 table.PageIndex = tablePageCount;
             }
 

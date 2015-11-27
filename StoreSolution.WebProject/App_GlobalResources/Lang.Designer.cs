@@ -511,6 +511,15 @@ namespace StoreSolution.WebProject.App_GlobalResources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string ProductManagement_CancelButton {
+            get {
+                return ResourceManager.GetString("ProductManagement_CancelButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delete.
         /// </summary>
         public static string ProductManagement_DeleteButton {
@@ -660,6 +669,15 @@ namespace StoreSolution.WebProject.App_GlobalResources {
         public static string ProductManagement_Title {
             get {
                 return ResourceManager.GetString("ProductManagement_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update.
+        /// </summary>
+        public static string ProductManagement_UpdateButton {
+            get {
+                return ResourceManager.GetString("ProductManagement_UpdateButton", resourceCulture);
             }
         }
         

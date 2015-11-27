@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace StoreSolution.BusinessLogic.Database.Model
+namespace StoreSolution.BusinessLogic.Database.Models
 {
     [Table("OrdersHistoryTable")]
     public class OrderHistory

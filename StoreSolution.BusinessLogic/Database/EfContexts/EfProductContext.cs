@@ -1,7 +1,7 @@
 ﻿using System.Data.Entity;
-using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.Database.Models;
 
-namespace StoreSolution.BusinessLogic.Database.EfContext
+namespace StoreSolution.BusinessLogic.Database.EfContexts
 {
     public class EfProductContext : DbContext
     {

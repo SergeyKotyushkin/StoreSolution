@@ -1,12 +1,12 @@
 ﻿using System.Linq;
 using System.Web.UI.WebControls;
-using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.Database.Models;
 
 namespace StoreSolution.BusinessLogic.GridViewManager.Contracts
 {
-    public interface IGridViewProductCatalogManager : IGridViewManager<Product>
+    public interface IGridViewProductCatalogManager<in T> : IGridViewManager<Product, T>
     {
-        void FillOrderColumn(GridView table, int columnIndex, int indexIdColumn, object repository);
+        void FillOrderColumn(GridView table, int columnIndex, int indexIdColumn, T sessionState);
 
         void FillCategories(DropDownList ddl, IQueryable<Product> data);
 

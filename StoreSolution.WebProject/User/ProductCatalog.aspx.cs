@@ -2,11 +2,12 @@
 using System.Drawing;
 using System.Linq;
 using System.Web;
+using System.Web.SessionState;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using StoreSolution.BusinessLogic.Currency.Contracts;
 using StoreSolution.BusinessLogic.Database.Contracts;
-using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.Database.Models;
 using StoreSolution.BusinessLogic.GridViewManager.Contracts;
 using StoreSolution.BusinessLogic.Lang.Contracts;
 using StoreSolution.BusinessLogic.Log4net;
@@ -31,32 +32,32 @@ namespace StoreSolution.WebProject.User
         private readonly Color _successColor = Color.DarkGreen;
 
         private readonly IEfProductRepository _efProductRepository;
-        private readonly IOrderSessionRepository _orderSessionRepository;
+        private readonly IOrderRepository<HttpSessionState> _orderRepository;
         private readonly IUserGroup _userGroup;
         private readonly ILangSetter _langSetter;
-        private readonly IGridViewProductCatalogManager _gridViewProductCatalogManager;
-        private readonly ICurrencyCultureInfoService _currencyCultureInfoService;
+        private readonly IGridViewProductCatalogManager<HttpSessionState> _gridViewProductCatalogManager;
+        private readonly ICurrencyCultureService<HttpCookieCollection> _currencyCultureService;
 
         protected ProductCatalog()
             : this(
                 StructureMapFactory.Resolve<IEfProductRepository>(),
-                StructureMapFactory.Resolve<IOrderSessionRepository>(), StructureMapFactory.Resolve<IUserGroup>(),
+                StructureMapFactory.Resolve<IOrderRepository<HttpSessionState>>(), StructureMapFactory.Resolve<IUserGroup>(),
                 StructureMapFactory.Resolve<ILangSetter>(),
-                StructureMapFactory.Resolve<IGridViewProductCatalogManager>(),
-                StructureMapFactory.Resolve<ICurrencyCultureInfoService>())
+                StructureMapFactory.Resolve<IGridViewProductCatalogManager<HttpSessionState>>(),
+                StructureMapFactory.Resolve<ICurrencyCultureService<HttpCookieCollection>>())
         {
         }
 
-        protected ProductCatalog(IEfProductRepository efProductRepository, IOrderSessionRepository orderSessionRepository,
-            IUserGroup userGroup, ILangSetter langSetter, IGridViewProductCatalogManager gridViewProductCatalogManager,
-            ICurrencyCultureInfoService currencyCultureInfoService)
+        protected ProductCatalog(IEfProductRepository efProductRepository, IOrderRepository<HttpSessionState> orderRepository,
+            IUserGroup userGroup, ILangSetter langSetter, IGridViewProductCatalogManager<HttpSessionState> gridViewProductCatalogManager,
+            ICurrencyCultureService<HttpCookieCollection> currencyCultureService)
         {
             _efProductRepository = efProductRepository;
-            _orderSessionRepository = orderSessionRepository;
+            _orderRepository = orderRepository;
             _userGroup = userGroup;
             _langSetter = langSetter;
             _gridViewProductCatalogManager = gridViewProductCatalogManager;
-            _currencyCultureInfoService = currencyCultureInfoService;
+            _currencyCultureService = currencyCultureService;
         }
 
         protected override void InitializeCulture()
@@ -79,21 +80,20 @@ namespace StoreSolution.WebProject.User
             
             SetUiProperties(user.UserName);
 
-            if (!Page.IsPostBack)
+            if (!IsPostBack)
                 FillGridView();
         }
 
         protected void gvTable_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var gv = (GridView) sender;
-            var id = _gridViewProductCatalogManager.GetIdFromRow(gv, gv.SelectedIndex, IndexIdColumn);
+            var id = _gridViewProductCatalogManager.GetIdFromRow(gvTable, gvTable.SelectedIndex, IndexIdColumn);
 
-            _orderSessionRepository.Add(Session, id);
+            _orderRepository.Add(Session, id);
 
             _master.SetLabMessage(_successColor, "ProductCatalog_ProductAdded",
                 _efProductRepository.GetProductById(id).Name);
 
-            _gridViewProductCatalogManager.FillOrderColumn(gv, OrderColumnIndex, IndexIdColumn, Session);
+            _gridViewProductCatalogManager.FillOrderColumn(gvTable, OrderColumnIndex, IndexIdColumn, Session);
         }
 
         protected void btnBasket_Click(object sender, EventArgs e)
@@ -107,21 +107,20 @@ namespace StoreSolution.WebProject.User
         
         protected void gvTable_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
-            var gv = (GridView) sender;
-            var id = _gridViewProductCatalogManager.GetIdFromRow(gv, e.RowIndex, IndexIdColumn);
+            var id = _gridViewProductCatalogManager.GetIdFromRow(gvTable, e.RowIndex, IndexIdColumn);
 
-            _orderSessionRepository.Remove(Session, id);
+            _orderRepository.Remove(Session, id);
 
             _master.SetLabMessage(_productRemovedColor, "ProductCatalog_ProductRemoved",
                 _efProductRepository.GetProductById(id).Name);
 
-            _gridViewProductCatalogManager.FillOrderColumn(gv, OrderColumnIndex, IndexIdColumn, Session);
+            _gridViewProductCatalogManager.FillOrderColumn(gvTable, OrderColumnIndex, IndexIdColumn, Session);
         }
 
         protected void gvTable_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
-            var gv = (GridView)sender;
-            gv.PageIndex = e.NewPageIndex;
+            _master.SetLabMessage(Color.Empty, string.Empty);
+            gvTable.PageIndex = e.NewPageIndex;
 
             _gridViewProductCatalogManager.SavePageIndex(Session, PageIndexNameInRepository, e.NewPageIndex);
 
@@ -130,9 +129,8 @@ namespace StoreSolution.WebProject.User
 
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
-            var gv = (GridView)sender;
-            _gridViewProductCatalogManager.SetCultureForPriceColumns(gv,
-                _currencyCultureInfoService.GetCurrencyCultureInfo(Request.Cookies, CurrencyCultureName), true, ColumnsIndexes);
+            _gridViewProductCatalogManager.SetCultureForPriceColumns(gvTable,
+                _currencyCultureService.GetCurrencyCultureInfo(Request.Cookies, CurrencyCultureName), true, ColumnsIndexes);
 
             _gridViewProductCatalogManager.FillOrderColumn(gvTable, OrderColumnIndex, IndexIdColumn, Session);
         }
@@ -155,15 +153,16 @@ namespace StoreSolution.WebProject.User
 
         protected void btnSearch_Click(object sender, EventArgs e)
         {
+            _master.SetLabMessage(Color.Empty, string.Empty);
             FillGridView();
         }
 
         protected void cbSearchHeader_CheckedChanged(object sender, EventArgs e)
         {
-            var cb = (CheckBox) sender;
-            _isSearch = cb.Checked;
+            _master.SetLabMessage(Color.Empty, string.Empty);
+            _isSearch = cbSearchHeader.Checked;
 
-            if (cb.Checked) return;
+            if (cbSearchHeader.Checked) return;
 
             ClearSearchValues();
             FillGridView();
@@ -171,6 +170,7 @@ namespace StoreSolution.WebProject.User
         
         protected void ddlSearchCategory_SelectedIndexChanged(object sender, EventArgs e)
         {
+            _master.SetLabMessage(Color.Empty, string.Empty);
             FillGridView();
         }
 

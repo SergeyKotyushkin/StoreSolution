@@ -9,7 +9,7 @@ using System.Web;
 using System.Web.Script.Serialization;
 using System.Web.UI.WebControls;
 using StoreSolution.BusinessLogic.Database.Contracts;
-using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.Database.Models;
 using StoreSolution.BusinessLogic.Lang.Contracts;
 using StoreSolution.BusinessLogic.Log4net;
 using StoreSolution.BusinessLogic.Models;

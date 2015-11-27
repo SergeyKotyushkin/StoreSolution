@@ -6,8 +6,8 @@ using System.Linq;
 using System.Web.Script.Serialization;
 using System.Web.Security;
 using StoreSolution.BusinessLogic.Database.Contracts;
-using StoreSolution.BusinessLogic.Database.EfContext;
-using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.Database.EfContexts;
+using StoreSolution.BusinessLogic.Database.Models;
 using StoreSolution.BusinessLogic.Models;
 
 namespace StoreSolution.BusinessLogic.Database.Realizations

@@ -31,8 +31,6 @@
     color: white;
     background-color: darkblue;
     border: 1px solid white;
-    font-size: x-small;
-    margin: 5px
 }
 
 div.delimeter {
@@ -72,6 +70,7 @@ div#back {
 #btnBack {
     font-size: medium;
     color: darkblue;
+    border: 1px solid darkblue;
     text-align: left;
     position: absolute;
     bottom: 5px;
@@ -79,14 +78,9 @@ div#back {
 }
 
 #btnBack:hover {
-    font-size: medium;
     color: white;
     background-color: darkblue;
-    border: 1px solid black;
-    text-align: left;
-    position: absolute;
-    bottom: 5px;
-    left: 5px;
+    border: 1px solid white;
 }
 
 .hiddenСolumn {
@@ -101,6 +95,11 @@ div#back {
 
 .btnInGvTable:hover {
     background-color: white;
+}
+
+.btnInGvTable:disabled {
+    background-color: lightgray;
+    border: 1px solid black;
 }
 
 #leftUp, #leftUpMoney {

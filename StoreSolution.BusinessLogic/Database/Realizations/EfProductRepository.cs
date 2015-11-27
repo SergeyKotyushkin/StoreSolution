@@ -1,8 +1,8 @@
 ﻿using System.Data.Entity.Migrations;
 using System.Linq;
 using StoreSolution.BusinessLogic.Database.Contracts;
-using StoreSolution.BusinessLogic.Database.EfContext;
-using StoreSolution.BusinessLogic.Database.Model;
+using StoreSolution.BusinessLogic.Database.EfContexts;
+using StoreSolution.BusinessLogic.Database.Models;
 
 namespace StoreSolution.BusinessLogic.Database.Realizations
 {
