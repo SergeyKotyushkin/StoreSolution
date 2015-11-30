@@ -6,7 +6,7 @@ namespace StoreSolution.BusinessLogic.GridViewManager.Contracts
 {
     public interface IGridViewProductCatalogManager<in T> : IGridViewManager<Product, T>
     {
-        void FillOrderColumn(GridView table, int columnIndex, int indexIdColumn, T sessionState);
+        void FillOrderColumn(GridView table, int columnIndex, int indexIdColumn, T repository);
 
         void FillCategories(DropDownList ddl, IQueryable<Product> data);
 

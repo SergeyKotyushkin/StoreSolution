@@ -33,6 +33,17 @@ namespace StoreSolution.BusinessLogic.UserGruop
             response.End();
         }
 
+        public bool CreateUser(string login, string password, string email, string question, string answer)
+        {
+            MembershipCreateStatus status;
+            Membership.CreateUser(login, password, email, question, answer, true, out status);
+
+            if (status != MembershipCreateStatus.Success) return false;
+
+            Roles.AddUserToRole(login, "User");
+            return true;
+        }
+
         private static bool CheckIsUserNotNull(MembershipUser user)
         {
             return user != null;

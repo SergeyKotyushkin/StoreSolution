@@ -53,6 +53,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.Web.Extensions" />
@@ -75,15 +76,19 @@
     <Compile Include="Database\Models\OrderHistory.cs" />
     <Compile Include="GridViewManager\Contracts\IGridViewBasketManager.cs" />
     <Compile Include="GridViewManager\Contracts\IGridViewManager.cs" />
+    <Compile Include="GridViewManager\Contracts\IGridViewProfileManager.cs" />
     <Compile Include="GridViewManager\Contracts\IStorageService.cs" />
     <Compile Include="GridViewManager\Contracts\IGridViewProductCatalogManager.cs" />
     <Compile Include="GridViewManager\Contracts\IGridViewProductManagementManager.cs" />
     <Compile Include="GridViewManager\EditingResults.cs" />
     <Compile Include="GridViewManager\GridViewAgent.cs" />
     <Compile Include="GridViewManager\GridViewBasketAgent.cs" />
+    <Compile Include="GridViewManager\GridViewProfileAgent.cs" />
     <Compile Include="GridViewManager\StorageSessionService.cs" />
     <Compile Include="GridViewManager\GridViewProductCatalogAgent.cs" />
     <Compile Include="GridViewManager\GridViewProductManagementAgent.cs" />
+    <Compile Include="ImageService\Contracts\IImageService.cs" />
+    <Compile Include="ImageService\ImageServiceAgent.cs" />
     <Compile Include="Models\OrderItem.cs" />
     <Compile Include="Database\Models\Person.cs" />
     <Compile Include="Database\Models\Product.cs" />

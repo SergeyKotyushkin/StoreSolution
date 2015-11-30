@@ -9,5 +9,7 @@ namespace StoreSolution.BusinessLogic.UserGruop.Contracts
         MembershipUser GetUser(bool canBeAnonymous = false);
 
         void SignOut(HttpResponse response, HttpSessionState sessionState);
+
+        bool CreateUser(string login, string password, string email, string question, string answer);
     }
 }

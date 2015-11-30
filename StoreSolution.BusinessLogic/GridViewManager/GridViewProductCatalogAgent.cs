@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Web.SessionState;
 using System.Web.UI.WebControls;
 using StoreSolution.BusinessLogic.Currency.Contracts;
 using StoreSolution.BusinessLogic.Database.Contracts;
@@ -10,15 +9,15 @@ using StoreSolution.BusinessLogic.OrderRepository.Contracts;
 
 namespace StoreSolution.BusinessLogic.GridViewManager
 {
-    public class GridViewProductCatalogAgent : GridViewAgent<Product, HttpSessionState>, IGridViewProductCatalogManager<HttpSessionState>
+    public class GridViewProductCatalogAgent<T> : GridViewAgent<Product, T>, IGridViewProductCatalogManager<T>
     {
         private readonly IEfProductRepository _efProductRepository;
-        private readonly IOrderRepository<HttpSessionState> _orderRepository;
+        private readonly IOrderRepository<T> _orderRepository;
         private readonly ILangSetter _langSetter;
 
         public GridViewProductCatalogAgent(IEfProductRepository efProductRepository,
-            IOrderRepository<HttpSessionState> orderRepository, ILangSetter langSetter,
-            IStorageService<HttpSessionState> storageService, ICurrencyConverter currencyConverter)
+            IOrderRepository<T> orderRepository, ILangSetter langSetter,
+            IStorageService<T> storageService, ICurrencyConverter currencyConverter)
             : base(storageService, currencyConverter)
         {
             _efProductRepository = efProductRepository;
@@ -26,9 +25,9 @@ namespace StoreSolution.BusinessLogic.GridViewManager
             _langSetter = langSetter;
         }
 
-        public void FillOrderColumn(GridView table, int columnIndex, int indexIdColumn, HttpSessionState sessionState)
+        public void FillOrderColumn(GridView table, int columnIndex, int indexIdColumn, T repository)
         {
-            var orders = _orderRepository.GetAll(sessionState);
+            var orders = _orderRepository.GetAll(repository);
 
             for (var i = 0; i < table.Rows.Count; i++)
             {

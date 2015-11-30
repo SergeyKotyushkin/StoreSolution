@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
-using System.Web.SessionState;
 using StoreSolution.BusinessLogic.Currency.Contracts;
 using StoreSolution.BusinessLogic.Database.Contracts;
 using StoreSolution.BusinessLogic.GridViewManager.Contracts;
@@ -10,15 +9,15 @@ using StoreSolution.BusinessLogic.OrderRepository.Contracts;
 
 namespace StoreSolution.BusinessLogic.GridViewManager
 {
-    public class GridViewBasketAgent : GridViewAgent<OrderItem, HttpSessionState>, IGridViewBasketManager<HttpSessionState>
+    public class GridViewBasketAgent<T> : GridViewAgent<OrderItem, T>, IGridViewBasketManager<T>
     {
         private readonly ICurrencyConverter _currencyConverter;
         private readonly IEfProductRepository _efProductRepository;
-        private readonly IOrderRepository<HttpSessionState> _orderRepository;
+        private readonly IOrderRepository<T> _orderRepository;
 
-        public GridViewBasketAgent(IStorageService<HttpSessionState> storageService,
+        public GridViewBasketAgent(IStorageService<T> storageService,
             ICurrencyConverter currencyConverter, IEfProductRepository efProductRepository,
-            IOrderRepository<HttpSessionState> orderRepository)
+            IOrderRepository<T> orderRepository)
             : base(storageService, currencyConverter)
         {
             _currencyConverter = currencyConverter;
@@ -26,7 +25,7 @@ namespace StoreSolution.BusinessLogic.GridViewManager
             _orderRepository = orderRepository;
         }
 
-        public IQueryable<OrderItem> GetOrderItemsList(HttpSessionState repository, CultureInfo culture)
+        public IQueryable<OrderItem> GetOrderItemsList(T repository, CultureInfo culture)
         {
             var products = _efProductRepository.Products.ToArray();
             var orders = _orderRepository.GetAll(repository);

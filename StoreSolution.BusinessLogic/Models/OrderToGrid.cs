@@ -34,10 +34,10 @@ namespace StoreSolution.BusinessLogic.Models
             Total = string.Format("<b>{0}</b>", source.Total.ToString("C", culture));
         }
 
-        public int Number;
-        public DateTime Date;
-        public string Email;
-        public string Order;
-        public string Total;
+        public int Number { get; set; }
+        public DateTime Date { get; set; }
+        public string Email { get; set; }
+        public string Order { get; set; }
+        public string Total { get; set; }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Web.SessionState;
 using System.Web.UI.WebControls;
 using StoreSolution.BusinessLogic.Currency.Contracts;
 using StoreSolution.BusinessLogic.Database.Contracts;
@@ -9,12 +8,12 @@ using StoreSolution.BusinessLogic.GridViewManager.Contracts;
 
 namespace StoreSolution.BusinessLogic.GridViewManager
 {
-    public class GridViewProductManagementAgent : GridViewAgent<Product, HttpSessionState>, IGridViewProductManagementManager<HttpSessionState>
+    public class GridViewProductManagementAgent<T> : GridViewAgent<Product, T>, IGridViewProductManagementManager<T>
     {
         private readonly IEfProductRepository _efProductRepository;
         private readonly ICurrencyConverter _currencyConverter;
 
-        public GridViewProductManagementAgent(IStorageService<HttpSessionState> storageService,
+        public GridViewProductManagementAgent(IStorageService<T> storageService,
             ICurrencyConverter currencyConverter, IEfProductRepository efProductRepository)
             : base(storageService, currencyConverter)
         {

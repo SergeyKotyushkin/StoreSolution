@@ -2,8 +2,9 @@
 using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Web;
-using System.Web.Security;
 using StoreSolution.BusinessLogic.Log4net;
+using StoreSolution.BusinessLogic.StructureMap;
+using StoreSolution.BusinessLogic.UserGruop.Contracts;
 using StoreSolution.WebProject.Master;
 
 namespace StoreSolution.WebProject.NotAuthenticated
@@ -11,9 +12,22 @@ namespace StoreSolution.WebProject.NotAuthenticated
     public partial class NewUser : System.Web.UI.Page
     {
         private static readonly Color ErrorColor = Color.Red;
+        private static readonly Regex RgxLogin = new Regex("^[a-zA-Z]+[a-zA-Z0-9_]{5,}$");
+        private static readonly Regex RgxPassword = new Regex("^[a-zA-Z0-9_!@#$%^&*]{5,}$");
 
         private StoreMaster _master;
-        
+
+        private readonly IUserGroup _userGroup;
+
+        public NewUser() : this(StructureMapFactory.Resolve<IUserGroup>())
+        {
+        }
+
+        public NewUser(IUserGroup userGroup)
+        {
+            _userGroup = userGroup;
+        }
+
         protected override void InitializeCulture()
         {
             var cookie = Request.Cookies["language"];
@@ -22,8 +36,7 @@ namespace StoreSolution.WebProject.NotAuthenticated
                 cookie = new HttpCookie("language", "en-US");
                 Response.Cookies.Add(cookie);
             }
-            Page.Culture = cookie.Value;
-            Page.UICulture = cookie.Value;
+            Page.Culture = Page.UICulture = cookie.Value;
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -31,42 +44,36 @@ namespace StoreSolution.WebProject.NotAuthenticated
             _master = (StoreMaster)Page.Master;
             if (_master == null) throw new HttpUnhandledException("Wrong master page.");
 
-            _master.HideMoney();
-            _master.BtnSignOutVisibility = false;
+            SetUiProperties();
         }
-
+        
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
             Page.Validate();
 
             _master.SetLabMessage(Color.Empty, string.Empty);
-            var rgxLogin = new Regex("^[a-zA-Z]+[a-zA-Z0-9_]{5,}$");
-            if (!rgxLogin.IsMatch(tbLogin.Text))
+            
+            if (!RgxLogin.IsMatch(tbLogin.Text))
             {
                 _master.SetLabMessage(ErrorColor, "NewUser_LoginError");
                 rfvLogin.IsValid = false;
                 return;
             }
 
-            var rgxPassword = new Regex("^[a-zA-Z0-9_!@#$%^&*]{5,}$");
-            if (!rgxPassword.IsMatch(tbPassword.Text))
+            if (!RgxPassword.IsMatch(tbPassword.Text))
             {
                 _master.SetLabMessage(ErrorColor, "NewUser_PasswordError");
                 rfvPassword.IsValid = false;
                 return;
             }
 
-            if (!Page.IsValid) _master.SetLabMessage(ErrorColor, "NewUser_EmptyFieldsError");
+            if (!Page.IsValid) 
+                _master.SetLabMessage(ErrorColor, "NewUser_EmptyFieldsError");
             else
             {
-                MembershipCreateStatus status;
-                Membership.CreateUser(tbLogin.Text, tbPassword.Text, tbEmail.Text, tbQuestion.Text,
-                    tbAnswer.Text, true, out status);
-
-                if (status == MembershipCreateStatus.Success)
+                if (_userGroup.CreateUser(tbLogin.Text, tbPassword.Text, tbEmail.Text, tbQuestion.Text, tbAnswer.Text))
                 {
                     Logger.Log.Info(string.Format("User {0} successfully created.", tbLogin.Text));
-                    Roles.AddUserToRole(tbLogin.Text, "User");
                     Session["NewUser"] = "Yes";
                     Response.Redirect("~/Index.aspx");
                 }
@@ -77,11 +84,18 @@ namespace StoreSolution.WebProject.NotAuthenticated
                 }
             }
         }
-
+        
         protected void btnBack_Click(object sender, EventArgs e)
         {
             Logger.Log.Debug("Redirected to Index page.");
             Response.Redirect("~/Index.aspx");
+        }
+        
+
+        private void SetUiProperties()
+        {
+            _master.HideMoney();
+            _master.BtnSignOutVisibility = false;
         }
 
     }
