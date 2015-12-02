@@ -20,7 +20,7 @@ namespace StoreSolution.WebProject.Admin
 {
     public partial class ProductManagement : Page
     {
-        private const string PageIndexNameInRepository = "pageIndexNameProductManager";
+        private const string PageIndexName = "pageIndexNameProductManager";
         private const string CurrencyCultureName = "currencyCultureName";
 
         private const int ColumnId = 2;
@@ -89,7 +89,7 @@ namespace StoreSolution.WebProject.Admin
             _master.SetLabMessage(Color.Empty, string.Empty);
             gvTable.PageIndex = e.NewPageIndex;
 
-            _gridViewProductManagementManager.SavePageIndex(Session, PageIndexNameInRepository, e.NewPageIndex);
+            _gridViewProductManagementManager.SavePageIndex(Session, PageIndexName, e.NewPageIndex);
 
             FillGridView();
         }
@@ -165,6 +165,13 @@ namespace StoreSolution.WebProject.Admin
 
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
+            if (_gridViewProductManagementManager.CheckIsPageIndexNeedToRefresh(Session, PageIndexName, gvTable))
+            {
+                _gridViewProductManagementManager.SetGridViewPageIndex(Session, PageIndexName, gvTable);
+                FillGridView();
+                return;
+            }
+
             var cultureTo = _currencyCultureService.GetCurrencyCultureInfo(Request.Cookies, CurrencyCultureName);
 
             _gridViewProductManagementManager.SetCultureForPriceColumns(gvTable, cultureTo, true, PriceColumnsIndex);
@@ -202,8 +209,7 @@ namespace StoreSolution.WebProject.Admin
                 data =
                     new EnumerableQuery<Product>(new[] {new Product {Id = -1, Name = "0", Category = "0", Price = 0}});
 
-            _gridViewProductManagementManager.FillGridViewAndRefreshPageIndex(gvTable, data, Session,
-                PageIndexNameInRepository);
+            _gridViewProductManagementManager.Fill(gvTable, data);
         }
 
         private void SetSettingsRowEditing(bool isEndEditing)
@@ -222,7 +228,7 @@ namespace StoreSolution.WebProject.Admin
             {
                 case EditingResults.Success:
                     if (isAdd)
-                        _gridViewProductManagementManager.SavePageIndex(Session, PageIndexNameInRepository,
+                        _gridViewProductManagementManager.SavePageIndex(Session, PageIndexName,
                             gvTable.PageCount - 1);
                     _master.SetLabMessage(SuccessColor, "ProductManagement_ProductWasAdded");
                     Logger.Log.Info(string.Format("Product {0} successfully added.", productName));

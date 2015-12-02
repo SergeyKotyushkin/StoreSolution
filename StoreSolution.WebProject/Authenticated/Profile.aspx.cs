@@ -24,7 +24,7 @@ namespace StoreSolution.WebProject.Authenticated
 {
     public partial class Profile : Page
     {
-        private const string PageIndexNameInRepository = "pageIndexNameProfile";
+        private const string PageIndexName = "pageIndexNameProfile";
 
         private static readonly Color ErrorColor = Color.Red;
         private static readonly Color SuccessColor = Color.DarkGreen;
@@ -196,6 +196,14 @@ namespace StoreSolution.WebProject.Authenticated
             else _master.SetLabMessage(ErrorColor, "Profile_PasswordWasChanged");
         }
 
+        protected void gvOrderHistory_OnDataBound(object sender, EventArgs e)
+        {
+            if (!_gridViewProfileManager.CheckIsPageIndexNeedToRefresh(Session, PageIndexName, gvOrderHistory)) return;
+
+            _gridViewProfileManager.SetGridViewPageIndex(Session, PageIndexName, gvOrderHistory);
+            FillGridView();
+        }
+
         protected void gvOrderHistory_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             switch (e.Row.RowType)
@@ -224,7 +232,7 @@ namespace StoreSolution.WebProject.Authenticated
         {
             gvOrderHistory.PageIndex = e.NewPageIndex;
 
-            _gridViewProfileManager.SavePageIndex(Session, PageIndexNameInRepository, e.NewPageIndex);
+            _gridViewProfileManager.SavePageIndex(Session, PageIndexName, e.NewPageIndex);
 
             FillGridView();
         }
@@ -266,8 +274,7 @@ namespace StoreSolution.WebProject.Authenticated
 
             var data = _gridViewProfileManager.GetOrderHistoriesList(user.UserName, CultureInfo.CurrentCulture);
 
-            _gridViewProfileManager.FillGridViewAndRefreshPageIndex(gvOrderHistory, data, Session,
-                PageIndexNameInRepository);
+            _gridViewProfileManager.Fill(gvOrderHistory, data);
         }
 
         private void SetUiProperties()

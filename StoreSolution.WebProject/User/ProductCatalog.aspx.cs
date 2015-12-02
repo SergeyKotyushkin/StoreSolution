@@ -20,7 +20,7 @@ namespace StoreSolution.WebProject.User
 {
     public partial class ProductCatalog : Page
     {
-        private const string PageIndexNameInRepository = "pageIndexNameProductCatalog";
+        private const string PageIndexName = "pageIndexNameProductCatalog";
         private const string CurrencyCultureName = "currencyCultureName";
         private const int OrderColumnIndex = 1;
         private const int IndexIdColumn = 3;
@@ -122,13 +122,20 @@ namespace StoreSolution.WebProject.User
             _master.SetLabMessage(Color.Empty, string.Empty);
             gvTable.PageIndex = e.NewPageIndex;
 
-            _gridViewProductCatalogManager.SavePageIndex(Session, PageIndexNameInRepository, e.NewPageIndex);
+            _gridViewProductCatalogManager.SavePageIndex(Session, PageIndexName, e.NewPageIndex);
 
             FillGridView();
         }
 
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
+            if (_gridViewProductCatalogManager.CheckIsPageIndexNeedToRefresh(Session, PageIndexName, gvTable))
+            {
+                _gridViewProductCatalogManager.SetGridViewPageIndex(Session, PageIndexName, gvTable);
+                FillGridView();
+                return;
+            }
+
             _gridViewProductCatalogManager.SetCultureForPriceColumns(gvTable,
                 _currencyCultureService.GetCurrencyCultureInfo(Request.Cookies, CurrencyCultureName), true, ColumnsIndexes);
 
@@ -182,8 +189,7 @@ namespace StoreSolution.WebProject.User
             if (_isSearch)
                 data = SearchProducts(data, tbSearchName.Text.Trim(), ddlSearchCategory.SelectedIndex);
 
-            _gridViewProductCatalogManager.FillGridViewAndRefreshPageIndex(gvTable, data, Session,
-                PageIndexNameInRepository);
+            _gridViewProductCatalogManager.Fill(gvTable, data);
 
             _gridViewProductCatalogManager.FillCategories(ddlSearchCategory, data);
         }

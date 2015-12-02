@@ -14,6 +14,8 @@ namespace StoreSolution.BusinessLogic.GridViewManager.Contracts
 
         int RestorePageIndex(TV repository, string name);
 
-        void FillGridViewAndRefreshPageIndex(GridView table, IQueryable<T> data, TV repository, string name);
+        bool CheckIsPageIndexNeedToRefresh(TV repository, string name, GridView table);
+        
+        void SetGridViewPageIndex(TV repository, string name, GridView table);
     }
 }

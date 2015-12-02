@@ -45,6 +45,8 @@
       <HintPath>..\packages\Moq.4.2.1510.2205\lib\net40\Moq.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -63,6 +65,8 @@
     <Compile Include="CurrencyTests\CurrencyServiceTests.cs" />
     <Compile Include="CurrencyTests\YahooRateServiceTests.cs" />
     <Compile Include="DatabaseTests\Realizations\EfProductRepositoryTests.cs" />
+    <Compile Include="GridViewManagerTests\GridViewAgentTests.cs" />
+    <Compile Include="ImageServiceTests\ImageServiceAgentTests.cs" />
     <Compile Include="MailTests\MailSenderTests.cs" />
     <Compile Include="MailTests\MailServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

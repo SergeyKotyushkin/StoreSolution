@@ -38,7 +38,7 @@ Title="<%$ Resources: Lang, Profile_Title %>" MasterPageFile="~/Master/StoreMast
         <asp:Label ID="labOrderHistory" runat="server" Text="<%$ Resources: Lang, Profile_OrderHistoryHeader %>"/>
         <br/>
         <br/>
-        <asp:GridView ID="gvOrderHistory" runat="server" OnRowDataBound="gvOrderHistory_RowDataBound" AllowPaging="True" BackColor="#DEBA84" BorderColor="#DEBA84" BorderStyle="None" BorderWidth="1px" CellPadding="3" CellSpacing="2" PageSize="3" OnPageIndexChanging="gvOrderHistory_PageIndexChanging">
+        <asp:GridView ID="gvOrderHistory" runat="server" OnDataBound="gvOrderHistory_OnDataBound" OnRowDataBound="gvOrderHistory_RowDataBound" AllowPaging="True" BackColor="#DEBA84" BorderColor="#DEBA84" BorderStyle="None" BorderWidth="1px" CellPadding="3" CellSpacing="2" PageSize="3" OnPageIndexChanging="gvOrderHistory_PageIndexChanging">
             <FooterStyle BackColor="#F7DFB5" ForeColor="#8C4510"/>
             <HeaderStyle BackColor="#A55129" Font-Bold="True" ForeColor="White"/>
             <PagerStyle ForeColor="#8C4510" HorizontalAlign="Center" VerticalAlign="Middle"/>

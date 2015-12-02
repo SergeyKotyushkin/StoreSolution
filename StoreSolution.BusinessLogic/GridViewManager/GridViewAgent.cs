@@ -53,32 +53,23 @@ namespace StoreSolution.BusinessLogic.GridViewManager
         {
             return _storageService.GetPageIndexByName(repository, name);
         }
-
-        public void FillGridViewAndRefreshPageIndex(GridView table, IQueryable<T> data, TV repository, string name)
+        
+        public bool CheckIsPageIndexNeedToRefresh(TV repository, string name, GridView table)
         {
-            Fill(table, data);
-
-            if (RefreshPageIndex(repository, name, table))
-                Fill(table, data);
+            return table.PageIndex != RestorePageIndex(repository, name);
         }
 
-
-        private bool RefreshPageIndex(TV repository, string name, GridView table)
+        public void SetGridViewPageIndex(TV repository, string name, GridView table)
         {
             var pageIndex = RestorePageIndex(repository, name);
-
-            if (table.PageIndex == pageIndex) return false;
-
-            var tablePageCount = table.PageCount;
-            if (pageIndex < tablePageCount)
+            
+            if (pageIndex < table.PageCount)
                 table.PageIndex = pageIndex;
             else
             {
-                _storageService.SetPageIndexByName(repository, name, tablePageCount);
-                table.PageIndex = tablePageCount;
+                _storageService.SetPageIndexByName(repository, name, table.PageCount - 1);
+                table.PageIndex = table.PageCount - 1;
             }
-
-            return true;
         }
     }
 }

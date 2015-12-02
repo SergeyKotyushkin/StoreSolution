@@ -24,7 +24,7 @@ namespace StoreSolution.WebProject.User
 {
     public partial class Basket : Page
     {
-        private const string PageIndexNameInRepository = "pageIndexNameBasket";
+        private const string PageIndexName = "pageIndexNameBasket";
         private const string CurrencyCultureName = "currencyCultureName";
         private const string SmtpSectionPath = "system.net/mailSettings/smtp";
 
@@ -103,13 +103,20 @@ namespace StoreSolution.WebProject.User
         {
             gvTable.PageIndex = e.NewPageIndex;
 
-            _gridViewBasketManager.SavePageIndex(Session, PageIndexNameInRepository, e.NewPageIndex);
+            _gridViewBasketManager.SavePageIndex(Session, PageIndexName, e.NewPageIndex);
 
             FillGridView();
         }
         
         protected void gvTable_DataBound(object sender, EventArgs e)
         {
+            if (_gridViewBasketManager.CheckIsPageIndexNeedToRefresh(Session, PageIndexName, gvTable))
+            {
+                _gridViewBasketManager.SetGridViewPageIndex(Session, PageIndexName, gvTable);
+                FillGridView();
+                return;
+            }
+
             _gridViewBasketManager.SetCultureForPriceColumns(gvTable,
                 _currencyCultureService.GetCurrencyCultureInfo(Request.Cookies, CurrencyCultureName), false,
                 PriceColumnsIndexes);
@@ -132,7 +139,7 @@ namespace StoreSolution.WebProject.User
 
             var data = _gridViewBasketManager.GetOrderItemsList(Session, cultureTo);
 
-            _gridViewBasketManager.FillGridViewAndRefreshPageIndex(gvTable, data, Session, PageIndexNameInRepository);
+            _gridViewBasketManager.Fill(gvTable, data);
 
             SetUiProperties(data, cultureTo);
         }
