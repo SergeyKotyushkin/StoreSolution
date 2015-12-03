@@ -7,7 +7,7 @@ namespace StoreSolution.BusinessLogic.Models
         public int Number;
         public DateTime Date;
         public string Email;
-        public ProductsOrder[] ProductsOrder;
+        public ProductOrder[] ProductOrder;
         public decimal Total;
         public string CultureName;
     }

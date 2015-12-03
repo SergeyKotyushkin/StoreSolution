@@ -272,7 +272,7 @@ namespace StoreSolution.WebProject.Authenticated
 
             if (Roles.IsUserInRole(user.UserName, "Admin")) labOrderHistory.Visible = false;
 
-            var data = _gridViewProfileManager.GetOrderHistoriesList(user.UserName, CultureInfo.CurrentCulture);
+            var data = _gridViewProfileManager.GetOrderToGridList(user.UserName);
 
             _gridViewProfileManager.Fill(gvOrderHistory, data);
         }

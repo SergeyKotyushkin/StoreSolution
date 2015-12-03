@@ -376,6 +376,15 @@ namespace StoreSolution.WebProject.App_GlobalResources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sorry, unknown currency.
+        /// </summary>
+        public static string OrderToGrid_UnknownCurrency {
+            get {
+                return ResourceManager.GetString("OrderToGrid_UnknownCurrency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to All.
         /// </summary>
         public static string ProductCatalog_AllCategories {

@@ -17,14 +17,14 @@ namespace StoreSolution.BusinessLogic.Models
 
             if (culture == null)
             {
-                Order = "Sorry, unknown currency.";
+                Order = langSetter.Set("OrderToGrid_UnknownCurrency");
                 return;
             }
 
             var quantity = langSetter.Set("Profile_Quantity");
             var price = langSetter.Set("Profile_Price");
             var total = langSetter.Set("Profile_Total");
-            var order = source.ProductsOrder.Aggregate(string.Empty,
+            var order = source.ProductOrder.Aggregate(string.Empty,
                 (current, p) =>
                     current +
                     string.Format("<b>{0}</b> ({1} <b>{2}</b>: {3} <b>{4}</b>)" + " {5} <b>{6}</b>{7}", p.Name, quantity, p.Count, price,

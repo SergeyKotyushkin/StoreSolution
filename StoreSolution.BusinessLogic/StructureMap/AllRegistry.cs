@@ -8,6 +8,8 @@ using StoreSolution.BusinessLogic.GridViewManager;
 using StoreSolution.BusinessLogic.GridViewManager.Contracts;
 using StoreSolution.BusinessLogic.ImageService;
 using StoreSolution.BusinessLogic.ImageService.Contracts;
+using StoreSolution.BusinessLogic.JsonSerialize;
+using StoreSolution.BusinessLogic.JsonSerialize.Contracts;
 using StoreSolution.BusinessLogic.Lang;
 using StoreSolution.BusinessLogic.Lang.Contracts;
 using StoreSolution.BusinessLogic.Mail;
@@ -55,6 +57,7 @@ namespace StoreSolution.BusinessLogic.StructureMap
             For<IStorageService<HttpSessionState>>().Use<StorageSessionService>();
             For<IOrderRepository<HttpSessionState>>().Use<OrderSessionRepository>();
             For<IImageService>().Use<ImageServiceAgent>();
+            For<IJsonSerializer>().Use<JsonSerializer>();
         }
     }
 }

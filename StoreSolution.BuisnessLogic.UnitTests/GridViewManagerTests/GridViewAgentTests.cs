@@ -16,10 +16,10 @@ namespace StoreSolution.BuisnessLogic.UnitTests.GridViewManagerTests
     public class GridViewAgentTests
     {
         private const string StorageName = "index";
-        static bool _onDataBoundEnded;
-        readonly int[] _priceColumns = { 3, 4 };
+        private static bool _onDataBoundEnded;
+        private readonly int[] _priceColumns = { 3, 4 };
 
-        private readonly Book[] _data =
+        private static readonly Book[] Data =
         {
             new Book("Book1", "Author1", 19, 130m, 10m),
             new Book("Book2", "Author2", 10, 80m, 8m),
@@ -35,119 +35,127 @@ namespace StoreSolution.BuisnessLogic.UnitTests.GridViewManagerTests
 
 
         [TestMethod]
-        public void Fill_SetDataToGridview_GridViewHasSameValues()
+        public void Fill_CheckReturnedDataLength_Return6()
         {
-            var gridView = ArrangeGridView(false);
+            var gridView = ArrangeGridView();
+            var agent = ArrangeGridViewAgent(0);
 
-            var agent = ArrangeGridViewAgent();
-
-            agent.Fill(gridView, _data.AsQueryable());
-
+            agent.Fill(gridView, Data.AsQueryable());
             while (!_onDataBoundEnded) { /* wait until data will bound */ }
 
-            Assert.AreEqual(_data.Length, gridView.Rows.Count);
-            for (var i = 0; i < _data.Length; i++)
+            const int expected = 6;
+            var actual = gridView.Rows.Count;
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void Fill_CheckReturnedData_ReturnExpectedData()
+        {
+            var gridView = ArrangeGridView();
+            var agent = ArrangeGridViewAgent(0);
+
+            agent.Fill(gridView, Data.AsQueryable());
+            while (!_onDataBoundEnded) { /* wait until data will bound */ }
+
+            Assert.AreEqual(Data.Length, gridView.Rows.Count);
+            for (var i = 0; i < Data.Length; i++)
             {
-                Assert.AreEqual(_data[i].Name, gridView.Rows[i].Cells[0].Text);
-                Assert.AreEqual(_data[i].Author, gridView.Rows[i].Cells[1].Text);
-                Assert.AreEqual(_data[i].PagesCount.ToString(), gridView.Rows[i].Cells[2].Text);
-                Assert.AreEqual(_data[i].Price+"", gridView.Rows[i].Cells[3].Text);
-                Assert.AreEqual(_data[i].Discount + "", gridView.Rows[i].Cells[4].Text);
+                Assert.AreEqual(Data[i].Name, gridView.Rows[i].Cells[0].Text);
+                Assert.AreEqual(Data[i].Author, gridView.Rows[i].Cells[1].Text);
+                Assert.AreEqual(Data[i].PagesCount + "", gridView.Rows[i].Cells[2].Text);
+                Assert.AreEqual(Data[i].Price + "", gridView.Rows[i].Cells[3].Text);
+                Assert.AreEqual(Data[i].Discount + "", gridView.Rows[i].Cells[4].Text);
             }
         }
 
         [TestMethod]
-        public void SetCultureForPriceColumns_SetDataToGridViewWithoutConvert_PriceColumnsContainsUsdSymbol()
+        public void SetCultureForPriceColumns_ConvertPriceColumnsValuesToCurrency_CheckArePriceColumnsValuesContainsCultureCurrencySymbol()
         {
-            var gridView = ArrangeGridView(false);
-
-            var agent = ArrangeGridViewAgent();
-            agent.Fill(gridView, _data.AsQueryable());
-
-            while (!_onDataBoundEnded) { /* wait until data will bound */ }
-
-            var culture = new CultureInfo("en-US");
+            const decimal rate = 1m;
             const bool performConvert = false;
+            var culture = new CultureInfo("en-US");
+            var currencySymbol = new RegionInfo(culture.LCID).CurrencySymbol;
+            var gridView = ArrangeGridView();
+            var agent = ArrangeGridViewAgent(rate);
+
+            agent.Fill(gridView, Data.AsQueryable());
+            while (!_onDataBoundEnded) { /* wait until data will bound */ }
+            
             agent.SetCultureForPriceColumns(gridView, culture, performConvert, _priceColumns);
 
-            Assert.AreEqual(_data.Length, gridView.Rows.Count);
-            for (var i = 0; i < _data.Length; i++)
+            Assert.AreEqual(Data.Length, gridView.Rows.Count);
+            for (var i = 0; i < Data.Length; i++)
             {
                 foreach (var priceColumn in _priceColumns)
                 {
-                    Assert.AreEqual(true, gridView.Rows[i].Cells[priceColumn].Text.Contains('$'));
-
-                    Assert.AreEqual(priceColumn == 3 ? _data[i].Price : _data[i].Discount,
-                        decimal.Parse(gridView.Rows[i].Cells[priceColumn].Text, NumberStyles.Currency, culture));
+                    Assert.AreEqual(true, gridView.Rows[i].Cells[priceColumn].Text.Contains(currencySymbol));
                 }
             }
         }
 
         [TestMethod]
-        public void SetCultureForPriceColumns_SetDataToGridViewPerformConvert_PriceColumnsContainsUsdSymbolAndConvertedValues()
+        public void SetCultureForPriceColumns_ConvertPriceColumnsValuesToCurrencyByRate_CheckArePriceColumnsValuesConverted()
         {
-            var gridView = ArrangeGridView(false);
+            const decimal rate = 2m;
+            const bool performConvert = true;
+            var culture = new CultureInfo("en-US");
+            var gridView = ArrangeGridView();
+            var agent = ArrangeGridViewAgent(rate);
 
-            var agent = ArrangeGridViewAgent();
-            agent.Fill(gridView, _data.AsQueryable());
-
+            agent.Fill(gridView, Data.AsQueryable());
             while (!_onDataBoundEnded) { /* wait until data will bound */ }
 
-            var culture = new CultureInfo("en-US");
-            const bool performConvert = true;
             agent.SetCultureForPriceColumns(gridView, culture, performConvert, _priceColumns);
 
-            var converter = StructureMapFactory.Resolve<ICurrencyConverter>();
-
-            Assert.AreEqual(_data.Length, gridView.Rows.Count);
-            for (var i = 0; i < _data.Length; i++)
+            Assert.AreEqual(Data.Length, gridView.Rows.Count);
+            for (var i = 0; i < Data.Length; i++)
             {
                 foreach (var priceColumn in _priceColumns)
                 {
-                    Assert.AreEqual(true, gridView.Rows[i].Cells[priceColumn].Text.Contains('$'));
-
-                    var value = converter.ConvertFromRubles(culture,
-                        priceColumn == 3 ? _data[i].Price : _data[i].Discount, DateTime.Now);
-                    Assert.AreEqual(value,
-                        decimal.Parse(gridView.Rows[i].Cells[priceColumn].Text, NumberStyles.Currency, culture));
+                    var expectedRatedCurrency =
+                        (rate*(priceColumn == 3 ? Data[i].Price : Data[i].Discount)).ToString("C", culture);
+                    Assert.AreEqual(expectedRatedCurrency, gridView.Rows[i].Cells[priceColumn].Text);
                 }
             }
         }
 
         [TestMethod]
-        public void SavePageIndex_Save7ToRepository_Check7InRepository()
+        public void SavePageIndex_SaveIndex7ToRepositoryByName_CheckIndex7InRepositoryByName()
         {
-            _repository.Clear();
+            _repository = new Dictionary<string, int>();
 
-            var agent = ArrangeGridViewAgent();
+            var agent = ArrangeGridViewAgent(0);
 
             agent.SavePageIndex(_repository, StorageName, 7);
 
             Assert.AreEqual(1, _repository.Count);
+            Assert.AreEqual(true, _repository.ContainsKey(StorageName));
             Assert.AreEqual(7, _repository[StorageName]);
         }
 
         [TestMethod]
-        public void RestorePageIndex_GetByNameFromRepository_Check2InRepository()
+        public void RestorePageIndex_GetIndexByNameFromRepository_Return2()
         {
             _repository = new Dictionary<string, int> {{StorageName, 2}};
 
-            var agent = ArrangeGridViewAgent();
+            var agent = ArrangeGridViewAgent(0);
 
             agent.RestorePageIndex(_repository, StorageName);
 
+            Assert.AreEqual(true, _repository.ContainsKey(StorageName));
             Assert.AreEqual(2, _repository[StorageName]);
         }
 
         [TestMethod]
-        public void CheckIsPageIndexNeedToRefresh_PageIndexNoNeedToRefresh_ReturnFalse()
+        public void CheckIsPageIndexNeedToRefresh_PageIndexAndStoredByNameIndexSameAndEqual3_ReturnFalse()
         {
             _repository = new Dictionary<string, int> {{StorageName, 3}};
 
-            var gridView = ArrangeGridView(false);
+            var gridView = ArrangeGridView();
             gridView.PageIndex = 3;
 
-            var agent = ArrangeGridViewAgent();
+            var agent = ArrangeGridViewAgent(0);
 
             var actual = agent.CheckIsPageIndexNeedToRefresh(_repository, StorageName, gridView);
 
@@ -155,30 +163,30 @@ namespace StoreSolution.BuisnessLogic.UnitTests.GridViewManagerTests
         }
 
         [TestMethod]
-        public void CheckIsPageIndexNeedToRefresh_PageIndexNeedToRefresh_ReturnTrue()
+        public void CheckIsPageIndexNeedToRefresh_PageIndex2AndStoredIndex3_ReturnTrue()
         {
             _repository = new Dictionary<string, int> {{StorageName, 3}};
 
-            var gridView = ArrangeGridView(false);
+            var gridView = ArrangeGridView();
             gridView.PageIndex = 2;
-            
-            var agent = ArrangeGridViewAgent();
-            
+
+            var agent = ArrangeGridViewAgent(0);
+
             var actual = agent.CheckIsPageIndexNeedToRefresh(_repository, StorageName, gridView);
 
             Assert.AreEqual(true, actual);
         }
 
         [TestMethod]
-        public void SetGridViewPageIndex_SetGridViewPageIndexTo4WhenPageCount6_ReturnGridViewPageIndexAs4()
+        public void SetGridViewPageIndex_SetGridViewPageIndexTo4WhenPageCount6_ReturnGridViewPageIndexEqual4()
         {
             _repository = new Dictionary<string, int> {{StorageName, 4}};
 
-            var gridView = ArrangeGridView(true);
-            
-            var agent = ArrangeGridViewAgent();
-            agent.Fill(gridView, _data.AsQueryable());
-            
+            var gridView = ArrangeGridView();
+            SetPagingPropertiesToGridView(gridView);
+            var agent = ArrangeGridViewAgent(0);
+
+            agent.Fill(gridView, Data.AsQueryable());
             while (!_onDataBoundEnded) { /* wait until data will bound */ }
 
             agent.SetGridViewPageIndex(_repository, StorageName, gridView);
@@ -189,17 +197,17 @@ namespace StoreSolution.BuisnessLogic.UnitTests.GridViewManagerTests
         }
 
         [TestMethod]
-        public void SetGridViewPageIndex_SetGridViewPageIndexTo9WhenPageCount6_ReturnGridViewPageIndexAs5()
+        public void SetGridViewPageIndex_SetGridViewPageIndexTo9WhenPageCount6_ReturnGridViewPageIndexEqual5()
         {
-            _repository = new Dictionary<string, int> {{StorageName, 9}};
+            _repository = new Dictionary<string, int> { { StorageName, 9 } };
 
-            var gridView = ArrangeGridView(true);
+            var gridView = ArrangeGridView();
+            SetPagingPropertiesToGridView(gridView);
+            var agent = ArrangeGridViewAgent(0);
 
-            var agent = ArrangeGridViewAgent();
-            agent.Fill(gridView, _data.AsQueryable());
-
+            agent.Fill(gridView, Data.AsQueryable());
             while (!_onDataBoundEnded) { /* wait until data will bound */ }
-
+            
             agent.SetGridViewPageIndex(_repository, StorageName, gridView);
 
             var actual = gridView.PageIndex;
@@ -208,22 +216,21 @@ namespace StoreSolution.BuisnessLogic.UnitTests.GridViewManagerTests
         }
 
 
-        private GridView ArrangeGridView(bool allowPaging)
+        private GridView ArrangeGridView()
         {
             var gridView = new GridView();
-
             gridView.DataBound += _onDataBound;
+            return gridView;
+        }
 
-            if (!allowPaging) return gridView;
-
+        private static void SetPagingPropertiesToGridView(GridView gridView)
+        {
             gridView.PageSize = 1;
             gridView.PagerSettings.Visible = false;
             gridView.AllowPaging = true;
-
-            return gridView;
         }
         
-        private static GridViewAgent<Book, Dictionary<string, int>> ArrangeGridViewAgent()
+        private static GridViewAgent<Book, Dictionary<string, int>> ArrangeGridViewAgent(decimal rate)
         {
             var mockStorageService = new Mock<IStorageService<Dictionary<string, int>>>();
             mockStorageService.Setup(
@@ -237,11 +244,17 @@ namespace StoreSolution.BuisnessLogic.UnitTests.GridViewManagerTests
                     m.GetPageIndexByName(It.IsAny<Dictionary<string, int>>(), It.Is<string>(s => s == StorageName)))
                 .Returns((Dictionary<string, int> r, string s) => r[s]);
             
+            var mockCurrencyConverter = new Mock<ICurrencyConverter>();
+            mockCurrencyConverter.Setup(
+                m => m.GetRate(It.IsAny<CultureInfo>(), It.IsAny<CultureInfo>(), It.IsAny<DateTime>())).Returns(rate);
+
+            mockCurrencyConverter.Setup(
+                m => m.ConvertByRate(It.IsAny<decimal>(), It.IsAny<decimal>())).Returns((decimal v, decimal r) => v * r);
+
             StructureMapFactory.Init();
 
-            return new GridViewAgent<Book, Dictionary<string, int>>(
-                mockStorageService.Object,
-                StructureMapFactory.Resolve<ICurrencyConverter>());
+            return new GridViewAgent<Book, Dictionary<string, int>>(mockStorageService.Object,
+                mockCurrencyConverter.Object);
         }
     }
 

@@ -1,10 +1,10 @@
 ﻿namespace StoreSolution.BusinessLogic.Models
 {
-    public class ProductsOrder
+    public class ProductOrder
     {
         public string Name;
         public decimal Price;
         public int Count;
-        public double Total;
+        public decimal Total;
     }
 }

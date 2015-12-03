@@ -89,6 +89,8 @@
     <Compile Include="GridViewManager\GridViewProductManagementAgent.cs" />
     <Compile Include="ImageService\Contracts\IImageService.cs" />
     <Compile Include="ImageService\ImageServiceAgent.cs" />
+    <Compile Include="JsonSerialize\Contracts\IJsonSerializer.cs" />
+    <Compile Include="JsonSerialize\JsonSerializer.cs" />
     <Compile Include="Models\OrderItem.cs" />
     <Compile Include="Database\Models\Person.cs" />
     <Compile Include="Database\Models\Product.cs" />
@@ -105,7 +107,7 @@
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\OrderFromHistory.cs" />
     <Compile Include="Models\OrderToGrid.cs" />
-    <Compile Include="Models\ProductsOrder.cs" />
+    <Compile Include="Models\ProductOrder.cs" />
     <Compile Include="OrderRepository\Contracts\IOrderRepository.cs" />
     <Compile Include="OrderRepository\OrderSessionRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

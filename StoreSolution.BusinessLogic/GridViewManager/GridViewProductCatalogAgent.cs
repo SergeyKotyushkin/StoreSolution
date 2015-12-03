@@ -56,6 +56,8 @@ namespace StoreSolution.BusinessLogic.GridViewManager
 
         public int GetIdFromRow(GridView table, int indexRow, int indexIdColumn)
         {
+            if (indexRow < 0 || indexRow >= table.Rows.Count) return -1;
+
             int id;
             if (!int.TryParse(table.Rows[indexRow].Cells[indexIdColumn].Text, out id)) return -1;
 

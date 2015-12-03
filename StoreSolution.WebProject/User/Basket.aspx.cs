@@ -90,7 +90,7 @@ namespace StoreSolution.WebProject.User
 
             var orderItemsList = _gridViewBasketManager.GetOrderItemsList(Session, currencyCulture).ToArray();
 
-            SaveOrderHistoryInDatabase(orderItemsList, user, currencyCulture);
+            SaveOrderHistoryInDatabase(orderItemsList, user.UserName, user.Email, currencyCulture.Name);
 
             SendMailMessage(user.Email, orderItemsList);
 
@@ -144,9 +144,10 @@ namespace StoreSolution.WebProject.User
             SetUiProperties(data, cultureTo);
         }
 
-        private void SaveOrderHistoryInDatabase(IEnumerable<OrderItem> orderItemsList, MembershipUser user, CultureInfo currencyCultureInfo)
+        private void SaveOrderHistoryInDatabase(IEnumerable<OrderItem> orderItemsList, string userName, string userEmail,
+            string currencyCultureName)
         {
-            _efOrderHistoryRepository.Add(orderItemsList, user, currencyCultureInfo);
+            _efOrderHistoryRepository.Add(orderItemsList, userName, userEmail, currencyCultureName);
         }
 
         private void SendMailMessage(string userEmail, IEnumerable<OrderItem> orderItemsList)

@@ -1,10 +1,8 @@
-﻿using System.Globalization;
-using System.Linq;
-using System.Web;
-using System.Web.Script.Serialization;
+﻿using System.Linq;
 using StoreSolution.BusinessLogic.Currency.Contracts;
 using StoreSolution.BusinessLogic.Database.Contracts;
 using StoreSolution.BusinessLogic.GridViewManager.Contracts;
+using StoreSolution.BusinessLogic.JsonSerialize.Contracts;
 using StoreSolution.BusinessLogic.Lang.Contracts;
 using StoreSolution.BusinessLogic.Models;
 
@@ -14,41 +12,36 @@ namespace StoreSolution.BusinessLogic.GridViewManager
     {
         private readonly IEfOrderHistoryRepository _efOrderHistoryRepository;
         private readonly ILangSetter _langSetter;
+        private readonly IJsonSerializer _jsonSerializer;
 
         public GridViewProfileAgent(IStorageService<T> storageService, ICurrencyConverter currencyConverter,
-            IEfOrderHistoryRepository efOrderHistoryRepository, ILangSetter langSetter)
+            IEfOrderHistoryRepository efOrderHistoryRepository, ILangSetter langSetter, IJsonSerializer jsonSerializer)
             : base(storageService, currencyConverter)
         {
             _efOrderHistoryRepository = efOrderHistoryRepository;
             _langSetter = langSetter;
+            _jsonSerializer = jsonSerializer;
         }
 
 
-        public IQueryable<OrderToGrid> GetOrderHistoriesList(string userName, CultureInfo culture)
+        public IQueryable<OrderToGrid> GetOrderToGridList(string userName)
         {
             var history = _efOrderHistoryRepository.GetAll.Where(u => u.PersonName == userName).OrderBy(u => u.Date).ToList();
             
-            var jss = new JavaScriptSerializer();
-
             var number = 1;
             var ordersFromHistory = (from h in history
-                                     let productsOrder = jss.Deserialize<ProductsOrder[]>(h.Order)
+                                     let productsOrder = _jsonSerializer.Deserialize<ProductOrder[]>(h.Order)
                                      select new OrderFromHistory
                                      {
                                          Number = number++,
                                          Email = h.PersonEmail,
                                          Date = h.Date,
-                                         ProductsOrder = productsOrder,
+                                         ProductOrder = productsOrder,
                                          Total = h.Total,
                                          CultureName = h.Culture
                                      }).ToArray();
 
-            return ordersFromHistory.Select(o =>
-            {
-                var ordersToGrid = new OrderToGrid(o, _langSetter);
-                ordersToGrid.Order = HttpContext.Current.Server.HtmlDecode(ordersToGrid.Order);
-                return ordersToGrid;
-            }).AsQueryable();
+            return ordersFromHistory.Select(o => new OrderToGrid(o, _langSetter)).AsQueryable();
         }
     }
 }

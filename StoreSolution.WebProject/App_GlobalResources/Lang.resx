@@ -411,4 +411,7 @@
   <data name="ProductManagement_UpdateButton" xml:space="preserve">
     <value>Update</value>
   </data>
+  <data name="OrderToGrid_UnknownCurrency" xml:space="preserve">
+    <value>Sorry, unknown currency</value>
+  </data>
 </root>
