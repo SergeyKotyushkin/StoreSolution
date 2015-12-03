@@ -3,9 +3,9 @@ using StoreSolution.BusinessLogic.Database.Models;
 
 namespace StoreSolution.BusinessLogic.Database.Contracts
 {
-    public interface IEfPersonRepository
+    public interface IDbPersonRepository
     {
-        IQueryable<Person> Persons { get; }
+        IQueryable<Person> GetAll();
 
         bool AddOrUpdate(Person person);
     }

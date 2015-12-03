@@ -30,7 +30,7 @@ namespace StoreSolution.WebProject.Admin
         private static readonly Color SuccessColor = Color.DarkGreen;
         
         private StoreMaster _master;
-        private readonly IEfProductRepository _efProductRepository;
+        private readonly IDbProductRepository _dbProductRepository;
         private readonly ICurrencyConverter _currencyConverter;
         private readonly IUserGroup _userGroup;
         private readonly ILangSetter _langSetter;
@@ -39,18 +39,18 @@ namespace StoreSolution.WebProject.Admin
 
         protected ProductManagement()
             : this(
-                StructureMapFactory.Resolve<IEfProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>(),
+                StructureMapFactory.Resolve<IDbProductRepository>(), StructureMapFactory.Resolve<ICurrencyConverter>(),
                 StructureMapFactory.Resolve<IUserGroup>(), StructureMapFactory.Resolve<ILangSetter>(),
                 StructureMapFactory.Resolve<ICurrencyCultureService<HttpCookieCollection>>(),
                 StructureMapFactory.Resolve<IGridViewProductManagementManager<HttpSessionState>>())
         {
         }
 
-        protected ProductManagement(IEfProductRepository efProductRepository, ICurrencyConverter currencyConverter,
+        protected ProductManagement(IDbProductRepository dbProductRepository, ICurrencyConverter currencyConverter,
             IUserGroup userGroup, ILangSetter langSetter, ICurrencyCultureService<HttpCookieCollection> currencyCultureService,
             IGridViewProductManagementManager<HttpSessionState> gridViewProductManagementManager)
         {
-            _efProductRepository = efProductRepository;
+            _dbProductRepository = dbProductRepository;
             _currencyConverter = currencyConverter;
             _userGroup = userGroup;
             _langSetter = langSetter;
@@ -133,8 +133,8 @@ namespace StoreSolution.WebProject.Admin
         {
             var id = int.Parse(gvTable.Rows[e.RowIndex].Cells[2].Text);
 
-            var product = _efProductRepository.GetProductById(id);
-            if (_efProductRepository.RemoveProduct(id))
+            var product = _dbProductRepository.GetById(id);
+            if (_dbProductRepository.RemoveById(id))
             {
                 _master.SetLabMessage(SuccessColor, "ProductManagement_ProductWasRemoved");
                 Logger.Log.Info(string.Format("Product {0} successfully added.", product.Name));
@@ -203,7 +203,7 @@ namespace StoreSolution.WebProject.Admin
 
         private void FillGridView()
         {
-            var data = _efProductRepository.Products;
+            var data = _dbProductRepository.GetAll();
 
             if (!data.Any())
                 data =

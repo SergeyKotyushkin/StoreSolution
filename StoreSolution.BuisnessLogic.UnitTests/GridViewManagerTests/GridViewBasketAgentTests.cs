@@ -100,8 +100,8 @@ namespace StoreSolution.BuisnessLogic.UnitTests.GridViewManagerTests
             mockCurrencyConverter.Setup(
                 m => m.ConvertByRate(It.IsAny<decimal>(), It.IsAny<decimal>())).Returns((decimal v, decimal r) => v*r);
 
-            var mockProductRepository = new Mock<IEfProductRepository>();
-            mockProductRepository.Setup(m => m.Products).Returns(Products.AsQueryable());
+            var mockProductRepository = new Mock<IDbProductRepository>();
+            mockProductRepository.Setup(m => m.GetAll()).Returns(Products.AsQueryable());
 
             var mockOrderRepository = new Mock<IOrderRepository<object>>();
             mockOrderRepository.Setup(m => m.GetAll(It.IsAny<object>())).Returns(OrderList);

@@ -22,7 +22,7 @@ namespace StoreSolution.BuisnessLogic.UnitTests.DatabaseTests.Realizations
             };
             var efProductRepository = ArrangeEfProductRepository(expected);
             
-            var actual = efProductRepository.Products.ToArray();
+            var actual = efProductRepository.GetAll().ToArray();
 
             Assert.AreEqual(2, actual.Count());
             Assert.AreEqual(expected[0], actual[0]);

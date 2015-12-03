@@ -10,15 +10,15 @@ namespace StoreSolution.BusinessLogic.GridViewManager
 {
     public class GridViewProfileAgent<T> : GridViewAgent<OrderToGrid, T>, IGridViewProfileManager<T>
     {
-        private readonly IEfOrderHistoryRepository _efOrderHistoryRepository;
+        private readonly IDbOrderHistoryRepository _dbOrderHistoryRepository;
         private readonly ILangSetter _langSetter;
         private readonly IJsonSerializer _jsonSerializer;
 
         public GridViewProfileAgent(IStorageService<T> storageService, ICurrencyConverter currencyConverter,
-            IEfOrderHistoryRepository efOrderHistoryRepository, ILangSetter langSetter, IJsonSerializer jsonSerializer)
+            IDbOrderHistoryRepository dbOrderHistoryRepository, ILangSetter langSetter, IJsonSerializer jsonSerializer)
             : base(storageService, currencyConverter)
         {
-            _efOrderHistoryRepository = efOrderHistoryRepository;
+            _dbOrderHistoryRepository = dbOrderHistoryRepository;
             _langSetter = langSetter;
             _jsonSerializer = jsonSerializer;
         }
@@ -26,7 +26,7 @@ namespace StoreSolution.BusinessLogic.GridViewManager
 
         public IQueryable<OrderToGrid> GetOrderToGridList(string userName)
         {
-            var history = _efOrderHistoryRepository.GetAll.Where(u => u.PersonName == userName).OrderBy(u => u.Date).ToList();
+            var history = _dbOrderHistoryRepository.GetAll().Where(u => u.PersonName == userName).OrderBy(u => u.Date).ToList();
             
             var number = 1;
             var ordersFromHistory = (from h in history

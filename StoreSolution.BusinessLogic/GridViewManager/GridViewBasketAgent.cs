@@ -12,22 +12,22 @@ namespace StoreSolution.BusinessLogic.GridViewManager
     public class GridViewBasketAgent<T> : GridViewAgent<OrderItem, T>, IGridViewBasketManager<T>
     {
         private readonly ICurrencyConverter _currencyConverter;
-        private readonly IEfProductRepository _efProductRepository;
+        private readonly IDbProductRepository _dbProductRepository;
         private readonly IOrderRepository<T> _orderRepository;
 
         public GridViewBasketAgent(IStorageService<T> storageService,
-            ICurrencyConverter currencyConverter, IEfProductRepository efProductRepository,
+            ICurrencyConverter currencyConverter, IDbProductRepository dbProductRepository,
             IOrderRepository<T> orderRepository)
             : base(storageService, currencyConverter)
         {
             _currencyConverter = currencyConverter;
-            _efProductRepository = efProductRepository;
+            _dbProductRepository = dbProductRepository;
             _orderRepository = orderRepository;
         }
 
         public IQueryable<OrderItem> GetOrderItemsList(T repository, CultureInfo culture)
         {
-            var products = _efProductRepository.Products.ToArray();
+            var products = _dbProductRepository.GetAll().ToArray();
             var orders = _orderRepository.GetAll(repository);
 
             var rate = _currencyConverter.GetRate(new CultureInfo("ru-Ru"), culture, DateTime.Now);

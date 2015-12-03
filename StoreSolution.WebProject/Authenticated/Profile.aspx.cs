@@ -32,7 +32,7 @@ namespace StoreSolution.WebProject.Authenticated
         private static readonly Regex RgxPassword = new Regex("^[a-zA-Z0-9_!@#$%^&*]{5,}$");
 
         private StoreMaster _master;
-        private readonly IEfPersonRepository _efPersonRepository;
+        private readonly IDbPersonRepository _dbPersonRepository;
         private readonly IUserGroup _userGroup;
         private readonly ILangSetter _langSetter;
         private readonly IGridViewProfileManager<HttpSessionState> _gridViewProfileManager;
@@ -40,18 +40,18 @@ namespace StoreSolution.WebProject.Authenticated
 
         protected Profile()
             : this(
-                StructureMapFactory.Resolve<IEfPersonRepository>(), StructureMapFactory.Resolve<IUserGroup>(),
+                StructureMapFactory.Resolve<IDbPersonRepository>(), StructureMapFactory.Resolve<IUserGroup>(),
                 StructureMapFactory.Resolve<ILangSetter>(),
                 StructureMapFactory.Resolve<IGridViewProfileManager<HttpSessionState>>(),
                 StructureMapFactory.Resolve<IImageService>())
         {
         }
 
-        protected Profile(IEfPersonRepository efPersonRepository,
+        protected Profile(IDbPersonRepository dbPersonRepository,
             IUserGroup userGroup, ILangSetter langSetter,
             IGridViewProfileManager<HttpSessionState> gridViewProfileManager, IImageService imageService)
         {
-            _efPersonRepository = efPersonRepository;
+            _dbPersonRepository = dbPersonRepository;
             _userGroup = userGroup;
             _langSetter = langSetter;
             _gridViewProfileManager = gridViewProfileManager;
@@ -114,7 +114,7 @@ namespace StoreSolution.WebProject.Authenticated
             }
 
             var user = _userGroup.GetUser();
-            var person = _efPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName) ?? new Person
+            var person = _dbPersonRepository.GetAll().FirstOrDefault(p => p.Login == user.UserName) ?? new Person
             {
                 Login = user.UserName,
                 Name = "",
@@ -133,7 +133,7 @@ namespace StoreSolution.WebProject.Authenticated
             };
 
             _master.SetLabMessage(Color.Empty, string.Empty);
-            if (_efPersonRepository.AddOrUpdate(updatedPerson))
+            if (_dbPersonRepository.AddOrUpdate(updatedPerson))
             {
                 _master.SetLabMessage(SuccessColor, "Profile_IconWasChanged");
                 Logger.Log.Info(string.Format("Icon successfully changed for user - {0}.", user.UserName));
@@ -147,7 +147,7 @@ namespace StoreSolution.WebProject.Authenticated
         {
             var user = _userGroup.GetUser();
 
-            var person = _efPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName);
+            var person = _dbPersonRepository.GetAll().FirstOrDefault(p => p.Login == user.UserName);
             if(person == null) return;
 
             var updatedPerson = new Person
@@ -158,7 +158,7 @@ namespace StoreSolution.WebProject.Authenticated
                 Icon = person.Icon
             };
 
-            if (!_efPersonRepository.AddOrUpdate(updatedPerson))
+            if (!_dbPersonRepository.AddOrUpdate(updatedPerson))
             {
                 _master.SetLabMessage(ErrorColor, "Profile_IconWasNotChanged");
             }
@@ -256,7 +256,7 @@ namespace StoreSolution.WebProject.Authenticated
 
             labTitle.Text = user.UserName;
 
-            var person = _efPersonRepository.Persons.FirstOrDefault(p => p.Login == user.UserName);
+            var person = _dbPersonRepository.GetAll().FirstOrDefault(p => p.Login == user.UserName);
 
             if (person == null) return;
             tbName.Text = person.Name;

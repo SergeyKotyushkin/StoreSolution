@@ -6,13 +6,13 @@ using StoreSolution.BusinessLogic.Database.Models;
 
 namespace StoreSolution.BusinessLogic.Database.Realizations
 {
-    public class EfPersonRepository : IEfPersonRepository
+    public class EfPersonRepository : IDbPersonRepository
     {
         private readonly EfPersonContext _context = new EfPersonContext();
         
-        public IQueryable<Person> Persons
+        public IQueryable<Person> GetAll()
         {
-            get { return _context.PersonTable; }
+            return _context.PersonTable;
         }
         
         public bool AddOrUpdate(Person person)

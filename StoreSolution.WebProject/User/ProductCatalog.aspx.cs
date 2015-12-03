@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.SessionState;
@@ -31,7 +32,7 @@ namespace StoreSolution.WebProject.User
         private readonly Color _productRemovedColor = Color.DarkBlue;
         private readonly Color _successColor = Color.DarkGreen;
 
-        private readonly IEfProductRepository _efProductRepository;
+        private readonly IDbProductRepository _dbProductRepository;
         private readonly IOrderRepository<HttpSessionState> _orderRepository;
         private readonly IUserGroup _userGroup;
         private readonly ILangSetter _langSetter;
@@ -40,7 +41,7 @@ namespace StoreSolution.WebProject.User
 
         protected ProductCatalog()
             : this(
-                StructureMapFactory.Resolve<IEfProductRepository>(),
+                StructureMapFactory.Resolve<IDbProductRepository>(),
                 StructureMapFactory.Resolve<IOrderRepository<HttpSessionState>>(), StructureMapFactory.Resolve<IUserGroup>(),
                 StructureMapFactory.Resolve<ILangSetter>(),
                 StructureMapFactory.Resolve<IGridViewProductCatalogManager<HttpSessionState>>(),
@@ -48,11 +49,11 @@ namespace StoreSolution.WebProject.User
         {
         }
 
-        protected ProductCatalog(IEfProductRepository efProductRepository, IOrderRepository<HttpSessionState> orderRepository,
+        protected ProductCatalog(IDbProductRepository dbProductRepository, IOrderRepository<HttpSessionState> orderRepository,
             IUserGroup userGroup, ILangSetter langSetter, IGridViewProductCatalogManager<HttpSessionState> gridViewProductCatalogManager,
             ICurrencyCultureService<HttpCookieCollection> currencyCultureService)
         {
-            _efProductRepository = efProductRepository;
+            _dbProductRepository = dbProductRepository;
             _orderRepository = orderRepository;
             _userGroup = userGroup;
             _langSetter = langSetter;
@@ -73,6 +74,8 @@ namespace StoreSolution.WebProject.User
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            //LOAD_PRODUCTS();
+
             _master = (StoreMaster)Page.Master;
             if (_master == null) throw new HttpUnhandledException("Wrong master page.");
 
@@ -91,7 +94,7 @@ namespace StoreSolution.WebProject.User
             _orderRepository.Add(Session, id);
 
             _master.SetLabMessage(_successColor, "ProductCatalog_ProductAdded",
-                _efProductRepository.GetProductById(id).Name);
+                _dbProductRepository.GetById(id).Name);
 
             _gridViewProductCatalogManager.FillOrderColumn(gvTable, OrderColumnIndex, IndexIdColumn, Session);
         }
@@ -112,7 +115,7 @@ namespace StoreSolution.WebProject.User
             _orderRepository.Remove(Session, id);
 
             _master.SetLabMessage(_productRemovedColor, "ProductCatalog_ProductRemoved",
-                _efProductRepository.GetProductById(id).Name);
+                _dbProductRepository.GetById(id).Name);
 
             _gridViewProductCatalogManager.FillOrderColumn(gvTable, OrderColumnIndex, IndexIdColumn, Session);
         }
@@ -184,7 +187,7 @@ namespace StoreSolution.WebProject.User
 
         private void FillGridView()
         {
-            var data = _efProductRepository.Products;
+            var data = _dbProductRepository.GetAll();
 
             if (_isSearch)
                 data = SearchProducts(data, tbSearchName.Text.Trim(), ddlSearchCategory.SelectedIndex);
@@ -197,13 +200,13 @@ namespace StoreSolution.WebProject.User
         private IQueryable<Product> SearchProducts(IQueryable<Product> products, string searchName, int indexCategory)
         {
             if (!string.IsNullOrWhiteSpace(searchName))
-                products = _efProductRepository.SearchByName(products, searchName);
+                products = _dbProductRepository.SearchByName(products, searchName);
 
             if (indexCategory == 0)
                 return products;
 
             var searchCategory = ddlSearchCategory.Items[ddlSearchCategory.SelectedIndex].Text;
-            return _efProductRepository.SearchByCategory(products, searchCategory);
+            return _dbProductRepository.SearchByCategory(products, searchCategory);
         }
         
         private void ClearSearchValues()
@@ -223,6 +226,23 @@ namespace StoreSolution.WebProject.User
 
             _master.SetLabMessage(_successColor, "ProductCatalog_ProductsBought");
             Session["Bought"] = null;
+        }
+        
+        private void LOAD_PRODUCTS()
+        {
+            var products = _dbProductRepository.GetAll();
+            const string file = @"C:\dev\curl\products.txt";
+
+            if (File.Exists(file)) File.Delete(file);
+            using (var writer = File.CreateText(file))
+            {
+                foreach (var p in products)
+                {
+                    writer.WriteLine(
+                        "start curl -XPUT \"http://localhost:9200/database/products/{0}\" -d \"{{\\\"Id\\\":\\\"{0}\\\",\\\"Name\\\":\\\"{1}\\\",\\\"Category\\\":\\\"{2}\\\",\\\"Price\\\":\\\"{3}\\\"}}\"",
+                        p.Id, p.Name, p.Category, p.Price);
+                }
+            }
         }
 
     }

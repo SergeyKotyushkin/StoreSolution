@@ -10,7 +10,7 @@ using StoreSolution.BusinessLogic.Models;
 
 namespace StoreSolution.BusinessLogic.Database.Realizations
 {
-    public class EfOrderHistoryRepository : IEfOrderHistoryRepository
+    public class EfOrderHistoryRepository : IDbOrderHistoryRepository
     {
         private readonly IJsonSerializer _jsonSerializer;
 
@@ -21,22 +21,22 @@ namespace StoreSolution.BusinessLogic.Database.Realizations
             _jsonSerializer = jsonSerializer;
         }
 
-        public IQueryable<OrderHistory> GetAll
+        public IQueryable<OrderHistory> GetAll()
         {
-            get { return _context.OrdersHistoryTable; }
+            return _context.OrdersHistoryTable;
         }
 
-        public bool Add(OrderHistory orderHistory)
+        public bool AddOrUpdate(OrderHistory orderHistory)
         {
             _context.OrdersHistoryTable.AddOrUpdate(orderHistory);
             return _context.SaveChanges() > 0;
         }
 
-        public bool Add(IEnumerable<OrderItem> orderItems, string userName, string userEmail, string cultureName)
+        public bool AddOrUpdate(IEnumerable<OrderItem> orderItems, string userName, string userEmail, string cultureName)
         {
             var orderHistory = CreateOrderHistory(orderItems, userName, userEmail, cultureName);
 
-            return Add(orderHistory);
+            return AddOrUpdate(orderHistory);
         }
 
         private OrderHistory CreateOrderHistory(IEnumerable<OrderItem> orderItems, string userName, string userEmail,

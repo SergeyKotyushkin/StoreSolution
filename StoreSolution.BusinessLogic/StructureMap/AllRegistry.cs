@@ -41,9 +41,9 @@ namespace StoreSolution.BusinessLogic.StructureMap
             For<IMailService>().Use<MailService>().Singleton();
 
             // Repository
-            For<IEfPersonRepository>().Use<EfPersonRepository>().Singleton();
-            For<IEfProductRepository>().Use<EfProductRepository>().Singleton();
-            For<IEfOrderHistoryRepository>().Use<EfOrderHistoryRepository>().Singleton();
+            For<IDbPersonRepository>().Use<EfPersonRepository>().Singleton();
+            For<IDbProductRepository>().Use<EfProductRepository>().Singleton();
+            For<IDbOrderHistoryRepository>().Use<EfOrderHistoryRepository>().Singleton();
 
             // GridViews
             For<IGridViewProductCatalogManager<HttpSessionState>>().Use<GridViewProductCatalogAgent<HttpSessionState>>();

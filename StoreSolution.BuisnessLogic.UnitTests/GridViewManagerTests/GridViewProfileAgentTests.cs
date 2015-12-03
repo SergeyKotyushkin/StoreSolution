@@ -95,8 +95,8 @@ namespace StoreSolution.BuisnessLogic.UnitTests.GridViewManagerTests
 
             var mockCurrencyConverter = new Mock<ICurrencyConverter>();
 
-            var mockOrderHistoryRepository = new Mock<IEfOrderHistoryRepository>();
-            mockOrderHistoryRepository.Setup(m => m.GetAll).Returns(OrderHistories.AsQueryable());
+            var mockOrderHistoryRepository = new Mock<IDbOrderHistoryRepository>();
+            mockOrderHistoryRepository.Setup(m => m.GetAll()).Returns(OrderHistories.AsQueryable());
 
             var  mockLangSetter = new Mock<ILangSetter>();
             mockLangSetter.Setup(m => m.Set(It.IsAny<string>())).Returns((string s) => s.Substring(s.IndexOf('_') + 1));

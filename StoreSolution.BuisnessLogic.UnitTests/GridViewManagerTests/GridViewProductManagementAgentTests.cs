@@ -202,9 +202,9 @@ namespace StoreSolution.BuisnessLogic.UnitTests.GridViewManagerTests
                 m => m.ConvertToRubles(It.IsAny<CultureInfo>(), It.IsAny<decimal>(), It.IsAny<DateTime>()))
                 .Returns((CultureInfo c, decimal v, DateTime d) => v*rate);
 
-            var mockProductRepository = new Mock<IEfProductRepository>();
-            mockProductRepository.Setup(m => m.AddOrUpdateProduct(It.Is<Product>(p => p == null))).Returns(false);
-            mockProductRepository.Setup(m => m.AddOrUpdateProduct(It.Is<Product>(p => p != null))).Returns(
+            var mockProductRepository = new Mock<IDbProductRepository>();
+            mockProductRepository.Setup(m => m.AddOrUpdate(It.Is<Product>(p => p == null))).Returns(false);
+            mockProductRepository.Setup(m => m.AddOrUpdate(It.Is<Product>(p => p != null))).Returns(
                 (Product p) =>
                 {
                     var index = _products.FindIndex(q => q.Id == p.Id);

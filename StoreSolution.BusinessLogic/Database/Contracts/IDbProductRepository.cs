@@ -3,15 +3,15 @@ using StoreSolution.BusinessLogic.Database.Models;
 
 namespace StoreSolution.BusinessLogic.Database.Contracts
 {
-    public interface IEfProductRepository
+    public interface IDbProductRepository
     {
-        IQueryable<Product> Products { get; }
+        IQueryable<Product> GetAll();
 
-        bool AddOrUpdateProduct(Product product);
+        bool AddOrUpdate(Product product);
 
-        bool RemoveProduct(int id);
+        bool RemoveById(int id);
 
-        Product GetProductById(int id);
+        Product GetById(int id);
 
         IQueryable<Product> SearchByName(IQueryable<Product> products, string searchName);
 

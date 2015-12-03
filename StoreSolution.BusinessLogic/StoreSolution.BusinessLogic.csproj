@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Elasticsearch.Net">
+      <HintPath>..\packages\Elasticsearch.Net.1.7.1\lib\net45\Elasticsearch.Net.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
@@ -40,6 +43,12 @@
     <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Nest">
+      <HintPath>..\packages\NEST.1.7.1\lib\net45\Nest.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="StructureMap, Version=3.1.6.186, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -68,12 +77,13 @@
     <Compile Include="Currency\CurrencyService.cs" />
     <Compile Include="Currency\RateScheme.cs" />
     <Compile Include="Currency\YahooRateService.cs" />
-    <Compile Include="Database\Contracts\IEfOrderHistoryRepository.cs" />
-    <Compile Include="Database\Contracts\IEfPersonRepository.cs" />
-    <Compile Include="Database\Contracts\IEfProductRepository.cs" />
+    <Compile Include="Database\Contracts\IDbOrderHistoryRepository.cs" />
+    <Compile Include="Database\Contracts\IDbPersonRepository.cs" />
+    <Compile Include="Database\Contracts\IDbProductRepository.cs" />
     <Compile Include="Database\EfContexts\EfPersonContext.cs" />
     <Compile Include="Database\EfContexts\EfProductContext.cs" />
     <Compile Include="Database\Models\OrderHistory.cs" />
+    <Compile Include="Database\Realizations\EsProductsRepository.cs" />
     <Compile Include="GridViewManager\Contracts\IGridViewBasketManager.cs" />
     <Compile Include="GridViewManager\Contracts\IGridViewManager.cs" />
     <Compile Include="GridViewManager\Contracts\IGridViewProfileManager.cs" />

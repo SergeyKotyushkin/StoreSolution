@@ -31,7 +31,7 @@ namespace StoreSolution.WebProject.User
         private static readonly int[] PriceColumnsIndexes = {1, 3};
 
         private StoreMaster _master;
-        private readonly IEfOrderHistoryRepository _efOrderHistoryRepository;
+        private readonly IDbOrderHistoryRepository _dbOrderHistoryRepository;
         private readonly IMailSender _mailSender;
         private readonly IUserGroup _userGroup;
         private readonly ILangSetter _langSetter;
@@ -39,18 +39,18 @@ namespace StoreSolution.WebProject.User
         private readonly IGridViewBasketManager<HttpSessionState> _gridViewBasketManager;
 
         protected Basket()
-            : this(StructureMapFactory.Resolve<IEfOrderHistoryRepository>(), StructureMapFactory.Resolve<IMailSender>(),
+            : this(StructureMapFactory.Resolve<IDbOrderHistoryRepository>(), StructureMapFactory.Resolve<IMailSender>(),
                 StructureMapFactory.Resolve<IUserGroup>(), StructureMapFactory.Resolve<ILangSetter>(),
                 StructureMapFactory.Resolve<ICurrencyCultureService<HttpCookieCollection>>(),
                 StructureMapFactory.Resolve<IGridViewBasketManager<HttpSessionState>>())
         {
         }
 
-        protected Basket(IEfOrderHistoryRepository efOrderHistoryRepository, IMailSender mailSender,
+        protected Basket(IDbOrderHistoryRepository dbOrderHistoryRepository, IMailSender mailSender,
             IUserGroup userGroup, ILangSetter langSetter, ICurrencyCultureService<HttpCookieCollection> currencyCultureService,
             IGridViewBasketManager<HttpSessionState> gridViewBasketManager)
         {
-            _efOrderHistoryRepository = efOrderHistoryRepository;
+            _dbOrderHistoryRepository = dbOrderHistoryRepository;
             _mailSender = mailSender;
             _userGroup = userGroup;
             _langSetter = langSetter;
@@ -147,7 +147,7 @@ namespace StoreSolution.WebProject.User
         private void SaveOrderHistoryInDatabase(IEnumerable<OrderItem> orderItemsList, string userName, string userEmail,
             string currencyCultureName)
         {
-            _efOrderHistoryRepository.Add(orderItemsList, userName, userEmail, currencyCultureName);
+            _dbOrderHistoryRepository.AddOrUpdate(orderItemsList, userName, userEmail, currencyCultureName);
         }
 
         private void SendMailMessage(string userEmail, IEnumerable<OrderItem> orderItemsList)

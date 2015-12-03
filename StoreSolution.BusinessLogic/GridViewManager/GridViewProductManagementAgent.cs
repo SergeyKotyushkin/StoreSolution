@@ -10,14 +10,14 @@ namespace StoreSolution.BusinessLogic.GridViewManager
 {
     public class GridViewProductManagementAgent<T> : GridViewAgent<Product, T>, IGridViewProductManagementManager<T>
     {
-        private readonly IEfProductRepository _efProductRepository;
+        private readonly IDbProductRepository _dbProductRepository;
         private readonly ICurrencyConverter _currencyConverter;
 
         public GridViewProductManagementAgent(IStorageService<T> storageService,
-            ICurrencyConverter currencyConverter, IEfProductRepository efProductRepository)
+            ICurrencyConverter currencyConverter, IDbProductRepository dbProductRepository)
             : base(storageService, currencyConverter)
         {
-            _efProductRepository = efProductRepository;
+            _dbProductRepository = dbProductRepository;
             _currencyConverter = currencyConverter;
         }
 
@@ -48,7 +48,7 @@ namespace StoreSolution.BusinessLogic.GridViewManager
         {
             product.Price = _currencyConverter.ConvertToRubles(currencyCulture, product.Price, DateTime.Now);
 
-            return _efProductRepository.AddOrUpdateProduct(product)
+            return _dbProductRepository.AddOrUpdate(product)
                 ? EditingResults.Success
                 : EditingResults.FailAddOrUpdate;
         }

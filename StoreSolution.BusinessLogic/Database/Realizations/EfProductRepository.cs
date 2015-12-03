@@ -6,7 +6,7 @@ using StoreSolution.BusinessLogic.Database.Models;
 
 namespace StoreSolution.BusinessLogic.Database.Realizations
 {
-    public class EfProductRepository : IEfProductRepository
+    public class EfProductRepository : IDbProductRepository
     {
         private readonly EfProductContext _context;
 
@@ -15,18 +15,18 @@ namespace StoreSolution.BusinessLogic.Database.Realizations
             _context = context;
         }
 
-        public IQueryable<Product> Products
+        public IQueryable<Product> GetAll()
         {
-            get { return _context.ProductTable.OrderBy(p => p.Id); }
+            return _context.ProductTable.OrderBy(p => p.Id);
         }
 
-        public bool AddOrUpdateProduct(Product product)
+        public bool AddOrUpdate(Product product)
         {
             _context.ProductTable.AddOrUpdate(product);
             return _context.SaveChanges() > 0;
         }
 
-        public bool RemoveProduct(int id)
+        public bool RemoveById(int id)
         {
             var entity = _context.ProductTable.Find(id);
             if (entity == null) return false;
@@ -35,7 +35,7 @@ namespace StoreSolution.BusinessLogic.Database.Realizations
             return true;
         }
 
-        public Product GetProductById(int id)
+        public Product GetById(int id)
         {
             return _context.ProductTable.Find(id);
         }

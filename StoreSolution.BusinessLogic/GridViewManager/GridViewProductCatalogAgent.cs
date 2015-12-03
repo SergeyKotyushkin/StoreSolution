@@ -11,16 +11,16 @@ namespace StoreSolution.BusinessLogic.GridViewManager
 {
     public class GridViewProductCatalogAgent<T> : GridViewAgent<Product, T>, IGridViewProductCatalogManager<T>
     {
-        private readonly IEfProductRepository _efProductRepository;
+        private readonly IDbProductRepository _dbProductRepository;
         private readonly IOrderRepository<T> _orderRepository;
         private readonly ILangSetter _langSetter;
 
-        public GridViewProductCatalogAgent(IEfProductRepository efProductRepository,
+        public GridViewProductCatalogAgent(IDbProductRepository dbProductRepository,
             IOrderRepository<T> orderRepository, ILangSetter langSetter,
             IStorageService<T> storageService, ICurrencyConverter currencyConverter)
             : base(storageService, currencyConverter)
         {
-            _efProductRepository = efProductRepository;
+            _dbProductRepository = dbProductRepository;
             _orderRepository = orderRepository;
             _langSetter = langSetter;
         }
@@ -61,7 +61,7 @@ namespace StoreSolution.BusinessLogic.GridViewManager
             int id;
             if (!int.TryParse(table.Rows[indexRow].Cells[indexIdColumn].Text, out id)) return -1;
 
-            var product = _efProductRepository.GetProductById(id);
+            var product = _dbProductRepository.GetById(id);
             return product == null ? -1 : product.Id;
         }
     }

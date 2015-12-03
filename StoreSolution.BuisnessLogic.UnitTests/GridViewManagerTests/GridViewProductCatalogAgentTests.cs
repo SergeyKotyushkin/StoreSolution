@@ -135,8 +135,8 @@ namespace StoreSolution.BuisnessLogic.UnitTests.GridViewManagerTests
 
         private GridViewProductCatalogAgent<object> ArrangeGridViewProductCatalogAgent()
         {
-            var mockProductRepository = new Mock<IEfProductRepository>();
-            mockProductRepository.Setup(m => m.GetProductById(It.IsAny<int>()))
+            var mockProductRepository = new Mock<IDbProductRepository>();
+            mockProductRepository.Setup(m => m.GetById(It.IsAny<int>()))
                 .Returns((int id) => Products.FirstOrDefault(p => p.Id == id));
 
             var mockOrderRepository = new Mock<IOrderRepository<object>>();
